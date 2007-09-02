@@ -3,13 +3,13 @@
 	<parent>
 		<artifactId>main</artifactId>
 		<groupId>com.requea.dysoweb.portlet</groupId>
-		<version>0.8.0-SNAPSHOT</version>
+		<version>0.8.0</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.requea.dysoweb.portlet</groupId>
 	<artifactId>portlet-core</artifactId>
 	<name>Requea Dysoweb Portlet Bootstrap</name>
-	<version>0.8.0-SNAPSHOT</version>
+	<version>0.8.0</version>
 	<url>http://www.requea.com</url><dependencies>
 		<dependency>
 			<groupId>javax.servlet</groupId>
