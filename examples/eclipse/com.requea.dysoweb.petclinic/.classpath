@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="lib/antlr-2.7.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/asm-2.2.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/asm-commons-2.2.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/asm-util-2.2.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/aspectjrt.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/aspectjweaver.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/cglib-nodep-2.1_3.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-collections.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-dbcp.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-lang.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-logging.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-pool.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/connector.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/dom4j-1.6.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/ehcache-1.2.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/hibernate3.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/hibernate-annotations.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/hibernate-commons-annotations.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/hibernate-entitymanager.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/hsqldb.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jboss-archive-browsing.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jstl.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jta.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/mysql.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/openjpa-0.9.7-incubating.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/persistence.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/petclinic.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/petclinic-domain.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/serp-1.12.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/spring.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/standard.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/toplink-essentials.jar"/>
+	<classpathentry exported="true" kind="lib" path="bin/"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

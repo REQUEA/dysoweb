@@ -1,0 +1,181 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.requea.dysoweb</groupId>
+	<artifactId>main</artifactId>
+	<packaging>pom</packaging>
+	<version>0.8.0-SNAPSHOT</version>
+	<name>Requea Dysoweb</name>
+	<url>http://www.requea.com</url>
+	<modules>
+		<module>dysoweb</module>
+		<module>dysoweb.demo</module>
+		<module>portlet</module>
+	</modules>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>javax.servlet</groupId>
+				<artifactId>servlet-api</artifactId>
+				<version>2.4</version>
+			</dependency>
+	        <dependency>
+	            <groupId>javax.servlet</groupId>
+	            <artifactId>jsp-api</artifactId>
+	            <version>2.0</version>
+	            <scope>provided</scope>
+	        </dependency>
+			<dependency>
+			    <groupId>portlet-api</groupId>
+			    <artifactId>portlet-api</artifactId>
+			    <version>1.0</version>
+			</dependency>
+
+	        <dependency>
+	            <groupId>org.apache.felix</groupId>
+	            <artifactId>org.osgi.core</artifactId>
+	            <version>1.0.0</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>org.apache.felix</groupId>
+	            <artifactId>org.apache.felix.shell</artifactId>
+	            <version>1.0.0</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>org.apache.felix</groupId>
+	            <artifactId>org.apache.felix.shell.tui</artifactId>
+	            <version>1.0.0-dysoweb</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>org.apache.felix</groupId>
+	            <artifactId>org.apache.felix.bundlerepository</artifactId>
+	            <version>1.0.0</version>
+	        </dependency>
+			<dependency>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>org.apache.felix.framework</artifactId>
+				<version>1.0.0</version>
+			</dependency>
+			
+	        <dependency>
+	            <groupId>requeabuild</groupId>
+	            <artifactId>jasper-runtime</artifactId>
+	            <version>5.5.20</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>requeabuild</groupId>
+	            <artifactId>jasper-compiler</artifactId>
+	            <version>5.5.20</version>
+	        </dependency>
+			
+	        <dependency>
+	            <groupId>com.requea.dysoweb</groupId>
+	            <artifactId>dysoweb-core</artifactId>
+	            <version>${version}</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>com.requea.dysoweb</groupId>
+	            <artifactId>com.requea.dysoweb.api</artifactId>
+	            <version>${version}</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>com.requea.dysoweb</groupId>
+	            <artifactId>com.requea.dysoweb.utils.tags</artifactId>
+	            <version>${version}</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>com.requea.dysoweb</groupId>
+	            <artifactId>com.requea.dysoweb.shell</artifactId>
+	            <version>${version}</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>com.requea.dysoweb</groupId>
+	            <artifactId>com.requea.dysoweb.processor</artifactId>
+	            <version>${version}</version>
+	        </dependency>
+
+	        <dependency>
+	            <groupId>com.requea.dysoweb</groupId>
+	            <artifactId>com.requea.dysoweb.commons-logging</artifactId>
+	            <version>1.1</version>
+	        </dependency>
+
+
+	        <dependency>
+	            <groupId>requeabuild</groupId>
+	            <artifactId>commons-el</artifactId>
+	            <version>5.5.20</version>
+	        </dependency>
+			<dependency>
+			    <groupId>janino</groupId>
+			    <artifactId>janino</artifactId>
+			    <version>2.5.7</version>
+			</dependency>
+	        <dependency>
+	            <groupId>requeabuild</groupId>
+	            <artifactId>naming-resources</artifactId>
+	            <version>5.5.20</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>backport-util-concurrent</groupId>
+	            <artifactId>backport-util-concurrent</artifactId>
+	            <version>3.0</version>
+	        </dependency>
+
+	        <dependency>
+	            <groupId>commons-logging</groupId>
+	            <artifactId>commons-logging-api</artifactId>
+	            <version>1.1</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>commons-logging</groupId>
+	            <artifactId>commons-logging</artifactId>
+	            <version>1.1</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>org.apache.ant</groupId>
+	            <artifactId>ant</artifactId>
+	            <version>1.7.0</version>
+	        </dependency>
+			<dependency>
+			    <groupId>org.apache.ant</groupId>
+			    <artifactId>ant-launcher</artifactId>
+			    <version>1.7.0</version>
+			</dependency>
+			
+		</dependencies>
+	</dependencyManagement>
+
+	<distributionManagement>
+		<repository>
+			<id>requea-maven-repository</id>
+			<name>Requea repository</name>
+			<url>scp://maven@maven.requea.com:/home/maven/repo/</url>
+		</repository>
+	</distributionManagement>
+	<repositories>
+		<repository>
+			<id>requea-maven-repository</id>
+			<name>Requea repository</name>
+			<url>http://maven.requea.com/repo/</url>
+		</repository>
+	</repositories>
+
+	<scm>
+		<connection>scm:svn:svn://svn.forge.objectweb.org/svnroot/dysoweb/trunk</connection>
+		<developerConnection>scm:svn:svn+ssh://${maven.username}@svn.forge.objectweb.org/svnroot/dysoweb/trunk</developerConnection>
+		<url>svn://svn.forge.objectweb.org/svnroot/dysoweb/trunk</url>
+	</scm>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<configuration>
+					<tagBase>svn+ssh://${maven.username}@svn.forge.objectweb.org/svnroot/dysoweb/tags</tagBase>
+					<preparationGoals>clean install</preparationGoals>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

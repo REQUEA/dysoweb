@@ -1,0 +1,34 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.requea.dysoweb.portlet</groupId>
+	<artifactId>main</artifactId>
+	<packaging>pom</packaging>
+	<version>0.8.0-SNAPSHOT</version>
+	<name>Requea Dysoweb Portlet Support</name>
+	<url>http://www.requea.com</url>
+	<parent>
+		<artifactId>main</artifactId>
+		<groupId>com.requea.dysoweb</groupId>
+		<version>0.8.0-SNAPSHOT</version>
+	</parent>
+	<modules>
+		<module>portlet-core</module>
+		<module>com.requea.dysoweb.portlet.processor</module>
+		<module>portlet</module>
+	</modules>
+	
+	<dependencyManagement>
+		<dependencies>
+	        <dependency>
+	            <groupId>com.requea.dysoweb.portlet</groupId>
+	            <artifactId>portlet-core</artifactId>
+	            <version>${version}</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>com.requea.dysoweb.portlet</groupId>
+	            <artifactId>com.requea.dysoweb.portlet.processor</artifactId>
+	            <version>${version}</version>
+	        </dependency>
+		</dependencies>
+	</dependencyManagement>	
+</project>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="lib/mysql-connector-java-3.1.12-bin.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/antlr.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/beanaction.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-beanutils.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-digester.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-fileupload.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-validator.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/hsqldb.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/ibatis-common-2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/ibatis-dao-2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/ibatis-sqlmap-2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jakarta-oro.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/struts.jar" sourcepath="/Users/pdubois/Desktop/struts-1.2.7-src/src/share"/>
+	<classpathentry exported="true" kind="lib" path="bin/"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

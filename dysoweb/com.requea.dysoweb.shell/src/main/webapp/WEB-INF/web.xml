@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<web-app>
+    <display-name>Dysoweb Shell</display-name>
+    <servlet>
+        <servlet-name>shellServlet</servlet-name>
+        <servlet-class>com.requea.dysoweb.shell.impl.ShellServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>shellServlet</servlet-name>
+        <url-pattern>/dysoweb/shell/exec</url-pattern>
+    </servlet-mapping>
+    
+</web-app>

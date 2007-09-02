@@ -1,0 +1,81 @@
+body {
+	font-family: "Lucida Grande", Geneva, Arial, Verdana, sans-serif;
+	font-size: 80%;
+	border:0px;
+	margin:0px;
+}
+
+#top {
+	height:140px;
+	background:url('dysoweb.jpg') no-repeat #101c1b;
+}
+#page {
+	margin:40px 20px 20px 20px;
+	padding:10px;
+	background:#fff;
+	border:2px solid #3a6631;
+	font-size:90%;
+}
+
+/*****************************************
+	MENUS
+******************************************/
+#menu {
+	padding-top:10px;
+	padding-left:7px;
+	font-size:120%;
+}
+.mbb {
+	position:absolute;
+	height:40px;
+	background:#f00;
+}
+
+.mb ul.mbp {
+	margin: 0px;
+	padding: 0px;
+}
+
+.mb ul.mbp li  {
+	display: inline;
+	list-style: none;
+}
+
+.mb ul.mbp a,.mb ul.mbp span,.mb ul.mbp a.current {
+	display: block;
+	float: left;
+	padding: 4px 20px 4px 20px;
+	margin: 0px 2px 0px 0px;
+	text-align: center;
+	font-size: 85%;
+	text-decoration: none;
+	color: #afccdc;
+	border:1px solid #ccc;
+	background:#e7e7e7;
+}
+
+.mb ul.mbp span,.mb ul.mbp a.current,.mb ul.mbp a.current:hover {
+    color:#c00;
+	background:#fff;
+}
+
+.mb ul.mbp a {
+	color:#000;
+}
+
+.mb ul.mbp a:hover {
+	color:#C00;
+	background:#fff;
+}
+
+/*****************************************
+	PLUGINS
+******************************************/
+.plugin {
+	padding:10px;
+	border:1px solid #ccc;
+	margin-bottom:10px;
+}
+.bundleinfo {
+	width:320px;
+}

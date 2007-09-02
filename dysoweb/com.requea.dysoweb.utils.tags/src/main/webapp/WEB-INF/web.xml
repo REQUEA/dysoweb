@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<web-app>
+    <display-name>dysoweb Utils</display-name>
+
+    <servlet>
+        <servlet-name>bundleServlet</servlet-name>
+        <servlet-class>com.requea.dysoweb.utils.impl.BundleServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+</web-app>

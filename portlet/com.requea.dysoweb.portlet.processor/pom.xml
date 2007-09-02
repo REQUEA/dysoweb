@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<!-- 
+// ========================================================================
+// Copyright 2007 Requea.
+
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at 
+// http://www.apache.org/licenses/LICENSE-2.0
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ========================================================================
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<parent>
+		<artifactId>main</artifactId>
+		<groupId>com.requea.dysoweb.portlet</groupId>
+		<version>0.8.0-SNAPSHOT</version>
+	</parent>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.requea.dysoweb.portlet</groupId>
+    <artifactId>com.requea.dysoweb.portlet.processor</artifactId>
+    <packaging>bundle</packaging>
+    <name>Requea Dysoweb Portlet Processor</name>
+    <version>0.8.0-SNAPSHOT</version>
+    <url>http://www.requea.com</url>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.osgi.core</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.requea.dysoweb.portlet</groupId>
+            <artifactId>portlet-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.requea.dysoweb</groupId>
+            <artifactId>com.requea.dysoweb.api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>jsp-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+		<dependency>
+		    <groupId>portlet-api</groupId>
+		    <artifactId>portlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+			    <version>1.0.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Bundle-Name>
+                            Requea Dysoweb Portlet Processor
+                        </Bundle-Name>
+                        <Bundle-SymbolicName>
+                            ${pom.artifactId}
+                        </Bundle-SymbolicName>
+                        <Bundle-Vendor>Requea.com</Bundle-Vendor>
+                        <Private-Package>com.requea.dysoweb.portlet.bundle,com.requea.dysoweb.portlet.processor,com.requea.dysoweb.portlet.util</Private-Package>
+                        <Bundle-ClassPath>.</Bundle-ClassPath>
+                        <Bundle-Activator>
+                            com.requea.dysoweb.portlet.bundle.Activator
+                        </Bundle-Activator>
+                        <Import-Package>
+                        	!sun.*,*
+                        </Import-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
