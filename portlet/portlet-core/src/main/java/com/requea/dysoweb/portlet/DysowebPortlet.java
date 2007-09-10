@@ -15,8 +15,9 @@ import javax.portlet.RenderResponse;
 
 public class DysowebPortlet extends GenericPortlet implements IPortletProcessorListener {
 
-	Portlet fProxy;
+	private Portlet fProxy;
 	private PortletConfig fConfig;
+	private ClassLoader fLoader;
 	
 	public void init(PortletConfig config) throws PortletException {
 		// Generic Portlet Default initialization
@@ -44,8 +45,16 @@ public class DysowebPortlet extends GenericPortlet implements IPortletProcessorL
 		} else {
 			Portlet proxy = DysowebPortletContext.getPortletProcessor().createPortlet(this, fConfig.getPortletName());
 			if(proxy != null) {
-				// initialize the portlet
-				proxy.init(fConfig);
+				fLoader = new LoaderWrapper(proxy.getClass().getClassLoader());
+				Thread th = Thread.currentThread();
+				ClassLoader cl = th.getContextClassLoader();
+				try {
+					th.setContextClassLoader(fLoader);
+					// initialize the portlet
+					proxy.init(fConfig);
+				} finally {
+					th.setContextClassLoader(cl);
+				}
 			}
 			fProxy = proxy;
 			return;
@@ -69,7 +78,7 @@ public class DysowebPortlet extends GenericPortlet implements IPortletProcessorL
 			Thread th = Thread.currentThread();
 			ClassLoader cl = th.getContextClassLoader();
 			try {
-				th.setContextClassLoader(fProxy.getClass().getClassLoader());
+				th.setContextClassLoader(fLoader);
 				fProxy.processAction(request, response);
 			} finally {
 				th.setContextClassLoader(cl);
@@ -89,7 +98,7 @@ public class DysowebPortlet extends GenericPortlet implements IPortletProcessorL
 			Thread th = Thread.currentThread();
 			ClassLoader cl = th.getContextClassLoader();
 			try {
-				th.setContextClassLoader(fProxy.getClass().getClassLoader());
+				th.setContextClassLoader(fLoader);
 				fProxy.render(request, response);
 			} finally {
 				th.setContextClassLoader(cl);
@@ -104,6 +113,7 @@ public class DysowebPortlet extends GenericPortlet implements IPortletProcessorL
 	public synchronized void onProxyUnavailable() {
 		// the proxy is no more available
 		fProxy = null;
+		fLoader = null;
 	}
 
 	protected void doEdit(RenderRequest request, RenderResponse response)
