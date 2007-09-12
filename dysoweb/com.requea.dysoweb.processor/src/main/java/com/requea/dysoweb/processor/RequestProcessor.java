@@ -496,7 +496,9 @@ public class RequestProcessor implements IWebProcessor {
         }
         
 		// regular container processing otherwise
-		chain.doFilter(request, response);
+        if(chain != null) {
+        	chain.doFilter(request, response);
+        }
 	}
 
 	private class ProxiedObject {

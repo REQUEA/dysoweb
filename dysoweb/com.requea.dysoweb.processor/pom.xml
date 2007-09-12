@@ -192,6 +192,15 @@
                                         ${project.build.directory}/lib
                                     </outputDirectory>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>javax.servlet</groupId>
+                                    <artifactId>jsp-api</artifactId>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>
+                                        ${project.build.directory}/lib
+                                    </outputDirectory>
+                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>
@@ -213,12 +222,17 @@
                         <Bundle-Vendor>Requea.com</Bundle-Vendor>
                         <Private-Package>org.apache.jasper.*,com.requea.dysoweb.bundle,com.requea.dysoweb.defaultservlet,com.requea.dysoweb.org.*,com.requea.dysoweb.util.xml,com.requea.dysoweb.util.xml.impl,com.requea.dysoweb.processor,com.requea.dysoweb.processor.definitions,com.requea.dysoweb.servlet.*</Private-Package>
                         <Include-Resource>lib=target/lib</Include-Resource>
-                        <Bundle-ClassPath>.,lib/jasper-runtime-5.5.20.jar,lib/jasper-compiler-5.5.20.jar,lib/ant-launcher-1.7.0.jar,lib/ant-1.7.0.jar,lib/backport-util-concurrent-3.0.jar,lib/commons-el-5.5.20.jar,lib/janino-2.5.7.jar,lib/naming-resources-5.5.20.jar</Bundle-ClassPath>
+                        <Bundle-ClassPath>.,lib/jsp-api-2.0.jar,lib/jasper-runtime-5.5.20.jar,lib/jasper-compiler-5.5.20.jar,lib/ant-launcher-1.7.0.jar,lib/ant-1.7.0.jar,lib/backport-util-concurrent-3.0.jar,lib/commons-el-5.5.20.jar,lib/janino-2.5.7.jar,lib/naming-resources-5.5.20.jar</Bundle-ClassPath>
                         <Bundle-Activator>
                             com.requea.dysoweb.bundle.Activator
                         </Bundle-Activator>
+                        <Export-Package>
+							javax.servlet.jsp;version="2.4.0",
+							javax.servlet.jsp.resources;version="2.4.0",
+							javax.servlet.jsp.el;version="2.4.0",
+							javax.servlet.jsp.tagext;version="2.4.0"
+                        </Export-Package>
                         <Import-Package>
-                        	javax.servlet.jsp.resources,
                         	javax.servlet.resources,
                         	!sun.*,!org.eclipse.jdt.*,*
                         </Import-Package>
