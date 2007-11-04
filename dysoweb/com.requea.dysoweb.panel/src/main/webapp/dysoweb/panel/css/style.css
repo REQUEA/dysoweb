@@ -1,0 +1,384 @@
+body {
+	background:#babbbd;
+	font-family: "Lucida grande",Verdana,arial,sans-serif;
+    margin:0px;
+	font-size: 70%;
+}	
+	
+#it {
+	background:url('bktop.gif') repeat-x #d4d8da;
+}
+#il {
+	background:url('bkbottom.gif') repeat-x 0% 100%;
+}
+#top {
+	background:url('top.jpg') no-repeat;
+	color:#ccc;
+	height:64px;
+}
+#inner {
+	padding:0px;	
+	padding:0px 20px 0px 20px;	
+}
+
+.rqdefaultpage {
+    padding:40px 15px 5px 20px;
+    margin:0px;
+}
+.rqpage {
+	padding:20px 15px 5px 20px;
+}
+.rqerror { 
+	color:#f00;
+	font-weight:bold;
+	padding:4px;
+	margin:4px;
+	border:1px solid #d8d8d8;
+	font-size:100%;
+	background:#ffc;
+}
+.rqsep {
+	clear:both;
+}
+
+/*****************************************
+	PORTLET RENDERING
+******************************************/
+.rqportlet 
+{
+	margin:0px 5px 5px 0px;
+	border:1px solid #aaa;
+	background:#fff;
+	padding:0px;
+}
+.rqhdr 
+{
+	background:url('hdr.gif') repeat-x;
+	color:#fff;
+	margin:0px;
+	padding:0px;
+	height:23px;
+}
+.rqhdr h3 
+{
+    margin:0px;
+    color:#555;
+	padding:4px;
+	font-weight:normal;
+	font-size:100%;
+    color:#fff;
+}
+.rqview {
+	background:#fff;
+	padding:10px;
+	clear:left;
+}
+.rqview .lbl {
+	width:30%;
+	text-align:right;
+	color: #666699;
+}
+.rqview .val {
+}
+
+.rqview h2 {
+	font-size:100%;
+	font-weight: normal;
+	letter-spacing: 1px; 
+    color: #666666;
+	border-bottom: 1px solid #ccc;
+	margin:4px 0px 10px 0px;	
+	padding:2px 0px 4px 10px;
+}
+.req {
+	font-weight: bold;
+	color:#CC0000;
+}
+.secure {
+	background:url('keys.jpg') no-repeat 100% 0%;	
+}
+
+/*****************************************
+	MENUBAR STYLES
+******************************************/
+.mbar {
+	margin-bottom:20px;
+	padding:13px 20px 0px 20px;
+}
+
+.mb {
+	position: relative;
+}
+.mbb {
+}
+
+.mb ul.mbp {
+	margin: 0px;
+	padding: 0px;
+	position: absolute;
+}
+
+.mb ul.mbp li  {
+	display: inline;
+	list-style: none;
+}
+.mbpcmen {
+	cursor:pointer;
+	background:url('mbbcm.gif') no-repeat #fafaff 5px 5px;
+	display: block;
+	float: left;
+	padding: 4px 20px 4px 20px;
+	margin: 0px 2px 0px 0px;
+	text-align: center;
+	font-size: 100%;
+	text-decoration: none;
+	color: #afccdc;
+}
+
+.mb ul.mbp a.mbpmen {
+	display: block;
+	float: left;
+	padding: 4px 20px 4px 20px;
+	margin: 0px 2px 0px 0px;
+	text-align: center;
+	font-size: 100%;
+	text-decoration: none;
+	color: #333;
+	border: 1px solid #aaa;
+	border-bottom: 1px solid #afccdc;
+	background: #fff;
+}
+
+.mb ul.mbp span,.mb ul.mbp a.current,.mb ul.mbp a.current:hover {
+	border: 1px solid #afccdc;
+	border-bottom:3px solid #659343;
+	font-weight:normal;
+	color:#157cc1;
+	padding-bottom: 3px;
+	margin-top: 0;
+}
+
+
+
+.mb ul.mbs {
+	position: absolute;
+	margin: 0px;
+	padding: 0px;
+	left: 1px;
+	top:28px;
+	width: 50em; /* a width is required for Opera, older Mozilla browsers, and Konqueror browsers */
+}
+
+
+.mb ul.mbs li a,.mb ul.mbs li span {
+	width: auto;
+	display: block;
+	float: left;
+	padding: 0 10px;
+	margin: 0;
+	text-align: auto;
+	border: none;
+	background: none;
+}
+
+.mb ul.mbs li a {
+	padding-top:4px;
+	color: #777;
+	font-size:75%;
+}
+.mb ul.mbs li a.mbbro,.mb ul.mbs li a.mbbro:hover,.mb ul.mbs li a.mbbro:active {
+	padding-top:4px;
+	padding-left:4px;
+	margin-left:4px;
+}
+
+.mb ul.mbs li a:hover {
+	color: #c00;
+	background: transparent;
+	padding: 0 10px;
+	border: none;
+	border-right: 1px dotted #AAA;
+	text-decoration: underline;
+}
+
+.mb ul.mbs li a:active {
+	color: #000;
+	background: transparent;
+}
+
+.mb ul.mbs li:last-child a { border: none; }
+
+
+/*****************************************
+	FOOTER STYLES
+******************************************/
+#cfooter 
+{
+	color:#777;
+    font-size: 85%;
+    padding:10px 10px 50px 10px;
+    text-align:center;
+}
+#cfooter .f1 
+{
+	padding:5px;
+}
+#cfooter .f2
+{
+	padding:5px;
+}
+a.lnkfooter 
+{
+	color:#777;
+	text-decoration:none;
+}
+a.lnkfooter:hover
+{
+	color:#c00;
+	text-decoration:none;
+}
+/*****************************************
+    MULTI COLUMN LIST
+******************************************/
+.tblreq {
+	margin:0px 0px 3px 0px;
+	border:1px solid #777;
+}
+.tblreq td {
+	padding:3px;
+	border-top:1px solid #ccc;
+	border-right:1px solid #ccc;
+}
+
+.tblreq th {
+	padding:3px;
+	border-right:1px solid #ccc;
+}
+.tblreq thead tr {
+  background-color: #888;
+  color:#fff;
+}
+.tblreq tr.odd td {
+}
+.tblreq tr.even td {
+	background:#f0f0f0;
+}
+/*****************************************
+    Install btns
+******************************************/
+
+a.rqbtn {
+    color: #fff;
+    text-decoration: none;
+    margin:5px;
+    font-family:verdana,sans-serif;
+    font-size:10px;
+    padding:2px 10px 2px 0px;
+}
+a.rqbtn span {
+    padding:2px 4px 2px 14px;
+}
+a.rqbtn:hover {
+    color:#fff;
+	text-decoration:none;    
+}
+
+a.rpinstall {
+    background: url('btnok.gif') no-repeat right;
+}
+a.rpinstall span {
+    background: url('btnoks.gif') no-repeat;
+}
+a.rpinstall:hover {
+    background: url('btnokh.gif') no-repeat right;
+}
+a.rpinstall:hover span {
+    background: url('btnokhs.gif') no-repeat;
+}
+
+a.rpurl {
+	color:#777;
+}
+a.rpurl:hover {
+	color:#c00;
+}
+
+.rpimg {
+	border:1px solid #777;
+}
+/*****************************************
+    Features
+******************************************/
+.rpcat {
+	border:1px solid #ccc;	
+	margin-top:19px;
+	padding:10px 0px 10px 10px;
+	font-size:110%;
+}
+
+.rpcat li {
+	padding:2px 0px 2px 10px;
+	list-style:none;
+}
+a.rpcatlnk {
+	color:#777;	
+	text-decoration:none;
+}
+a.rpcatlnk:hover {
+	color:#c00;	
+}
+
+.rpfeatlnk div {
+	padding:6px;
+	background:#fff;
+	border:1px solid #fff;
+}
+a.rpfeatlnk:hover div {
+	border:1px solid #aaa;
+}
+.rpfeatlnk img {
+	border:1px solid #777;
+}
+
+#launch {
+	margin:10px;
+}
+a.rplaunch {
+	font-size:150%;
+	text-decoration:none;
+}
+a.rplaunch:hover {
+	text-decoration:underline;
+}
+
+
+
+
+.rqprogressBar {
+  margin: 5px;
+}
+
+.rqprogressBar .rqborder {
+  background: url("progress-remainder.gif") repeat-x;
+  border-left: 1px solid grey;
+  border-right: 1px solid grey;
+  width: 100%;
+}
+
+.rqprogressBar .rqbackground {
+  background: url("progress-bar.gif") repeat-x;
+  height: 18px;
+  width: 0%;
+}
+.rqtask {
+	font-size:110%;
+	text-align:center;
+	width:100%;
+	padding:2px 10px 10px 10px;	
+}
+.rqpercent {
+	font-size:110%;
+	font-weight:bold;
+	padding:2px;
+}
+
