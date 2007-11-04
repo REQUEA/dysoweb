@@ -44,6 +44,7 @@ import org.apache.felix.shell.ShellService;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.Text;
 
 public class ShellServlet extends HttpServlet {
 
@@ -78,7 +79,7 @@ public class ShellServlet extends HttpServlet {
 			elMsg.setAttribute("class", "msg");
 			
 			// check if the shell operation is authorized
-			Object shellAuth = request.getAttribute("com.requea.dysoweb.shell.auth");
+			Object shellAuth = request.getSession().getAttribute("com.requea.dysoweb.shell.auth");
 			boolean authorized = false;
 			if(Boolean.TRUE.equals(shellAuth)) {
 				authorized = true;
@@ -119,14 +120,14 @@ public class ShellServlet extends HttpServlet {
 				            	appendResult(elMsg, "Command executed");
 				            }
 			            } catch(Exception e) {
-			    			el.setTextContent("Error: " + e.getMessage());
+			            	setText(el, "Error: " + e.getMessage());
 			            }
 					}
 				} else {
-					elErr.setTextContent("Error, no shell is available");
+					setText(elErr, "Error, no shell is available");
 				}
 			} else {
-				elErr.setTextContent("Error, operation not authorized");
+				setText(elErr, "Error, operation not authorized");
 			}
 			
 			// ajax response
@@ -173,6 +174,21 @@ public class ShellServlet extends HttpServlet {
 		
 	}
 
+    /**
+     * Sets the text value for a given element.
+     * @param el
+     * @param value
+     */
+    public static void setText(Element el, String value) {
+        // remove the children if already exist
+        while (el.getFirstChild() != null) {
+            el.removeChild(el.getFirstChild());
+        }
+        Text txt = el.getOwnerDocument().createTextNode(value);
+        el.appendChild(txt);
+    }
+
+	
 	private void appendResult(Element el, String str) {
         StringTokenizer st = new StringTokenizer(str, "\n");
         boolean first = true;

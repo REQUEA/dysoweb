@@ -5,8 +5,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
 
-import com.requea.webenv.WebContext;
-
+import com.requea.webenv.IWebProcessor;
 
 public class LoaderWrapper extends ClassLoader {
 
@@ -15,7 +14,7 @@ public class LoaderWrapper extends ClassLoader {
 	private ClassLoader fLoader;
 
 	public LoaderWrapper(ClassLoader classLoader) {
-		super(WebContext.class.getClassLoader());
+		super(IWebProcessor.class.getClassLoader());
 		fLoader = classLoader;
 	}
 

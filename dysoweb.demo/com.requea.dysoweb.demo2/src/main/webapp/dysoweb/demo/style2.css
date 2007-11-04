@@ -1,8 +1,14 @@
 body {
 	font-family: "Lucida Grande", Geneva, Arial, Verdana, sans-serif;
-	font-size: 80%;
+	font-size: 70%;
 	border:0px;
 	margin:0px;
+}
+#it {
+	background:none;
+}
+#il {
+	background:none;
 }
 
 #top {

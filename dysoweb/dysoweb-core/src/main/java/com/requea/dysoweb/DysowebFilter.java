@@ -14,54 +14,32 @@
 
 package com.requea.dysoweb;
 
-import java.io.File;
 import java.io.IOException;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-import org.apache.felix.framework.Felix;
-
-
 import com.requea.webenv.IWebProcessor;
-import com.requea.webenv.WebContext;
 
 public class DysowebFilter implements Filter {
 
-	private Felix fPlatform;
-
 	public void init(FilterConfig config) throws ServletException {
-		
-		ServletContext ctx = config.getServletContext();
-		
-		// initialize web environement 
-		String str = ctx.getRealPath("/");
-		WebContext.setBaseDir(str == null ? null : new File(str));
-		WebContext.setScratchDir(DysowebServlet.getScratchDir(ctx));
-		WebContext.setServletContext(ctx);
-		String prefix = config.getInitParameter("RequestPrefix");
-		WebContext.setRequestPrefix(prefix);
 		// starts the osgi platform
-		fPlatform = DysowebServlet.startFelix(ctx);
+		String prefix = config.getInitParameter("RequestPrefix");
+		DysowebServlet.startFelix(config.getServletContext(), prefix);
 	}
 	
 
 	public void destroy() {
-		// stop the felix platform
-		// TODO
-		if(fPlatform != null) {
-			
-		}
 	}
 
 	public void doFilter(ServletRequest request, ServletResponse response,
 			FilterChain chain) throws IOException, ServletException {
 
-		IWebProcessor processor = WebContext.getProcessor();
+		IWebProcessor processor = DysowebServlet.getActiveProcessor();
 		if (processor != null) {
 			// chain with the Request processor from the OSGI platform
 			processor.process(request, response, chain);

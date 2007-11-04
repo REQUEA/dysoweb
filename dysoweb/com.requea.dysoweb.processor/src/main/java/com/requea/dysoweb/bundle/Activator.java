@@ -14,8 +14,6 @@
 
 package com.requea.dysoweb.bundle;
 
-import javax.servlet.ServletContext;
-
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceEvent;
@@ -26,13 +24,13 @@ import org.osgi.framework.ServiceRegistration;
 import com.requea.dysoweb.WebAppService;
 import com.requea.dysoweb.WebAppException;
 import com.requea.dysoweb.processor.RequestProcessor;
-import com.requea.webenv.WebContext;
+import com.requea.webenv.IWebProcessor;
 
 public class Activator implements BundleActivator {
 
-	private RequestProcessor fRequestProcessor;
-	private ServiceRegistration fContextService;
 	private BundleContext fContext;
+	private ServiceRegistration fProcessorRef;
+	private RequestProcessor fRequestProcessor;
 
 	/*
 	 * (non-Javadoc)
@@ -40,15 +38,12 @@ public class Activator implements BundleActivator {
 	 */
 	public void start(BundleContext context) throws Exception {
 		fContext = context;
-		ServletContext servletContext = WebContext.getServletContext();
+		
+		
 		// create the request processor to handle all incoming ServletRequest
 		// from the container webapp
-		RequestProcessor processor = new RequestProcessor(servletContext);
-		processor.init();
-		fRequestProcessor = processor;
-		servletContext.setAttribute("com.requea.dysoweb.processor", processor);
-		// we are now the Request processor
-		WebContext.setProcessor(fRequestProcessor);
+		fRequestProcessor = new RequestProcessor();
+		fProcessorRef = context.registerService(IWebProcessor.class.getName(), fRequestProcessor, null);
 		
 		// get the service ref of all dysoweb apps
 		ServiceReference[] srs = context.getServiceReferences(WebAppService.class.getName(), 
@@ -102,17 +97,13 @@ public class Activator implements BundleActivator {
 	 */
 	public void stop(BundleContext context) throws Exception {
 		// stop processing incoming requests
-		if(fRequestProcessor != null && WebContext.getProcessor() == fRequestProcessor) {
-			// no more accepting requests
-			WebContext.setProcessor(null);
-			fRequestProcessor = null;
-		}
+		fRequestProcessor = null;
+		
 		// unregister the context service
-		if(fContextService != null)
-			fContextService.unregister();
+		if(fProcessorRef != null) {
+			fProcessorRef.unregister();
+		}
 	}
 
-	
-	
-
 }
+

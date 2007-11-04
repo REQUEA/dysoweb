@@ -23,6 +23,8 @@ public class MenuTag extends TagSupport {
 	private static final long serialVersionUID = 1L;
 	private String fPath;
 	private String fLabel;
+	private String fStyle;
+	private String fCurrentStyle;
 
 	public void setPath(String path) {
 		fPath = path;
@@ -30,6 +32,15 @@ public class MenuTag extends TagSupport {
 
 	public void setLabel(String lbl) {
 		fLabel = lbl;
+	}
+
+	
+	public void setStyle(String style) {
+		fStyle = style;
+	}
+
+	public void setCurrentStyle(String currentStyle) {
+		fCurrentStyle = currentStyle;
 	}
 
 	public int doStartTag() throws JspException {
@@ -44,14 +55,30 @@ public class MenuTag extends TagSupport {
 		String path = request.getContextPath()+fPath;
 		if(uri.startsWith(path)) {
 			// current menu
-			tw.append("<span class=\"current\">");
+			tw.append("<span");
+			if(fCurrentStyle != null) {
+				tw.append(" class=\"");
+				tw.append(fCurrentStyle);
+				tw.append("\"");
+			} else if(fStyle != null) {
+				tw.append(" class=\"");
+				tw.append(fStyle);
+				tw.append("\"");
+			}
+			tw.append(">");
 			tw.append(fLabel);
 			tw.append("</span>");
 		} else {
 			// not the current one
 			tw.append("<a href=\"");
 			tw.append(path);
-			tw.append("\">");
+			tw.append("\"");
+			if(fStyle != null) {
+				tw.append(" class=\"");
+				tw.append(fStyle);
+				tw.append("\"");
+			}
+			tw.append(">");
 			tw.append(fLabel);
 			tw.append("</a>");
 		}

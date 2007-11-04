@@ -34,6 +34,7 @@ public class BundleTag extends TagSupport {
 	private String fProperty;
 	private String fClass;
 	private String fBundle;
+	private String fCommand;
 	
 	public void setProperty(String value) {
 		fProperty = value;
@@ -43,6 +44,9 @@ public class BundleTag extends TagSupport {
 	}
 	public void setBundle(String bundleId) {
 		fBundle = bundleId;
+	}
+	public void setCommand(String command) {
+		fCommand = command;
 	}
 
 
@@ -82,7 +86,13 @@ public class BundleTag extends TagSupport {
 			}
 			tw.append("<a href=\"");
 			tw.append(request.getContextPath());
-			tw.append("/dwbndl?bndl=");
+			tw.append("/");
+			if(fCommand == null) {
+				tw.append("dwbndl");
+			} else {
+				tw.append(fCommand);
+			}
+			tw.append("?bndl=");
 			try {
 				tw.append(URLEncoder.encode(bundle.getSymbolicName(), "UTF-8"));
 			} catch (UnsupportedEncodingException e) {

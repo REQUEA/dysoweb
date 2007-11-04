@@ -52,6 +52,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionBindingEvent;
 import javax.servlet.http.HttpSessionEvent;
@@ -75,6 +76,7 @@ import com.requea.dysoweb.WebAppException;
 import com.requea.dysoweb.defaultservlet.DefaultServlet;
 import com.requea.dysoweb.processor.definitions.ContextParam;
 import com.requea.dysoweb.processor.definitions.FilterDefinition;
+import com.requea.dysoweb.processor.definitions.JasperLoader;
 import com.requea.dysoweb.processor.definitions.ListenerDefinition;
 import com.requea.dysoweb.processor.definitions.ServletDefinition;
 import com.requea.dysoweb.servlet.jasper.DysowebCompilerAdapter;
@@ -85,8 +87,6 @@ import com.requea.dysoweb.servlet.wrapper.ServletWrapper;
 import com.requea.dysoweb.util.xml.XMLException;
 import com.requea.dysoweb.util.xml.XMLUtils;
 import com.requea.webenv.IWebProcessor;
-import com.requea.webenv.IWebProcessorListener;
-import com.requea.webenv.WebContext;
 
 import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 import edu.emory.mathcs.backport.java.util.concurrent.CopyOnWriteArrayList;
@@ -99,7 +99,6 @@ public class RequestProcessor implements IWebProcessor {
 	private ServletContext fServletContext;
 	
 	private Map fActiveServicesMap = new ConcurrentHashMap();
-	private List fEventListeners = new CopyOnWriteArrayList();
 	private List fActiveBundles = new CopyOnWriteArrayList();
 
 	private Map fTagLocations = new ConcurrentHashMap();
@@ -110,27 +109,32 @@ public class RequestProcessor implements IWebProcessor {
 	private RequestMapper fRequestMapper;
 	private Map fEntries = new ConcurrentHashMap();
 
-	private ConcurrentHashMap fContextParams;
 
 	private List fContextListeners;
 	private List fSessionListeners;
 	private List fContextAttributeListeners;
 	private List fSessionAttributeListeners;
 
-	private Map       fJspWrappers;
+	private Map  fContextParams = new ConcurrentHashMap();
+	private Map  fJspWrappers = new ConcurrentHashMap();
+	private Map  fServletContextWrappers = new ConcurrentHashMap();
+	private Map  fFiltersByName = new ConcurrentHashMap();
 
-	private Map       fServletContextWrappers;
+	private String fPrefix;
 	
     private static Log fLog = LogFactory.getLog(RequestProcessor.class);
 	
 	
-	public RequestProcessor(ServletContext servletContext) {
-		fServletContext = servletContext;
+	public RequestProcessor() {
 	}
 	
 	
-	public void init() throws ServletException {
-	
+	public synchronized void activate(ServletContext context, String prefix) throws ServletException {
+		
+		fServletContext = context;
+		
+		fPrefix = prefix;
+		
 		// create the default servlet and initialize it
 		fDefaultServlet = new DefaultServlet(this);
 		fDefaultServlet.init(new Config());
@@ -139,9 +143,57 @@ public class RequestProcessor implements IWebProcessor {
 		File fBase = new File(getScratchDir(), "jsp");
 		fBase.mkdirs();
 		
-		fContextParams = new ConcurrentHashMap();
-		fJspWrappers = new ConcurrentHashMap();
-		fServletContextWrappers = new ConcurrentHashMap();
+		fContextParams.clear();
+		fJspWrappers.clear();
+		fServletContextWrappers.clear();
+		fFiltersByName.clear();
+		
+		// activate the bundles that have already been registered
+		Iterator iter = fActiveServicesMap.keySet().iterator();
+		List lst = new ArrayList();
+		while(iter.hasNext()) {
+			Long key = (Long)iter.next();
+			if(fServletContextWrappers.get(key) == null) {
+				// not deployed yet
+				lst.add(fActiveServicesMap.get(key));
+			}
+		}
+		// activate the services that should be activated
+		for(int i=0; i<lst.size(); i++) {
+			WebAppService service = (WebAppService)lst.get(i);
+			try {
+				deploy(service);
+			} catch(WebAppException e) {
+				fLog.error("Unable to deploy service " + service.getBundle().getBundleId(), e);
+			}
+		}
+		
+		// send the servlet context event
+		processContextEvent("contextInitialized", new ServletContextEvent(context));
+	}
+	
+	public synchronized void deactivate() {
+		// send the servlet context event to the listeners
+		processContextEvent("contextDestroyed", new ServletContextEvent(fServletContext));
+
+		// deactivate the services that have been activated
+		Iterator iter = fActiveServicesMap.keySet().iterator();
+		List lst = new ArrayList();
+		while(iter.hasNext()) {
+			Long key = (Long)iter.next();
+			if(fServletContextWrappers.get(key) != null) {
+				// not deployed yet
+				lst.add(fActiveServicesMap.get(key));
+			}
+		}
+		for(int i=0; i<lst.size(); i++) {
+			WebAppService service = (WebAppService)lst.get(i);
+			try {
+				undeploy(service.getBundle());
+			} catch(WebAppException e) {
+				fLog.error("Unable to deploy service " + service.getBundle().getBundleId(), e);
+			}
+		}
 	}
 	
 	public void loadWebDescriptor(WebAppService service, long bundleId, URL url) throws WebAppException {
@@ -421,15 +473,14 @@ public class RequestProcessor implements IWebProcessor {
 				uri += pathInfo;
 			}
 			// request included (with a request dispatcher)
-	        String prefix = WebContext.getRequestPrefix();
-	        if(prefix != null) {
-	        	if(uri.startsWith(prefix)) {
-		    		uri = uri.substring(prefix.length());
+	        if(fPrefix != null) {
+	        	if(uri.startsWith(fPrefix)) {
+		    		uri = uri.substring(fPrefix.length());
 		    		request.setAttribute(Constants.INC_SERVLET_PATH, uri);
 	        	}
 	        	// wrap if not already done
 	        	if(!(request instanceof RequestWrapper)) {
-		        	request = new RequestWrapper((HttpServletRequest)request, prefix);
+		        	request = new RequestWrapper((HttpServletRequest)request, fPrefix);
 	        	}
 	        }
         } else {
@@ -444,10 +495,9 @@ public class RequestProcessor implements IWebProcessor {
                 uri += pathInfo;
             }
             // remove the prefix and wrap if not already done
-            String prefix = WebContext.getRequestPrefix();
-            if(prefix != null && !(request instanceof RequestWrapper) && uri.startsWith(prefix)) {
-        		uri = uri.substring(prefix.length());
-            	request = new RequestWrapper((HttpServletRequest)request, prefix);
+            if(fPrefix != null && !(request instanceof RequestWrapper) && uri.startsWith(fPrefix)) {
+        		uri = uri.substring(fPrefix.length());
+            	request = new RequestWrapper((HttpServletRequest)request, fPrefix);
             }
         }
         
@@ -468,7 +518,7 @@ public class RequestProcessor implements IWebProcessor {
 				}
 				// set the web app class loader as a thread context class loader
 				if(wrapper.getProcessingContextClassLoader() == null)
-					th.setContextClassLoader(WebContext.class.getClassLoader());
+					th.setContextClassLoader(IWebProcessor.class.getClassLoader());
 				else
 					th.setContextClassLoader(wrapper.getProcessingContextClassLoader());
 				
@@ -486,8 +536,14 @@ public class RequestProcessor implements IWebProcessor {
 				// check if the request will be served by some static content
 				EntryInfo ei = getEntryInfo(uri);
 				if(ei != null) {
-					// bundle static content
-					fDefaultServlet.service(request, response);
+					// build another chain with the filters
+					if(filters != null && filters.length > 0) {
+						DefaultServletChain fc = new DefaultServletChain(fDefaultServlet, filters);
+						fc.doFilter(request, response);
+					} else {
+						// bundle static content
+						fDefaultServlet.service(request, response);
+					}
 					return;
 				}
 			}
@@ -495,17 +551,21 @@ public class RequestProcessor implements IWebProcessor {
         	th.setContextClassLoader(cl);
         }
         
-		// regular container processing otherwise
-        if(chain != null) {
+        // redirect to panel?
+        HttpServletRequest hrequest = (HttpServletRequest)request;
+        HttpServletResponse hresponse = (HttpServletResponse)response;
+        if("/".equals(uri)) {
+        	hresponse.sendRedirect(hrequest.getContextPath()+"/dysoweb/panel/panel.jsp");
+        	return;
+        } else if(chain != null) {
+        	// regular chain processing
         	chain.doFilter(request, response);
+        } else {
+        	// not found
+			hresponse.sendError(404);
         }
 	}
 
-	private class ProxiedObject {
-		private long fBundleId;
-		private IWebProcessorListener fListener;
-	}
-	
 	private class BundleInfo {
 
 		private Bundle fBundle;
@@ -655,63 +715,68 @@ public class RequestProcessor implements IWebProcessor {
 				if(obj != null) {
 					return obj == RequestProcessor.NULL ? null : (EntryInfo)obj;
 				}
-				// lookup into the bundles
-				for(int i=0; i<fActiveBundles.size(); i++) {
-					BundleInfo info = (BundleInfo)fActiveBundles.get(i);
-					// get the service path
-					String path = info.fPath;
-					Bundle bundle = info.fBundle;
-					WebAppService service = (WebAppService)fActiveServicesMap.get(new Long(bundle.getBundleId()));
-					// is this bundle in dev mode?
-					if(info.isDev()) {
-						File f = new File(info.getDevDir(), name);
-						if(f.exists()) {
-							// return an entry info based on the direct src file
-							EntryInfo ei = new EntryInfo(service, bundle.getBundleId(), f.toURL(), 0, name);
+				if(name.endsWith("/")) {
+					// TODO: handle index file lists
+					return null;
+				} else {
+					// lookup into the bundles
+					for(int i=0; i<fActiveBundles.size(); i++) {
+						BundleInfo info = (BundleInfo)fActiveBundles.get(i);
+						// get the service path
+						String path = info.fPath;
+						Bundle bundle = info.fBundle;
+						WebAppService service = (WebAppService)fActiveServicesMap.get(new Long(bundle.getBundleId()));
+						// is this bundle in dev mode?
+						if(info.isDev()) {
+							File f = new File(info.getDevDir(), name);
+							if(f.exists()) {
+								// return an entry info based on the direct src file
+								EntryInfo ei = new EntryInfo(service, bundle.getBundleId(), f.toURL(), 0, name);
+								return ei;
+							}
+						}
+						// is there an entry for this bundle?
+						String fullPath = path+name;
+						URL url = bundle.getEntry(fullPath);
+						if(url != null) {
+							// For jasper, we must cache the jsp into the jsp directory
+							// because felix will not return a correct time
+							if(fullPath.endsWith(".jsp") || fullPath.endsWith("jspx")) {
+								File fBase = new File(getScratchDir(), "jsp");
+								// remove the leading character
+								if(fullPath.startsWith("/") || fullPath.startsWith("\\")) {
+									fullPath = fullPath.substring(1);
+								}
+								File f = new File(fBase, fullPath);
+								// check if the file exists
+								if(!f.exists() || f.lastModified() < info.fStartTime) {
+									// copy the file to the file directory
+									f.getParentFile().mkdirs();
+									URLConnection uc = url.openConnection();
+									InputStream is = uc.getInputStream();
+									FileOutputStream os = new FileOutputStream(f);
+									byte[] buf = new byte[4096];
+									int read;
+									while ((read = is.read(buf)) > 0) {
+										os.write(buf, 0, read);
+									}
+									os.close();
+									is.close();
+									// set the time
+									f.setLastModified(info.fStartTime);
+								}
+								url = new URL("file:"+f.getAbsolutePath());
+							}
+							// create the entry in the cache
+							EntryInfo ei = new EntryInfo(service, bundle.getBundleId(), url, info.fStartTime, name);
+							fEntries.put(name, ei);
 							return ei;
 						}
 					}
-					// is there an entry for this bundle?
-					String fullPath = path+name;
-					URL url = bundle.getEntry(fullPath);
-					if(url != null) {
-						// For jasper, we must cache the jsp into the jsp directory
-						// because felix will not return a correct time
-						if(fullPath.endsWith(".jsp") || fullPath.endsWith("jspx")) {
-							File fBase = new File(getScratchDir(), "jsp");
-							// remove the leading character
-							if(fullPath.startsWith("/") || fullPath.startsWith("\\")) {
-								fullPath = fullPath.substring(1);
-							}
-							File f = new File(fBase, fullPath);
-							// check if the file exists
-							if(!f.exists() || f.lastModified() < info.fStartTime) {
-								// copy the file to the file directory
-								f.getParentFile().mkdirs();
-								URLConnection uc = url.openConnection();
-								InputStream is = uc.getInputStream();
-								FileOutputStream os = new FileOutputStream(f);
-								byte[] buf = new byte[4096];
-								int read;
-								while ((read = is.read(buf)) > 0) {
-									os.write(buf, 0, read);
-								}
-								os.close();
-								is.close();
-								// set the time
-								f.setLastModified(info.fStartTime);
-							}
-							url = new URL("file:"+f.getAbsolutePath());
-						}
-						// create the entry in the cache
-						EntryInfo ei = new EntryInfo(service, bundle.getBundleId(), url, info.fStartTime, name);
-						fEntries.put(name, ei);
-						return ei;
-					}
+					// nothing found
+					fEntries.put(name, RequestProcessor.NULL);
+					return null;
 				}
-				// nothing found
-				fEntries.put(name, RequestProcessor.NULL);
-				return null;
 			}
 		}
 	}
@@ -803,7 +868,6 @@ public class RequestProcessor implements IWebProcessor {
 			// do nothing
 			return;
 		}
-		
 		Bundle bundle = service.getBundle();
 		Long key = new Long(bundle.getBundleId());
 		
@@ -811,73 +875,74 @@ public class RequestProcessor implements IWebProcessor {
 			fLog.info("Deploying Dysoweb Application " + bundle.getBundleId() + 
 					(bundle.getSymbolicName() == null ? "" : " ("+bundle.getSymbolicName()+")"));
 		}
-		
 		fActiveServicesMap.put(key, service);
 		
-		// create a ServletContextWrapper
-		fServletContextWrappers.put(key, new ServletContextWrapper(this, fServletContext, fContextParams));
-		
-		// normalize the web path
-		String webPath = service.getWebPath();
-		if(!webPath.endsWith("/")) {
-			webPath = webPath + "/";
+		if(fServletContext != null) {
+			// create a ServletContextWrapper
+			fServletContextWrappers.put(key, new ServletContextWrapper(this, fServletContext, fContextParams));
+			
+			// normalize the web path
+			String webPath = service.getWebPath();
+			if(!webPath.endsWith("/")) {
+				webPath = webPath + "/";
+			}
+			
+			// update the search policy
+			ClassLoader cl = service.getClass().getClassLoader();
+			if(cl instanceof ContentClassLoader) {
+		        IContentLoader contentLoader =
+		            ((ContentClassLoader) cl).getContentLoader();
+		        
+		        // override the URL content policy handler 
+		        contentLoader.setURLPolicy(new DysowebURLPolicy(bundle.getBundleId(), contentLoader.getURLPolicy(), System.currentTimeMillis()));
+			}
+			
+			String bundlePath = "/"+webPath.substring(0, webPath.length()-1);
+			fActiveBundles.add(new BundleInfo(bundle, bundlePath, System.currentTimeMillis()));
+	
+			// add the service elements Maps
+			fServlets.put(key, new ConcurrentHashMap());
+			fFilters.put(key, new ConcurrentHashMap());
+			fListeners.put(key, new ConcurrentHashMap());
+			
+			// process WEB-INF files
+			try {
+				String path = webPath+"WEB-INF";
+				processWebinfFiles(bundle, path, path);
+			} catch (IOException e1) {
+				throw new WebAppException(e1);
+			}
+			// process TLD in the class path
+			try {
+				processTLDinBundleClassPath(bundle);
+			} catch (IOException e1) {
+				throw new WebAppException(e1);
+			}
+			
+			
+			// load the web descriptor
+			URL url = bundle.getEntry(webPath+"WEB-INF/web.xml");
+			if(url != null) {
+				// creates a copy of the existing mapper and add new entries into it
+				loadWebDescriptor(service, bundle.getBundleId(), url);
+			}
+	
+			
+			loadAndInitElements();
+			
+			
+			try {
+				// creates a copy of the existing mapper and add new entries into it
+				RequestMapper mapper = new RequestMapper(this, fRequestMapper);
+				mapper.init(fActiveDefinitions);
+				// set the mapper as the new mapper
+				fRequestMapper = mapper;
+			} catch (ServletException e) {
+				throw new WebAppException(e);
+			}
+			
+			fEntries.clear();
 		}
-		
-		// update the search policy
-		ClassLoader cl = service.getClass().getClassLoader();
-		if(cl instanceof ContentClassLoader) {
-	        IContentLoader contentLoader =
-	            ((ContentClassLoader) cl).getContentLoader();
-	        
-	        // override the URL content policy handler 
-	        contentLoader.setURLPolicy(new DysowebURLPolicy(bundle.getBundleId(), contentLoader.getURLPolicy(), System.currentTimeMillis()));
-		}
-		
-		String bundlePath = "/"+webPath.substring(0, webPath.length()-1);
-		fActiveBundles.add(new BundleInfo(bundle, bundlePath, System.currentTimeMillis()));
-
-		// add the service elements Maps
-		fServlets.put(key, new ConcurrentHashMap());
-		fFilters.put(key, new ConcurrentHashMap());
-		fListeners.put(key, new ConcurrentHashMap());
-		
-		// process WEB-INF files
-		try {
-			String path = webPath+"WEB-INF";
-			processWebinfFiles(bundle, path, path);
-		} catch (IOException e1) {
-			throw new WebAppException(e1);
-		}
-		// process TLD in the class path
-		try {
-			processTLDinBundleClassPath(bundle);
-		} catch (IOException e1) {
-			throw new WebAppException(e1);
-		}
-		
-		
-		// load the web descriptor
-		URL url = bundle.getEntry(webPath+"WEB-INF/web.xml");
-		if(url != null) {
-			// creates a copy of the existing mapper and add new entries into it
-			loadWebDescriptor(service, bundle.getBundleId(), url);
-		}
-
-		
-		loadAndInitElements();
-		
-		
-		try {
-			// creates a copy of the existing mapper and add new entries into it
-			RequestMapper mapper = new RequestMapper(this, fRequestMapper);
-			mapper.init(fActiveDefinitions);
-			// set the mapper as the new mapper
-			fRequestMapper = mapper;
-		} catch (ServletException e) {
-			throw new WebAppException(e);
-		}
-		
-		fEntries.clear();
 	}
 
 
@@ -1125,18 +1190,6 @@ public class RequestProcessor implements IWebProcessor {
 			fTagBundles.remove(uri);
 			fTagLocations.remove(uri);
 		}
-		// notify all the listeners
-		for(int i=0; i<fEventListeners.size(); ) {
-			ProxiedObject p = (ProxiedObject)fEventListeners.get(i);
-			if(p.fBundleId == bundleId) {
-				p.fListener.onProxyUnloaded();
-				fEventListeners.remove(i);
-			} else {
-				i++;
-			}
-		}
-		
-
 		// remove the definitions associated to this bundle
 		removeBundleDefinitions(bundleId);
 		
@@ -1155,7 +1208,6 @@ public class RequestProcessor implements IWebProcessor {
 		// invalidate the resource cache
 		fEntries.clear();
 	}
-
 
 	public ServletContext getServletContext() {
 		return fServletContext;
@@ -1201,7 +1253,7 @@ public class RequestProcessor implements IWebProcessor {
 	private Map fFilters = new ConcurrentHashMap();
 	private Map fListeners = new ConcurrentHashMap();
 
-	private Map fServletWrappers;
+	private Map fServletWrappers = new ConcurrentHashMap();
 	
 	public IServletDefinition createServletDefinition(WebAppService service,
 			long bundleId, String name, Element el) {
@@ -1361,7 +1413,7 @@ public class RequestProcessor implements IWebProcessor {
 					if(instance instanceof HttpSessionAttributeListener) {
 						sessionAttributeListeners.add(instance);
 					}
-				} catch(Exception e) {
+				} catch(Throwable e) {
 					fLog.error("Unable to initialize a listener", e);
 				}
 			}
@@ -1375,7 +1427,7 @@ public class RequestProcessor implements IWebProcessor {
 				try {
 					def.load();
 					filters.put(def.getName(), def);
-				} catch(Exception e) {
+				} catch(Throwable e) {
 					fLog.error("Unable to initialize the filter " + def.getName(), e);
 				}
 			}
@@ -1386,20 +1438,20 @@ public class RequestProcessor implements IWebProcessor {
 		Iterator iter = fActiveServicesMap.keySet().iterator();
 		while(iter.hasNext()) {
 			Long l = (Long)iter.next();
-			if(fJspWrappers.get(l) == null) {
+			ServletContextWrapper contextWrapper = (ServletContextWrapper)fServletContextWrappers.get(l);
+			if(fJspWrappers.get(l) == null && contextWrapper != null) {
 				try {
 					JspServlet jasperServlet = new JspServlet();
-					ServletContextWrapper contextWrapper = (ServletContextWrapper)fServletContextWrappers.get(l);
 					WebAppService service = (WebAppService)fActiveServicesMap.get(l);
-					URL[] loaderURL = getLoaderURL(WebContext.class.getClassLoader());
+					URL[] loaderURL = getLoaderURL(IWebProcessor.class.getClassLoader());
 					// set a URL class loader to make Jasper happy with dynamic class path compilation
-					ClassLoader jspLoader = new URLClassLoader(loaderURL, new JasperLoader(service));
+					ClassLoader jspLoader = new URLClassLoader(loaderURL, new JasperLoader(service.getClass().getClassLoader()));
 					th.setContextClassLoader(jspLoader);
 					jasperServlet.init(new JasperConfig(contextWrapper));
 					ServletWrapper jasperWrapper = new ServletWrapper(l.longValue(), contextWrapper, jasperServlet, jspLoader);
 					jasperWrapper.setProcessingContextClassLoader(jspLoader);
 					fJspWrappers.put(l, jasperWrapper);
-				} catch(Exception e) {
+				} catch(Throwable e) {
 					fLog.error("Unable to initialize the JSP servlet ", e);
 				} finally {
 					th.setContextClassLoader(contextClassLoader);
@@ -1408,7 +1460,7 @@ public class RequestProcessor implements IWebProcessor {
 		}
 		
 		// Phase2: initialize the other servlets and create the servlet wrappers
-		Map servletWrappers = new HashMap();
+		Map servletWrappers = new ConcurrentHashMap();
 		for(int i=0; i<fActiveDefinitions.size(); i++) {
 			Object item = fActiveDefinitions.get(i); 
 			if(item instanceof IServletDefinition) {
@@ -1481,25 +1533,10 @@ public class RequestProcessor implements IWebProcessor {
 		fSessionAttributeListeners = sessionAttributeListeners;
 		
 		fServletWrappers = servletWrappers;
+		fFiltersByName = filters;
 	}
 
 
-	private class JasperLoader extends ClassLoader {
-
-		public JasperLoader(WebAppService service) {
-			super(service.getClass().getClassLoader());
-		}
-
-		protected synchronized Class loadClass(String name, boolean resolve)
-				throws ClassNotFoundException {
-			try {
-				return super.loadClass(name, resolve);
-			} catch(ClassNotFoundException e) {
-				// load from the processor loader 
-				return this.getClass().getClassLoader().loadClass(name);
-			}
-		}
-	}
 	
 	private URL[] getLoaderURL(ClassLoader webAppLoader) {
 		URL[] parentURL;
@@ -1517,26 +1554,24 @@ public class RequestProcessor implements IWebProcessor {
 				parentURL = new URL[0];
 			}
 		}
-		IWebProcessor processor = WebContext.getProcessor();
-		if(processor != null) {
-			// try with the ProxyLoader if this happens to be a TagClass
-			File f = WebContext.getScratchDir();
-			URL[] proxyPath;
-			try {
-				proxyPath = new URL[] { f.toURL() };
-			} catch (MalformedURLException e) {
-				// cannot happen
-				proxyPath = null;
-			}
-			URLClassLoader cl = new URLClassLoader(proxyPath, WebContext.class.getClassLoader());
-			if(cl != null) {
-				URL[] proxies = cl.getURLs();
-				URL[] combined = new URL[parentURL.length+proxies.length];
-				System.arraycopy(parentURL, 0, combined, 0, parentURL.length);
-				System.arraycopy(proxies, 0, combined, parentURL.length, proxies.length);
-				return combined;
-			}
+		// try with the ProxyLoader if this happens to be a TagClass
+		File f = getScratchDir();
+		URL[] proxyPath;
+		try {
+			proxyPath = new URL[] { f.toURL() };
+		} catch (MalformedURLException e) {
+			// cannot happen
+			proxyPath = null;
 		}
+		URLClassLoader cl = new URLClassLoader(proxyPath, IWebProcessor.class.getClassLoader());
+		if(cl != null) {
+			URL[] proxies = cl.getURLs();
+			URL[] combined = new URL[parentURL.length+proxies.length];
+			System.arraycopy(parentURL, 0, combined, 0, parentURL.length);
+			System.arraycopy(proxies, 0, combined, parentURL.length, proxies.length);
+			return combined;
+		}
+
 		// otherwise, regular 
 		return parentURL;
 	}
@@ -1618,7 +1653,7 @@ public class RequestProcessor implements IWebProcessor {
 	}
 
 	public IFilterDefinition getFilterByName(String name) {
-		return (IFilterDefinition)fFilters.get(name);	
+		return (IFilterDefinition)fFiltersByName.get(name);	
 	}
 	
 	public ServletWrapper getServletWrapper(String name) {

@@ -18,13 +18,18 @@
     <display-name>Demo5 WebApp</display-name>
 
 	<filter>
-		<filter-name>securityFilter</filter-name>
+		<filter-name>dwDemoSecurityFilter</filter-name>
 		<filter-class>com.requea.dysoweb.demo5.SecurityFilter</filter-class>
 	</filter>
 
 	<filter-mapping>
-		<filter-name>securityFilter</filter-name>
-		<servlet-name>bundleServlet</servlet-name>
+		<filter-name>dwDemoSecurityFilter</filter-name>
+        <url-pattern>/dwdemobndl</url-pattern>
 	</filter-mapping>
+
+    <servlet-mapping>
+        <servlet-name>bundleServlet</servlet-name>
+        <url-pattern>/dwdemobndl</url-pattern>
+    </servlet-mapping>
 
 </web-app>

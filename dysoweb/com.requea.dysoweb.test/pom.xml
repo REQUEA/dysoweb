@@ -18,14 +18,14 @@
 	<parent>
 		<artifactId>dysoweb</artifactId>
 		<groupId>com.requea.dysoweb</groupId>
-		<version>0.8.2-SNAPSHOT</version>
+		<version>0.9.0-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.requea.dysoweb</groupId>
 	<artifactId>com.requea.dysoweb.test</artifactId>
 	<packaging>bundle</packaging>
 	<name>Requea Dysoweb Test Webapp</name>
-	<version>0.8.2-SNAPSHOT</version>
+	<version>0.9.0-SNAPSHOT</version>
 	<url>http://www.requea.com</url>
     <dependencies>
         <dependency>
@@ -64,7 +64,7 @@
                         <Bundle-Vendor>Requea.com</Bundle-Vendor>
 			            <Bundle-SymbolicName>${pom.artifactId}</Bundle-SymbolicName>
 			            <Bundle-Activator>com.requea.dysoweb.test.Activator</Bundle-Activator>
-						<Import-Package>!javax.*,!org.w3c.dom,*</Import-Package>
+						<Import-Package>*</Import-Package>
                         <Include-Resource>webapp=src/main/webapp</Include-Resource>
 					</instructions>
 				</configuration>

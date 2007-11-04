@@ -55,7 +55,22 @@ public class BundleServlet extends HttpServlet {
 				if("start".equals(op)) {
 					bundle.start();
 				} else if("stop".equals(op)) {
-					bundle.stop();
+					// there are a number of bundles that should not be stopped
+					String symName = bundle.getSymbolicName();
+					if("org.apache.felix.framework".equals(symName) || "System Bundle".equals(symName)) {
+						// do not stop
+					} else if("com.requea.dysoweb.api".equals(symName)) {
+						// do not stop
+					} else if("com.requea.dysoweb.processor".equals(symName)) {
+						// do not stop
+					} else if("com.requea.dysoweb.utils.tags".equals(symName)) {
+						// do not stop
+					} else if("com.requea.dysoweb.panel".equals(symName)) {
+						// do not stop
+					} else {
+						// ok to stop the bundle
+						bundle.stop();
+					}
 				}
 			}
 		} catch(BundleException e) {
@@ -67,7 +82,7 @@ public class BundleServlet extends HttpServlet {
 		if(ru == null)
 			ru = request.getHeader("Referer");
 		if(ru == null)
-			ru = request.getContextPath() + "/index.jsp";
+			ru = request.getContextPath();
 		
 		// redirect to the ru
     	response.sendRedirect(ru);

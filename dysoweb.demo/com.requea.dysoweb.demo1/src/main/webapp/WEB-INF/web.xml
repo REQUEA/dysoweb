@@ -17,9 +17,4 @@
 <web-app>
     <display-name>Dysoweb Demo Web Site</display-name>
 
-    <servlet-mapping>
-        <servlet-name>bundleServlet</servlet-name>
-        <url-pattern>/dwbndl</url-pattern>
-    </servlet-mapping>
-
 </web-app>

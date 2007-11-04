@@ -17,6 +17,7 @@ package com.requea.webenv;
 import java.io.IOException;
 
 import javax.servlet.FilterChain;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletContextAttributeEvent;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletException;
@@ -35,4 +36,7 @@ public interface IWebProcessor {
 	public void processContextAttributeEvent(String eventType, ServletContextAttributeEvent event);
 	public void processSessionEvent(String eventType, HttpSessionEvent event);
 	public void processSessionAttributeEvent(String eventType, HttpSessionBindingEvent event);
+
+	public void activate(ServletContext servletContext, String prefix) throws ServletException;
+	public void deactivate();
 }

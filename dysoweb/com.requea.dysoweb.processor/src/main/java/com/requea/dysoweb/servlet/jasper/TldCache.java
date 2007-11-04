@@ -98,9 +98,13 @@ public class TldCache extends TldLocationsCache {
     public String[] getLocation(String uri) throws JasperException {
 
     	// retrieve the RequestProcessor
-    	RequestProcessor processor = (RequestProcessor)fServletContext.getAttribute("com.requea.dysoweb.processor");
-    	String[] location = processor.getTaglibLocation(uri);
-    	return location;
+    	Object processor = fServletContext.getAttribute("com.requea.dysoweb.processor");
+    	if(processor instanceof RequestProcessor) {
+    		String[] location = ((RequestProcessor)processor).getTaglibLocation(uri);
+    		return location;
+    	} else {
+    		return new String[0];
+    	}
     }
 
 

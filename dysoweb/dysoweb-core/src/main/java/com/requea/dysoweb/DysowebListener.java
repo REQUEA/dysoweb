@@ -24,66 +24,65 @@ import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
 import com.requea.webenv.IWebProcessor;
-import com.requea.webenv.WebContext;
 
 public class DysowebListener implements ServletContextListener, ServletContextAttributeListener, HttpSessionListener, HttpSessionAttributeListener {
 
 	public void contextDestroyed(ServletContextEvent event) {
-		IWebProcessor processor = WebContext.getProcessor();
+		IWebProcessor processor = DysowebServlet.getActiveProcessor();
 		if(processor != null)
 			processor.processContextEvent("contextDestroyed", event);
 	}
 
 	public void contextInitialized(ServletContextEvent event) {
-		IWebProcessor processor = WebContext.getProcessor();
+		IWebProcessor processor = DysowebServlet.getActiveProcessor();
 		if(processor != null)
 			processor.processContextEvent("contextInitialized", event);
 	}
 
 	public void attributeAdded(ServletContextAttributeEvent event) {
-		IWebProcessor processor = WebContext.getProcessor();
+		IWebProcessor processor = DysowebServlet.getActiveProcessor();
 		if(processor != null)
 			processor.processContextAttributeEvent("attributeAdded", event);
 	}
 
 	public void attributeRemoved(ServletContextAttributeEvent event) {
-		IWebProcessor processor = WebContext.getProcessor();
+		IWebProcessor processor = DysowebServlet.getActiveProcessor();
 		if(processor != null)
 			processor.processContextAttributeEvent("attributeRemoved", event);
 	}
 
 	public void attributeReplaced(ServletContextAttributeEvent event) {
-		IWebProcessor processor = WebContext.getProcessor();
+		IWebProcessor processor = DysowebServlet.getActiveProcessor();
 		if(processor != null)
 			processor.processContextAttributeEvent("attributeReplaced", event);
 	}
 
 	public void sessionCreated(HttpSessionEvent event) {
-		IWebProcessor processor = WebContext.getProcessor();
+		IWebProcessor processor = DysowebServlet.getActiveProcessor();
 		if(processor != null)
 			processor.processSessionEvent("sessionCreated", event);
 	}
 
 	public void sessionDestroyed(HttpSessionEvent event) {
-		IWebProcessor processor = WebContext.getProcessor();
+		IWebProcessor processor = DysowebServlet.getActiveProcessor();
 		if(processor != null)
 			processor.processSessionEvent("sessionDestroyed", event);
 	}
 
 	public void attributeAdded(HttpSessionBindingEvent event) {
-		IWebProcessor processor = WebContext.getProcessor();
+		IWebProcessor processor = DysowebServlet.getActiveProcessor();
 		if(processor != null)
 			processor.processSessionAttributeEvent("attributeAdded", event);
 	}
 
 	public void attributeRemoved(HttpSessionBindingEvent event) {
-		IWebProcessor processor = WebContext.getProcessor();
+		IWebProcessor processor = DysowebServlet.getActiveProcessor();
 		if(processor != null)
 			processor.processSessionAttributeEvent("attributeRemoved", event);
 	}
 
 	public void attributeReplaced(HttpSessionBindingEvent event) {
-		IWebProcessor processor = WebContext.getProcessor();
+		IWebProcessor processor = DysowebServlet.getActiveProcessor();
 		if(processor != null)
 			processor.processSessionAttributeEvent("attributeReplaced", event);
 	}

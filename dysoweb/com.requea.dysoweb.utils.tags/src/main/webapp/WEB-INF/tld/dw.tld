@@ -33,6 +33,11 @@
             <required>false</required>
             <rtexprvalue>false</rtexprvalue>
         </attribute>
+        <attribute>
+            <name>command</name>
+            <required>false</required>
+            <rtexprvalue>false</rtexprvalue>
+        </attribute>
     </tag>
     <tag>
         <name>insert</name>
@@ -61,6 +66,16 @@
         <attribute>
             <name>label</name>
             <required>true</required>
+            <rtexprvalue>false</rtexprvalue>
+        </attribute>
+        <attribute>
+            <name>style</name>
+            <required>false</required>
+            <rtexprvalue>false</rtexprvalue>
+        </attribute>
+        <attribute>
+            <name>currentStyle</name>
+            <required>false</required>
             <rtexprvalue>false</rtexprvalue>
         </attribute>
     </tag>
