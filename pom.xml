@@ -3,7 +3,7 @@
 	<groupId>com.requea.dysoweb</groupId>
 	<artifactId>main</artifactId>
 	<packaging>pom</packaging>
-	<version>0.8.2-SNAPSHOT</version>
+	<version>0.9.0-SNAPSHOT</version>
 	<name>Requea Dysoweb</name>
 	<url>http://www.requea.com</url>
 	<modules>
@@ -54,7 +54,7 @@
 			<dependency>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>org.apache.felix.framework</artifactId>
-				<version>1.0.0</version>
+				<version>1.0.1</version>
 			</dependency>
 			
 	        <dependency>
@@ -86,6 +86,11 @@
 	        <dependency>
 	            <groupId>com.requea.dysoweb</groupId>
 	            <artifactId>com.requea.dysoweb.shell</artifactId>
+	            <version>${version}</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>com.requea.dysoweb</groupId>
+	            <artifactId>com.requea.dysoweb.panel</artifactId>
 	            <version>${version}</version>
 	        </dependency>
 	        <dependency>

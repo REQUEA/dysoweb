@@ -2,14 +2,14 @@
 	<parent>
 		<artifactId>dysoweb</artifactId>
 		<groupId>com.requea.dysoweb</groupId>
-		<version>0.8.2-SNAPSHOT</version>
+		<version>0.9.0-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.requea.dysoweb</groupId>
 	<artifactId>webapp</artifactId>
 	<packaging>war</packaging>
 	<name>Requea Dysoweb WebApp</name>
-	<version>0.8.2-SNAPSHOT</version>
+	<version>0.9.0-SNAPSHOT</version>
 	<url>http://www.requea.com</url>
 	<dependencies>
 		<dependency>
@@ -47,6 +47,11 @@
 		</dependency>
 		<dependency>
 			<groupId>com.requea.dysoweb</groupId>
+			<artifactId>com.requea.dysoweb.panel</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.requea.dysoweb</groupId>
 			<artifactId>com.requea.dysoweb.commons-logging</artifactId>
 			<scope>provided</scope>
 		</dependency>
@@ -64,10 +69,10 @@
 						<configuration>
 							<tasks>
 								<echo>Processing dysoweb.properties file with ${version}</echo>
-								<copy file="src/main/resources/dysoweb.properties" toFile="target/dysoweb/WEB-INF/classes/dysoweb.properties" />
-								<replace file="target/dysoweb/WEB-INF/classes/dysoweb.properties">
+								<copy file="src/main/config/dysoweb.properties" toFile="target/dysoweb/WEB-INF/classes/dysoweb.properties" />
+								<replace file="target/dysoweb/WEB-INF/classes/dysoweb.properties" summary="true">
 									<replacetoken>@version</replacetoken>
-									<replacevalue>${Version}</replacevalue>							
+									<replacevalue>${version}</replacevalue>							
 								</replace>
 							</tasks>
 						</configuration>
@@ -167,6 +172,19 @@
 									</groupId>
 									<artifactId>
 										com.requea.dysoweb.shell
+									</artifactId>
+									<type>jar</type>
+									<overWrite>true</overWrite>
+									<outputDirectory>
+										${project.build.directory}/dysoweb/WEB-INF/bundle
+									</outputDirectory>
+								</artifactItem>
+								<artifactItem>
+									<groupId>
+										com.requea.dysoweb
+									</groupId>
+									<artifactId>
+										com.requea.dysoweb.panel
 									</artifactId>
 									<type>jar</type>
 									<overWrite>true</overWrite>
