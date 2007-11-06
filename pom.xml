@@ -3,7 +3,7 @@
 	<groupId>com.requea.dysoweb</groupId>
 	<artifactId>main</artifactId>
 	<packaging>pom</packaging>
-	<version>0.9.1</version>
+	<version>0.9.2-SNAPSHOT</version>
 	<name>Requea Dysoweb</name>
 	<url>http://www.requea.com</url>
 	<modules>
@@ -167,9 +167,9 @@
 	</repositories>
 
 	<scm>
-		<connection>scm:svn:svn+ssh://pdubois@svn.forge.objectweb.org/svnroot/dysoweb/tags/main-0.9.1</connection>
-		<developerConnection>scm:svn:svn+ssh://pdubois@svn.forge.objectweb.org/svnroot/dysoweb/tags/main-0.9.1</developerConnection>
-		<url>scm:svn:svn+ssh://pdubois@svn.forge.objectweb.org/svnroot/dysoweb/tags/main-0.9.1</url>
+		<connection>scm:svn:svn+ssh://null@svn.forge.objectweb.org/svnroot/dysoweb/tags/main-0.9.0-SNAPSHOT</connection>
+		<developerConnection>scm:svn:svn+ssh://null@svn.forge.objectweb.org/svnroot/dysoweb/tags/main-0.9.0-SNAPSHOT</developerConnection>
+		<url>scm:svn:svn+ssh://null@svn.forge.objectweb.org/svnroot/dysoweb/tags/main-0.9.0-SNAPSHOT</url>
 	</scm>
 	<build>
 		<plugins>
