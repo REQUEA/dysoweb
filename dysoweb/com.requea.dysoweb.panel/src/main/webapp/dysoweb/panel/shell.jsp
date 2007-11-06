@@ -22,7 +22,7 @@ function dysowebExecuteCommand() {
 	<style type="text/css" media="all">
 #dysowebResults {
 	font-family:"Courier New", Courier, monospace;
-	font-size:110%;
+	font-size:130%;
 }
 #dysowebResults .err {
 	color:#e00;

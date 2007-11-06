@@ -50,6 +50,7 @@ body {
 	border:1px solid #aaa;
 	background:#fff;
 	padding:0px;
+	position:relative;
 }
 .rqhdr 
 {
@@ -360,9 +361,10 @@ a.rplaunch:hover {
 
 .rqprogressBar .rqborder {
   background: url("progress-remainder.gif") repeat-x;
-  border-left: 1px solid grey;
-  border-right: 1px solid grey;
   width: 100%;
+  padding:0px;
+  border-left:1px solid #777;
+  border-right:1px solid #777;
 }
 
 .rqprogressBar .rqbackground {

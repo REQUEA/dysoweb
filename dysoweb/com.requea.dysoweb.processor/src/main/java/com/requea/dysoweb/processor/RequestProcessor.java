@@ -570,13 +570,13 @@ public class RequestProcessor implements IWebProcessor {
 
 		private Bundle fBundle;
 		private String fPath;
-		private long fStartTime;
+		private long fLastModified;
 		private File fDevDir;
 
 		public BundleInfo(Bundle bundle, String bundlePath, long l) {
 			fBundle = bundle;
 			fPath = bundlePath;
-			fStartTime = l;
+			fLastModified = bundle.getLastModified();
 			// check if the bundle is in dev mode?
 			fDevDir = null;
 			String location = bundle.getLocation();
@@ -741,6 +741,8 @@ public class RequestProcessor implements IWebProcessor {
 						if(url != null) {
 							// For jasper, we must cache the jsp into the jsp directory
 							// because felix will not return a correct time
+							long lastModified = info.fLastModified;
+							
 							if(fullPath.endsWith(".jsp") || fullPath.endsWith("jspx")) {
 								File fBase = new File(getScratchDir(), "jsp");
 								// remove the leading character
@@ -749,7 +751,8 @@ public class RequestProcessor implements IWebProcessor {
 								}
 								File f = new File(fBase, fullPath);
 								// check if the file exists
-								if(!f.exists() || f.lastModified() < info.fStartTime) {
+								lastModified = f.lastModified();
+								if(!f.exists() || lastModified < info.fLastModified) {
 									// copy the file to the file directory
 									f.getParentFile().mkdirs();
 									URLConnection uc = url.openConnection();
@@ -762,13 +765,12 @@ public class RequestProcessor implements IWebProcessor {
 									}
 									os.close();
 									is.close();
-									// set the time
-									f.setLastModified(info.fStartTime);
+									lastModified = f.lastModified();
 								}
 								url = new URL("file:"+f.getAbsolutePath());
 							}
 							// create the entry in the cache
-							EntryInfo ei = new EntryInfo(service, bundle.getBundleId(), url, info.fStartTime, name);
+							EntryInfo ei = new EntryInfo(service, bundle.getBundleId(), url, lastModified, name);
 							fEntries.put(name, ei);
 							return ei;
 						}
@@ -983,7 +985,7 @@ public class RequestProcessor implements IWebProcessor {
 									if(!path.startsWith("/")) {
 										path = "/" + path;
 									}
-									processTaglibDefinition(bundle.getBundleId(), doc, path);
+									processTaglibDefinition(bundle, doc, path);
 								} catch(XMLException e) {
 									throw new WebAppException(e);
 								}
@@ -1058,12 +1060,13 @@ public class RequestProcessor implements IWebProcessor {
 			}
 			is.close();
 			// special treatment for not referenced taglib definition
-			processTaglibDefinition(bundle.getBundleId(), doc, path);
+			processTaglibDefinition(bundle, doc, path);
 		}	
 	}
 
-	private void processTaglibDefinition(long bundleId, Document doc, String path) throws WebAppException {
+	private void processTaglibDefinition(Bundle bundle, Document doc, String path) throws WebAppException {
 		try {
+			long bundleId = bundle.getBundleId();
 			// scan the xml content and load the context descriptor
 			String tagURI = XMLUtils.getChildText(doc.getDocumentElement(), "uri");
 
@@ -1076,14 +1079,13 @@ public class RequestProcessor implements IWebProcessor {
 	        Writer w = new FileWriter(f);
 	        w.write(xml);
 	        w.close();
-	        
+	        // set the last modified date as well
+	        f.setLastModified(bundle.getLastModified());
 	        if(tagURI != null) {
 	        	fTagLocations.put(tagURI, "$scratch/"+baseName);
         		fTagLocations.put("/WEB-INF"+path, "$scratch/"+baseName);
-	        	
 	        	fTagBundles.put(tagURI, new Long(bundleId));
 	        }
-
 		} catch (IOException e) {
 			throw new WebAppException(e);
 		} catch (XMLException e) {

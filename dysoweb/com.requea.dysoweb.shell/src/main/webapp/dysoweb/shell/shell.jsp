@@ -20,7 +20,6 @@ body {
 }
 #dysowebResults {
 	font-family:"Courier New", Courier, monospace;
-	font-size:80%;
 }
 #dysowebResults .err {
 	color:#e00;
