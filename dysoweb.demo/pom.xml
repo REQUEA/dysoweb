@@ -2,14 +2,14 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.requea.dysoweb</groupId>
     <artifactId>demo</artifactId>
-    <version>0.9.2</version>
+    <version>0.9.3-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Requea Dysoweb Demo Web Site</name>
     <url>http://www.requea.com</url>
 	<parent>
 		<artifactId>main</artifactId>
 		<groupId>com.requea.dysoweb</groupId>
-		<version>0.9.2</version>
+		<version>0.9.3-SNAPSHOT</version>
 	</parent>
     <modules>
         <module>com.requea.dysoweb.demo1</module>
