@@ -35,7 +35,6 @@ public class ServletWrapper {
 	private ServletContext fServletContext;
 	private IServletDefinition fServletDefinition;
 	private IFilterDefinition[] fFilterDefinitions;
-	private ClassLoader fProcessingContextClassLoader;
 
 	public ServletWrapper() {
 		
@@ -47,10 +46,10 @@ public class ServletWrapper {
 		fFilterDefinitions = new IFilterDefinition[0];
 	}
 	
-	public ServletWrapper(long bundleId, ServletContext context, HttpServlet servlet) {
+	public ServletWrapper(long bundleId, ServletContext context, HttpServlet servlet, ClassLoader loader) {
 		fBundleId = bundleId;
 		fServletContext = context;
-		fServletDefinition = new ServletDefinition(servlet);
+		fServletDefinition = new ServletDefinition(servlet, loader);
 		fFilterDefinitions = new IFilterDefinition[0];
 	}
 
@@ -84,9 +83,11 @@ public class ServletWrapper {
 	private class ServletDefinition implements IServletDefinition {
 
 		private HttpServlet fServlet;
+		private ClassLoader fLoader;
 
-		public ServletDefinition(HttpServlet servlet) {
+		public ServletDefinition(HttpServlet servlet, ClassLoader loader) {
 			fServlet = servlet;
+			fLoader = loader;
 		}
 
 		public long getBundleId() {
@@ -122,7 +123,7 @@ public class ServletWrapper {
 		}
 
 		public ClassLoader getLoader() {
-			return null;
+			return fLoader;
 		}
 
 		public void loadClass(Bundle bundle) throws WebAppException {
@@ -132,13 +133,4 @@ public class ServletWrapper {
 
 	}
 
-	public ClassLoader getProcessingContextClassLoader() {
-		return fProcessingContextClassLoader;
-	}
-	public void setProcessingContextClassLoader(
-			ClassLoader processingContextClassLoader) {
-		fProcessingContextClassLoader = processingContextClassLoader;
-	}
-
-	
 }

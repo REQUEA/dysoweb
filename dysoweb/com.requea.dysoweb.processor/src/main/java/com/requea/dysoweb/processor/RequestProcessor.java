@@ -542,12 +542,6 @@ public class RequestProcessor implements IWebProcessor {
 					bundleId = new Long(wrapper.getBundleId());
 					request.setAttribute("com.requea.dysoweb.service", bundleId);
 				}
-				// set the web app class loader as a thread context class loader
-				if(wrapper.getProcessingContextClassLoader() == null)
-					th.setContextClassLoader(IWebProcessor.class.getClassLoader());
-				else
-					th.setContextClassLoader(wrapper.getProcessingContextClassLoader());
-				
 				ServletChain ac = ((ServletWrapper)wrapper).getChain();
 				
 				// build another chain with the filters
@@ -1535,8 +1529,7 @@ public class RequestProcessor implements IWebProcessor {
 					ClassLoader jspLoader = new URLClassLoader(loaderURL, new JasperLoader(info.getBundle()));
 					th.setContextClassLoader(jspLoader);
 					jasperServlet.init(new JasperConfig(contextWrapper));
-					ServletWrapper jasperWrapper = new ServletWrapper(l.longValue(), contextWrapper, jasperServlet);
-					jasperWrapper.setProcessingContextClassLoader(jspLoader);
+					ServletWrapper jasperWrapper = new ServletWrapper(l.longValue(), contextWrapper, jasperServlet, jspLoader);
 					fJspWrappers.put(l, jasperWrapper);
 				} catch(Throwable e) {
 					fLog.error("Unable to initialize the JSP servlet ", e);
