@@ -70,8 +70,8 @@ public class PortletProcessor implements IPortletProcessor {
 			return;
 		}
 		
-		Bundle bundle = service.getBundle();
-		
+//		Bundle bundle = service.getBundle();
+/*		
 		// check if there is a portlet.xml descriptor
 		URL descURL = bundle.getResource(service.getWebPath()+"WEB-INF/portlet.xml");
 		if(descURL != null) {
@@ -79,6 +79,7 @@ public class PortletProcessor implements IPortletProcessor {
 			// parse the descriptor and add the definitions to the list of portlets definitions
 			parsePortletDescriptor(service, bundle, descURL);
 		}
+*/
 	}
 
 

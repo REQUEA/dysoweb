@@ -573,7 +573,8 @@ public class ResolverImpl implements Resolver
                 // Only update if it is a different version or a SNAPSHOT version
                 if (!localResource.equals(deployResources[i]) || localResource.getVersion().getQualifier().endsWith("SNAPSHOT"))
                 {
-            		size += getResourceSize(localResource);
+                	int lSize = (int) ((Long)deployResources[i].getProperties().get("size")).longValue();
+            		size += lSize;
                 }
             }
             else

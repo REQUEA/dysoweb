@@ -48,7 +48,8 @@ public class FilterListChain implements FilterChain {
 				Filter flt = fltDef.getInstance();
 				// we have progressed in the chain
 				fPos ++;
-				th.setContextClassLoader(fltDef.getLoader());
+				if(fltDef.getLoader() != null)
+					th.setContextClassLoader(fltDef.getLoader());
 				flt.doFilter(request, response, this);
 			} finally {
 				th.setContextClassLoader(cl);

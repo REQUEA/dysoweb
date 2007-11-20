@@ -7,7 +7,7 @@
 <head>
 	<title>Dysoweb Control Panel</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <link href="<%= request.getContextPath() %>/dysoweb/panel/css/style.css" rel="stylesheet" type="text/css" />
+    <link href="<%= request.getContextPath() %>/dysoweb/panel/css/style-1.0.0.css" rel="stylesheet" type="text/css" />
 	<script src="<%=request.getContextPath()%>/dysoweb/panel/js/prototype-1.5.1.js" type="text/javascript"></script>	
 	<script type="text/javascript">
 function dysowebRefreshStatus() {
@@ -37,10 +37,6 @@ function dysowebRefreshStatus() {
 }
 	</script>
 	<style type="text/css" media="all">
-#dysowebResults {
-	font-family:"Courier New", Courier, monospace;
-	font-size:110%;
-}
 #dysowebResults .err {
 	color:#e00;
 }
@@ -65,6 +61,7 @@ function dysowebRefreshStatus() {
 							<panel:error />
 							<div id="dysowebResults">
 								<p>Installation in progress. Please wait</p>
+								<div class="rqwait"><span>wait please</span></div>
 							</div>
 							<div style="display:none" id="launch"><panel:feature style="rplaunch" property="launch" /></div>
 						</div>

@@ -20,22 +20,11 @@ import org.osgi.framework.Bundle;
 
 /**
  * A web application service implementation
- * @author pdubois
- *
+ * @deprecated
+ * The WebAppService registration is unecessary
  */
 public abstract class WebAppService {
 	
-	private Bundle fBundle;
-
 	public WebAppService(Bundle bundle) {
-		fBundle = bundle;
-	}
-	
-	public String getWebPath() {
-		return "webapp/";
-	}
-	
-	public Bundle getBundle() {
-		return fBundle;
 	}
 }

@@ -50,7 +50,8 @@ public class DefaultServletChain implements FilterChain {
 				Filter flt = def.getInstance();
 				// we have progressed in the chain
 				fPos ++;
-				th.setContextClassLoader(def.getLoader());
+				if(def.getLoader() != null) 
+					th.setContextClassLoader(def.getLoader());
 				flt.doFilter(request, response, this);
 			} finally {
 				th.setContextClassLoader(cl);

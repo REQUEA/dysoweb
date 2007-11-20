@@ -21,6 +21,7 @@ import java.security.SecureRandom;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -117,11 +118,21 @@ public class InstallServlet extends HttpServlet {
 	private void process(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		
+		Element elConfig = getServerConfig();
+		// first of all, check if the server is a registered server
+		if (elConfig == null) {
+			// include registration page
+			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure.jsp");
+			rd.forward(request, response);
+			return;
+		}
 
 		String op = request.getParameter("op");
 		if("status".equals(op)) {
 			handleStatusRequest(request, response);
 			return;
+		} else if("install".equals(op)) {
+			handleInstallBundleRequest(request, response, elConfig);
 		} else if("image".equals(op)) {
 			// render the image
 			String image = request.getParameter("image");
@@ -150,20 +161,7 @@ public class InstallServlet extends HttpServlet {
 			} else {
 				response.sendError(404);
 			}
-		}
-		
-		Element elConfig = getServerConfig();
-		// first of all, check if the server is a registered server
-		if (elConfig == null) {
-			// include registration page
-			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure.jsp");
-			rd.forward(request, response);
-			return;
-		}
-
-		// we have the configuration (with the servlet id)
-		String bundles = request.getParameter("bundles");
-		if (bundles == null || bundles.length() == 0) {
+		} else {
 			try {
 				handleInstallPanelRequest(request, response, elConfig);
 			} catch (Exception e) {
@@ -172,10 +170,7 @@ public class InstallServlet extends HttpServlet {
 				RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/install.jsp");
 				rd.forward(request, response);
 			}
-		} else {
-			handleInstallBundleRequest(request, response, elConfig, bundles);
 		}
-	
 	}
 
 	private void handleStatusRequest(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -209,6 +204,13 @@ public class InstallServlet extends HttpServlet {
 				Element elMsg = XMLUtils.addElement(el, "div");
 				elMsg.setAttribute("class", "rqtask");
 				XMLUtils.setText(elMsg, "Application installed successfully");
+			} else if(status.getStatus() == Status.NEW) {
+				// still waiting to start
+				Element elMsg = XMLUtils.addElement(el, "div");
+				XMLUtils.setText(elMsg, "Installation in progress. Please wait");
+				Element elWait = XMLUtils.addElement(el, "div");
+				elWait.setAttribute("class", "rqwait");
+				XMLUtils.addElement(elWait, "span", "Please wait");
 			} else {
 				monitor.renderProgress(el);
 			}
@@ -254,27 +256,49 @@ public class InstallServlet extends HttpServlet {
 	}
 
 	private void handleInstallBundleRequest(HttpServletRequest request,
-			HttpServletResponse response, Element elConfig, String bundles) throws IOException, ServletException {
+			HttpServletResponse response, Element elConfig) throws IOException, ServletException {
 
 		
 		BundleContext context = Activator.getDefault().getContext();
-		String strFeature = request.getParameter("feature");
 
 		try {
 			Feature[] allFeatures = getFeatures(request, response, elConfig);
-			// find the requested feature
-			Feature feature = findFeature(allFeatures, strFeature);
-			if(feature == null) {
-				throw new Exception("Unable to find feature '"+strFeature+"'. Cannot deploy");
+			
+			ArrayList lst = new ArrayList();
+
+			Feature installedFeature = null;
+			
+			// get the list of features that need to be installed
+			Map map = request.getParameterMap();
+			Iterator iter = map.keySet().iterator();
+			while(iter.hasNext()) {
+				String strParam = (String)iter.next();
+				if(strParam.startsWith("feature")) {
+					Object value = map.get(strParam);
+					if(value instanceof String[]) {
+						String[] vals = (String[])value;
+						if(vals.length > 0)
+							value = vals[0];
+					}
+					if("install".equals(value)) {
+						String strFeature = strParam.substring("feature".length());
+						// find the requested feature
+						Feature feature = findFeature(allFeatures, strFeature);
+						if(feature == null) {
+							throw new Exception("Unable to find feature '"+strFeature+"'. Cannot deploy");
+						}
+						installedFeature = feature;
+						
+						// find dependent features
+						getDependentFeatures(lst, allFeatures, feature);
+						if(!lst.contains(feature)) {
+							// adds at the end
+							lst.add(feature);
+						}
+					}
+				}
 			}
 			
-			// find dependent features
-			ArrayList lst = new ArrayList();
-			getDependentFeatures(lst, allFeatures, feature);
-			if(!lst.contains(feature)) {
-				// adds at the end
-				lst.add(feature);
-			}
 			// turn it as an array
 			Feature[] features = (Feature[])lst.toArray(new Feature[lst.size()]);
 			
@@ -296,7 +320,7 @@ public class InstallServlet extends HttpServlet {
 			} catch (MalformedURLException e) {
 				// cannot happend
 			}
-
+			
 			// create the progress monitor
 			AjaxProgressMonitor monitor = new AjaxProgressMonitor();
 			Status status = new Status();
@@ -306,19 +330,16 @@ public class InstallServlet extends HttpServlet {
 			// launch the trhead to install the bundles
 			Thread th = new Thread(new Installer(context, repo, features, monitor, status));
 			th.start();
-
-			request.setAttribute(FEATURE, feature);
+			
+			request.setAttribute(FEATURE, installedFeature);
 			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/installing.jsp");
 			rd.forward(request, response);
 		} catch (Exception e) {
 			// show the error
-			request.setAttribute(ErrorTag.ERROR, "Unable to install feature " + strFeature + ": " + e.getMessage());
+			request.setAttribute(ErrorTag.ERROR, "Unable to install features: " + e.getMessage());
 			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/install.jsp");
 			rd.forward(request, response);
 		}
-
-		
-		
 	}
 
 	private void getDependentFeatures(List lst, Feature[] allFeatures,
@@ -349,7 +370,7 @@ public class InstallServlet extends HttpServlet {
 		private static final long serialVersionUID = 7322042123009546894L;
 		
 		private Exception fException;
-		private int fStatus = OK;
+		private int fStatus = NEW;
 		
 		public void setError(Exception e) {
 			fException = e;
@@ -360,7 +381,8 @@ public class InstallServlet extends HttpServlet {
 			return fException;
 		}
 		
-		public static final int OK = 0;
+		public static final int NEW = 0;
+		public static final int STARTED = 4;
 		public static final int DONE = 1;
 		public static final int ERROR = 2;
 		public static final int CANCEL = 3;
@@ -405,6 +427,7 @@ public class InstallServlet extends HttpServlet {
 			
 			try {
 				fProgressMonitor.beginTask("Installing feature ", lTotalSize == 0 ? IProgressMonitor.UNKNOWN : (int)lTotalSize);
+				fStatus.setStatus(Status.STARTED);
 				for(int i=0; i<fFeatures.length; i++) {
 					try {
 						installFeature(fContext, fRepo, fFeatures[i], fProgressMonitor);
@@ -464,20 +487,25 @@ public class InstallServlet extends HttpServlet {
 		// then resolve
 		resolver.resolve();
 		
-		// get the list of resources to deploy
-		Resource[] resources = resolver.getResourcesToDeploy();
+		// get the list of resources added
+		long lSize = 0;
+		Resource[] resources = resolver.getRequiredResources();
 		if(resources != null) {
-			long lSize = 0;
 			for(int i=0; i<resources.length; i++) {
 				Long size = (Long)resources[i].getProperties().get("size");
 				if(size != null)
 					lSize += size.longValue();
 			}
-			return lSize;
-		} else {
-			// error
-			return 0;
 		}
+		resources = resolver.getOptionalResources();
+		if(resources != null) {
+			for(int i=0; i<resources.length; i++) {
+				Long size = (Long)resources[i].getProperties().get("size");
+				if(size != null)
+					lSize += size.longValue();
+			}
+		}
+		return lSize;
 	}
 	
 	private void installFeature(BundleContext context, RepositoryAdminImpl repo, Feature feature, IProgressMonitor parentMonitor) throws Exception {
@@ -533,10 +561,10 @@ public class InstallServlet extends HttpServlet {
             if (resolver.resolve())
             {
     			long lSize = 0;
-            	Resource[] resourcesToDeploy = resolver.getResourcesToDeploy();
-        		if(resourcesToDeploy != null) {
-        			for(int i=0; i<resourcesToDeploy.length; i++) {
-        				Resource resource = resourcesToDeploy[i];
+            	Resource[] resources = resolver.getRequiredResources();
+        		if(resources != null && resources.length > 0) {
+        			for(int i=0; i<resources.length; i++) {
+        				Resource resource = resources[i];
         				Long size = (Long)resource.getProperties().get("size");
         				if(size != null) {
         					lSize += size.longValue();
@@ -545,6 +573,22 @@ public class InstallServlet extends HttpServlet {
 		                elBundle.setAttribute("symbolicName", resource.getSymbolicName());
 		                elBundle.setAttribute("name", resource.getPresentationName());
 		                elBundle.setAttribute("version", resource.getVersion().toString());
+		                elBundle.setAttribute("type", "required");
+        			}
+        		}
+        		resources = resolver.getOptionalResources();
+        		if(resources != null && resources.length > 0) {
+        			for(int i=0; i<resources.length; i++) {
+        				Resource resource = resources[i];
+        				Long size = (Long)resource.getProperties().get("size");
+        				if(size != null) {
+        					lSize += size.longValue();
+        				}
+	                	Element elBundle = XMLUtils.addElement(elBundles, "bundle");
+		                elBundle.setAttribute("symbolicName", resource.getSymbolicName());
+		                elBundle.setAttribute("name", resource.getPresentationName());
+		                elBundle.setAttribute("version", resource.getVersion().toString());
+		                elBundle.setAttribute("type", "optional");
         			}
         		}
         		IProgressMonitor monitor = new SubProgressMonitor(parentMonitor, (int)lSize);
@@ -555,9 +599,7 @@ public class InstallServlet extends HttpServlet {
 	            		SubProgressMonitor subMonitor = new SubProgressMonitor(monitor, (int)lSize);
 	                    resolver.deploy(true, subMonitor);
 	                    // register the new application if something was installed
-	                    if(resourcesToDeploy != null && resourcesToDeploy.length > 0) {
-	                    	registerInstalledApplication(feature, elFeature);
-	                    }
+                    	registerInstalledApplication(feature, elFeature);
 	                }
 	                catch (IllegalStateException ex)
 	                {
@@ -763,7 +805,6 @@ public class InstallServlet extends HttpServlet {
     }
 
 	
-	
 	private void handleInstallPanelRequest(HttpServletRequest req,
 			HttpServletResponse resp, Element elConfig) throws Exception {
 
@@ -782,6 +823,7 @@ public class InstallServlet extends HttpServlet {
 		}		
 		return;
 	}
+	
 	
 	private Feature findFeature(Feature[] features, String strFeature) {
 		Feature feature = null;

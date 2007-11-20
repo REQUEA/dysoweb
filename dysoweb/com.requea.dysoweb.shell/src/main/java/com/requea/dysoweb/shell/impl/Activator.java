@@ -15,22 +15,17 @@
 package com.requea.dysoweb.shell.impl;
 
 import org.apache.felix.shell.ShellService;
-import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
 import org.osgi.framework.ServiceReference;
-import org.osgi.framework.ServiceRegistration;
-
-import com.requea.dysoweb.WebAppService;
 
 public class Activator implements BundleActivator {
 
 	private static BundleContext fContext;
 	private static Activator fInstance;
-	private ServiceRegistration fWebApp;
 	private ServiceReference fShellRef;
 	private ShellService fShell;
 	
@@ -86,10 +81,6 @@ public class Activator implements BundleActivator {
         // since one might already be available.
         initializeService();		
 		
-		fWebApp = ctx.registerService(WebAppService.class.getName(), 
-				new Service(ctx.getBundle()), 
-				null);
-		
 		fInstance = this;
 	}
 
@@ -97,9 +88,6 @@ public class Activator implements BundleActivator {
 	public void stop(BundleContext ctx) throws Exception {
 		fInstance = null;
 		fContext = null;
-		// unregister the web app service
-		fWebApp.unregister();
-		fWebApp = null;
 	}
 	
 	public static Activator getInstance() {
@@ -132,14 +120,5 @@ public class Activator implements BundleActivator {
         }
         fShell = (ShellService) fContext.getService(fShellRef);
     }
-	
-	class Service extends WebAppService {
-
-		public Service(Bundle bundle) {
-			super(bundle);
-		}
-		
-	}
-
 
 }

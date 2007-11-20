@@ -117,6 +117,14 @@ public class FeatureTag extends TagSupport {
         	tw.append("install");
         	tw.append("</span></a>");
         	tw.writeTo(pageContext);
+        } else if("check".equals(fProperty)) {
+        	TagWriter tw = new TagWriter();
+        	tw.append("<input name=\"feature");
+        	tw.append(feature.getID());
+        	tw.append("\" type=\"checkbox\" value=\"");
+        	tw.append("install");
+        	tw.append("\"/>");
+        	tw.writeTo(pageContext);
         } else if("image".equals(fProperty)) {
         	TagWriter tw = new TagWriter();
         	Element elImage = feature.getImage();
@@ -144,49 +152,7 @@ public class FeatureTag extends TagSupport {
         	}
         	tw.append("></img>");
         	tw.writeTo(pageContext);
-        } else if("link".equals(fProperty)) {
-        	TagWriter tw = new TagWriter();
-        	tw.append("<a href=\"");
-        	tw.append(request.getContextPath());
-        	tw.append("/dysoweb/panel/install?feature=");
-        	tw.append(feature.getID());
-        	tw.append("\"");
-        	if(fStyle != null) {
-        		tw.append(" class=\"");
-        		tw.append(fStyle);
-        		tw.append("\"");
-        	}
-        	tw.append(">");
-        	tw.append("<div");
-        	tw.append(">");
-        	Element elImage = feature.getImage();
-        	if(elImage == null) {
-        		tw.append(feature.getName());
-        	} else {
-	        	tw.append("<img src=\"");
-	        	tw.append(elImage.getAttribute("url"));
-	        	tw.append("\"");
-	        	String width = elImage.getAttribute("width");
-	        	if(width != null && width.length() > 0) {
-	        		tw.append(" width=\"");
-	        		tw.append(width);
-	        		tw.append("\"");
-	        	}
-	        	String height = elImage.getAttribute("height");
-	        	if(height != null && height.length() > 0) {
-	        		tw.append(" height=\"");
-	        		tw.append(height);
-	        		tw.append("\"");
-	        	}
-	        	tw.append(" alt=\"");
-	        	tw.append(feature.getName());
-	        	tw.append("\"");
-	        	tw.append("></img>");
-        	}
-        	tw.append("</div></a>");
-        	tw.writeTo(pageContext);
         }
-
 		return super.doStartTag();
 	}
 	

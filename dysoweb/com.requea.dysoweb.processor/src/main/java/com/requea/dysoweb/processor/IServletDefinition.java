@@ -18,6 +18,8 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
+import org.osgi.framework.Bundle;
+
 import com.requea.dysoweb.WebAppException;
 
 public interface IServletDefinition {
@@ -26,6 +28,8 @@ public interface IServletDefinition {
 	public void unload();
 	
 	public void init(ServletContext ctx) throws ServletException;
+	public void loadClass(Bundle bundle) throws WebAppException;
+	public ClassLoader getLoader();
 
 	public boolean isInitialized();
 
@@ -37,5 +41,4 @@ public interface IServletDefinition {
 
 	public int getLoadOnStartup();
 	
-	public ClassLoader getLoader();
 }

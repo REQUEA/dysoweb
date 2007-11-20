@@ -190,14 +190,12 @@ public class DysowebServlet extends HttpServlet {
 			// unable to lookup the requea configuration file
 			fCache = new File(getScratchDir(ctx),"bundles");
 
-			System.out.println("");
 			System.out.println("-----------------------------");
-			System.out.println("WARNING: The dysoweb bundle cache directory will be set to " + fCache.getAbsolutePath());
+			System.out.println("INFO: The dysoweb bundle cache directory will be set to " + fCache.getAbsolutePath());
 			System.out.println("We recommend that you setup the dysoweb.home Context Environment variable 'dysoweb.home' in your web container");
 			System.out.println("    <Environment name=\"dysoweb.home\" type=\"java.lang.String\" value=\"[path to directory]\"/>");
 			System.out.println("    see http://dysoweb.requea.com/dysopedia/index.php/Configuring_dysoweb_home");
 			System.out.println("-----------------------------");
-			System.out.println("");
 		}
 		fCache.mkdirs();
 		// setup the local cache path
@@ -272,6 +270,9 @@ public class DysowebServlet extends HttpServlet {
 			if(srs != null && srs.length > 0) {
 				// get the one with the best version
 				ServiceReference ref = getBestVersion(srs);
+				if(srs.length > 1) {
+					System.out.println("Active Dysoweb Processor is bundle " + ref.getBundle().getBundleId());
+				}
 				setActiveProcessor(servletContext, context, ref);
 			}
 		} catch (InvalidSyntaxException e) {

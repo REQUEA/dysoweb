@@ -21,9 +21,9 @@ import javax.servlet.http.HttpSessionListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.osgi.framework.Bundle;
 
 import com.requea.dysoweb.WebAppException;
-import com.requea.dysoweb.WebAppService;
 import com.requea.dysoweb.processor.IListenerDefinition;
 
 public class ListenerDefinition implements IListenerDefinition {
@@ -31,17 +31,19 @@ public class ListenerDefinition implements IListenerDefinition {
     private static Log fLog = LogFactory.getLog(ListenerDefinition.class);
 	
 	
-	private long fBundleId;
 	private String fClassName;
 	private Object fInstance;
-	private WebAppService fService;
 
 
 	private boolean bContextNotified;
 
-	public ListenerDefinition(WebAppService service, long bundleId,
-			String className) {
-		fService = service;
+
+	private long fBundleId;
+
+
+	private ClassLoader fLoader;
+
+	public ListenerDefinition(long bundleId, String className) {
 		fBundleId = bundleId;
 		fClassName = className;
 	}
@@ -49,15 +51,29 @@ public class ListenerDefinition implements IListenerDefinition {
 	public long getBundleId() {
 		return fBundleId;
 	}
-
+	
 	public String getClassName() {
 		return fClassName;
 	}
 	
-	public WebAppService getService() {
-		return fService;
+	public ClassLoader getLoader() {
+		return fLoader;
 	}
 
+	public synchronized void loadClass(Bundle bundle) throws WebAppException {
+		if(fClassName == null) {
+			fLoader = null;
+		} else {
+			Class cls;
+			try {
+				cls = bundle.loadClass(fClassName);
+			} catch (ClassNotFoundException e) {
+				throw new WebAppException(e);
+			}
+			fLoader = new LoaderWrapper(cls.getClassLoader());
+		}
+	}
+	
 	public Object getInstance() {
 		return fInstance;
 	}
@@ -70,14 +86,10 @@ public class ListenerDefinition implements IListenerDefinition {
 		
 		fLog.info("Initializing Servlet Listener " + fClassName);
 		
-		Thread th = Thread.currentThread();
-		ClassLoader contextClassLoader = th.getContextClassLoader();
 		
 		try {
-			// instantiate the servlet
-			ClassLoader cl = fService.getClass().getClassLoader();
-			th.setContextClassLoader(cl);
-			Class cls = cl.loadClass(fClassName);
+			// instantiate the listener
+			Class cls = fLoader.loadClass(fClassName);
 			Object obj = cls.newInstance();
 			if(obj instanceof ServletContextListener) {
 				fInstance = obj;
@@ -96,8 +108,6 @@ public class ListenerDefinition implements IListenerDefinition {
 			throw new WebAppException(e);
 		} catch (IllegalAccessException e) {
 			throw new WebAppException(e);
-		} finally {
-			th.setContextClassLoader(contextClassLoader);
 		}
 	}
 

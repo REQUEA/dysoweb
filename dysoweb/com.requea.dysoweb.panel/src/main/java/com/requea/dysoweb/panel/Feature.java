@@ -131,7 +131,7 @@ public class Feature implements Serializable {
 	}
 
 	public String getLongDesc() {
-		return fLongDesc == null || fLongDesc.length() == 0 ? fDescription : fLongDesc;
+		return fLongDesc;
 	}
 
 	public String getName() {

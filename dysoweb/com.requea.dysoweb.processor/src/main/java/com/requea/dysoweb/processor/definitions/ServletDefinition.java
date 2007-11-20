@@ -27,9 +27,9 @@ import javax.servlet.ServletException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.osgi.framework.Bundle;
 import org.w3c.dom.Element;
 
-import com.requea.dysoweb.WebAppService;
 import com.requea.dysoweb.processor.IServletDefinition;
 import com.requea.dysoweb.WebAppException;
 import com.requea.dysoweb.util.xml.XMLUtils;
@@ -44,7 +44,6 @@ public class ServletDefinition implements IServletDefinition {
     private static Log fLog = LogFactory.getLog(ServletDefinition.class);
 	
 	
-	private long fBundleId;
 	private String fName;
 	private String fClassName;
 	private Servlet fInstance;
@@ -52,27 +51,49 @@ public class ServletDefinition implements IServletDefinition {
 	private boolean fInitialized;
 	private int fLoadOnStartup;
 	private ServletContext fServletContext;
+
+
+	private long fBundleId;
+
+
 	private ClassLoader fLoader;
 	
 	
 
-	public ServletDefinition(WebAppService service, long bundleId, String name, String cls, int loadOnStartup) {
+	public ServletDefinition(long bundleId, String name, String cls, int loadOnStartup) {
 		fBundleId = bundleId;
 		fName = name;
 		fClassName = cls;
 		fLoadOnStartup = loadOnStartup;
-		fLoader = new LoaderWrapper(service.getClass().getClassLoader());
+	}
+
+	public ClassLoader getLoader() {
+		return fLoader;
+	}
+
+	public synchronized void loadClass(Bundle bundle) throws WebAppException {
+		if(fClassName == null) {
+			fLoader = null;
+		} else {
+			Class cls;
+			try {
+				cls = bundle.loadClass(fClassName);
+			} catch (ClassNotFoundException e) {
+				throw new WebAppException(e);
+			}
+			fLoader = new LoaderWrapper(cls.getClassLoader());
+		}
 	}
 	
 	public Servlet getInstance() {
 		return fInstance;
 	}
 	
-
 	public long getBundleId() {
 		return fBundleId;
 	}
 	
+
 	public String getName() {
 		return fName;
 	}
@@ -90,15 +111,13 @@ public class ServletDefinition implements IServletDefinition {
 			// already loaded
 			return;
 		}
+		if(fLoader == null) {
+			throw new WebAppException("Unable to retrieve class loader for filter definition");
+		}
 		
 		fLog.info("Loading Servlet " + fName);
 		
-		Thread th = Thread.currentThread();
-		ClassLoader contextClassLoader = th.getContextClassLoader();
-		
 		try {
-			// instantiate the servlet
-			th.setContextClassLoader(fLoader);
 			Class cls = fLoader.loadClass(fClassName);
 			Object obj = cls.newInstance();
 			if(obj instanceof Servlet) {
@@ -112,8 +131,6 @@ public class ServletDefinition implements IServletDefinition {
 			throw new WebAppException(e);
 		} catch (IllegalAccessException e) {
 			throw new WebAppException(e);
-		} finally {
-			th.setContextClassLoader(contextClassLoader);
 		}
 	}
 
@@ -134,15 +151,8 @@ public class ServletDefinition implements IServletDefinition {
 		
 		fLog.info("Initializing Servlet " + fName);
 		
-		Thread th = Thread.currentThread();
-		ClassLoader contextClassLoader = th.getContextClassLoader();
-		try {
-			th.setContextClassLoader(fLoader);
-			fInstance.init(new Config());
-			fInitialized = true;
-		} finally {
-			th.setContextClassLoader(contextClassLoader);
-		}
+		fInstance.init(new Config());
+		fInitialized = true;
 	}
 	
 	class Config implements ServletConfig {
@@ -209,10 +219,6 @@ public class ServletDefinition implements IServletDefinition {
 		}
 		fInstance = null;
 		fInitialized = false;
-	}
-
-	public ClassLoader getLoader() { 
-		return fLoader;
 	}
 
 }

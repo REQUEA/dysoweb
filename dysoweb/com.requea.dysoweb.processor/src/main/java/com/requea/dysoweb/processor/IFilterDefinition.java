@@ -18,6 +18,8 @@ import javax.servlet.Filter;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
+import org.osgi.framework.Bundle;
+
 import com.requea.dysoweb.WebAppException;
 
 public interface IFilterDefinition {
@@ -26,13 +28,13 @@ public interface IFilterDefinition {
 	public void unload();
 	
 	public void init(ServletContext ctx) throws ServletException;
+	public void loadClass(Bundle bundle) throws WebAppException;
+	public ClassLoader getLoader();
 
 	public Filter getInstance();
 
 	public String getName();
 
 	public long getBundleId();
-	
-	public ClassLoader getLoader();
 	
 }

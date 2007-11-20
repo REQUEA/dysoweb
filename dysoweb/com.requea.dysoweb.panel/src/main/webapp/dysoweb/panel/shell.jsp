@@ -7,7 +7,7 @@
 <head>
 	<title>Dysoweb Control Panel</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <link href="<%= request.getContextPath() %>/dysoweb/panel/css/style.css" rel="stylesheet" type="text/css" />
+    <link href="<%= request.getContextPath() %>/dysoweb/panel/css/style-1.0.0.css" rel="stylesheet" type="text/css" />
 	<script src="<%=request.getContextPath()%>/dysoweb/panel/js/prototype-1.5.1.js" type="text/javascript"></script>	
 	<script type="text/javascript">
 function dysowebExecuteCommand() {

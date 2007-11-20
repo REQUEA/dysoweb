@@ -7,7 +7,7 @@
 <head>
 	<title>Dysoweb Control Panel</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <link href="<%= request.getContextPath() %>/dysoweb/panel/css/style.css" rel="stylesheet" type="text/css" />
+    <link href="<%= request.getContextPath() %>/dysoweb/panel/css/style-1.0.0.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
 <div id="it">
@@ -23,24 +23,33 @@
 						<div>
 							<h2><span>Dysoweb Application installation</span></h2>
 							<panel:error />
-							<a href="<%=request.getContextPath() %>/dysoweb/panel/install?refresh=true">Refresh list</a>
-							<table width="100%"><tr valign="top">
-							<td width="250">
+							<table width="100%" cellpadding="0" cellspacing="0" class="rpfeatlist"><tr valign="top">
+							<td>
+								<form method="post" name="frminstall" action="<%=request.getContextPath()%>/dysoweb/panel/install">
+								<input type="hidden" name="op" value="install"/>
+								<div class="rpfeatinst"><input type="submit" value="Install Selected features"></input></div>
+								<table cellpadding="5">
+								<panel:features>
+								<tr valign="center">
+									<td><panel:feature property="check"/></input></td>
+									<td width="200"><panel:feature style="rpimg" property="image"/></td>
+									<td align="left">
+										<div class="rpfeatdesc"><panel:feature property="description"/></div>
+										<div class="rpfeatldesc"><panel:feature property="longDesc"/></div>
+									</td></tr>
+								</panel:features>
+								</table>
+								<div class="rpfeatinst"><input type="submit" value="Install Selected features"></input></div>
+								</form>
+							</td>
+							<td width="200">
+								<a href="<%=request.getContextPath() %>/dysoweb/panel/install?refresh=true">Refresh list</a>
 								<ul class="rpcat">Categories:
 								<li><a href="<%=request.getContextPath()%>/dysoweb/panel/install" class="rpcatlnk">All categories</a></li>
 								<panel:categories>
 								<li><panel:category style="rpcatlnk" property="link"/></li>
 								</panel:categories>
 								</ul>								
-							</td>
-							<td>
-								<table cellpadding="10">
-								<panel:features>
-								<tr valign="center">
-									<td><panel:feature style="rpfeatlnk" property="link"/></td>
-									<td align="left"><panel:feature style="rpfeatdesc" property="description"/></td></tr>
-								</panel:features>
-								</table>
 							</td>
 							</tr></table>
 						</div>

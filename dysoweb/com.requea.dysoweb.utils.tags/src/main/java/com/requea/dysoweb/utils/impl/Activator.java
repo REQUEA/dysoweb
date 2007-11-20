@@ -14,25 +14,16 @@
 
 package com.requea.dysoweb.utils.impl;
 
-import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceRegistration;
-
-import com.requea.dysoweb.WebAppService;
 
 public class Activator implements BundleActivator {
 
 	private static BundleContext fContext;
 	private static Activator fInstance;
-	private ServiceRegistration fWebApp;
 	
 	public void start(BundleContext ctx) throws Exception {
 		fContext = ctx;
-		fWebApp = ctx.registerService(WebAppService.class.getName(), 
-				new Service(ctx.getBundle()), 
-				null);
-		
 		fInstance = this;
 	}
 
@@ -40,9 +31,6 @@ public class Activator implements BundleActivator {
 	public void stop(BundleContext ctx) throws Exception {
 		fInstance = null;
 		fContext = null;
-		// unregister the web app service
-		fWebApp.unregister();
-		fWebApp = null;
 	}
 	
 	public static Activator getInstance() {
@@ -56,15 +44,5 @@ public class Activator implements BundleActivator {
 	public BundleContext getContext() {
 		return fContext;
 	}
-	
-
-	class Service extends WebAppService {
-
-		public Service(Bundle bundle) {
-			super(bundle);
-		}
-		
-	}
-
 
 }

@@ -27,9 +27,9 @@ import javax.servlet.ServletException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.osgi.framework.Bundle;
 import org.w3c.dom.Element;
 
-import com.requea.dysoweb.WebAppService;
 import com.requea.dysoweb.processor.IFilterDefinition;
 import com.requea.dysoweb.WebAppException;
 import com.requea.dysoweb.util.xml.XMLUtils;
@@ -43,22 +43,23 @@ public class FilterDefinition implements IFilterDefinition {
 
     private static Log fLog = LogFactory.getLog(FilterDefinition.class);
 	
-	private long   fBundleId;
 	private String fName;
 	private String fClassName;
 	private Filter fInstance;
 	private Map    fParams;
 	private boolean fInitialized;
 	private ServletContext fServletContext;
+
+	private long fBundleId;
+
 	private ClassLoader fLoader;
 
-	public FilterDefinition(WebAppService service, long bundleId, String name, String cls) {
+	public FilterDefinition(long bundleId, String name, String cls) {
 		fBundleId = bundleId;
 		fName = name;
 		fClassName = cls;
-		fLoader = new LoaderWrapper(service.getClass().getClassLoader());
 	}
-
+	
 	public long getBundleId() {
 		return fBundleId;
 	}
@@ -71,10 +72,31 @@ public class FilterDefinition implements IFilterDefinition {
 		return fInstance;
 	}
 	
+	public ClassLoader getLoader() {
+		return fLoader;
+	}
+
+	public synchronized void loadClass(Bundle bundle) throws WebAppException {
+		if(fClassName == null) {
+			fLoader = null;
+		} else {
+			Class cls;
+			try {
+				cls = bundle.loadClass(fClassName);
+			} catch (ClassNotFoundException e) {
+				throw new WebAppException(e);
+			}
+			fLoader = new LoaderWrapper(cls.getClassLoader());
+		}
+	}
+	
 	public synchronized void load() throws WebAppException {
 		if(fInstance != null) {
 			// already loaded
 			return;
+		}
+		if(fLoader == null) {
+			throw new WebAppException("Unable to retrieve class loader for filter definition");
 		}
 		
 		fLog.info("Loading Filter " + fName);
@@ -84,8 +106,9 @@ public class FilterDefinition implements IFilterDefinition {
 		
 		try {
 			// instantiate the servlet
-			th.setContextClassLoader(fLoader);
 			Class cls = fLoader.loadClass(fClassName);
+			// set the class loader as the context class loader
+			th.setContextClassLoader(cls.getClassLoader());
 			Object obj = cls.newInstance();
 			if(obj instanceof Filter) {
 				fInstance = (Filter)obj;
@@ -117,15 +140,8 @@ public class FilterDefinition implements IFilterDefinition {
 		
 		fLog.info("Initializing Filter " + fName);
 		
-		Thread th = Thread.currentThread();
-		ClassLoader contextClassLoader = th.getContextClassLoader();
-		try {
-			th.setContextClassLoader(fLoader);
-			fInstance.init(new Config());
-			fInitialized = true;
-		} finally {
-			th.setContextClassLoader(contextClassLoader);
-		}
+		fInstance.init(new Config());
+		fInitialized = true;
 	}
 
 	class Config implements FilterConfig {
@@ -194,7 +210,4 @@ public class FilterDefinition implements IFilterDefinition {
 		fInitialized = false;
 	}
 
-	public ClassLoader getLoader() {
-		return fLoader;
-	}
 }

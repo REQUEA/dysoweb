@@ -21,6 +21,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
+import org.osgi.framework.Bundle;
+
 import com.requea.dysoweb.processor.IFilterDefinition;
 import com.requea.dysoweb.processor.IServletDefinition;
 import com.requea.dysoweb.WebAppException;
@@ -45,10 +47,10 @@ public class ServletWrapper {
 		fFilterDefinitions = new IFilterDefinition[0];
 	}
 	
-	public ServletWrapper(long bundleId, ServletContext context, HttpServlet servlet, ClassLoader loader) {
+	public ServletWrapper(long bundleId, ServletContext context, HttpServlet servlet) {
 		fBundleId = bundleId;
 		fServletContext = context;
-		fServletDefinition = new ServletDefinition(servlet, loader);
+		fServletDefinition = new ServletDefinition(servlet);
 		fFilterDefinitions = new IFilterDefinition[0];
 	}
 
@@ -82,11 +84,9 @@ public class ServletWrapper {
 	private class ServletDefinition implements IServletDefinition {
 
 		private HttpServlet fServlet;
-		private ClassLoader fLoader;
 
-		public ServletDefinition(HttpServlet servlet, ClassLoader loader) {
+		public ServletDefinition(HttpServlet servlet) {
 			fServlet = servlet;
-			fLoader = loader;
 		}
 
 		public long getBundleId() {
@@ -122,8 +122,13 @@ public class ServletWrapper {
 		}
 
 		public ClassLoader getLoader() {
-			return fLoader;
+			return null;
 		}
+
+		public void loadClass(Bundle bundle) throws WebAppException {
+			// nothing to do: already loadded
+		}
+		
 
 	}
 

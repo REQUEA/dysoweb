@@ -14,14 +14,17 @@
 
 package com.requea.dysoweb.processor;
 
+import org.osgi.framework.Bundle;
+
 import com.requea.dysoweb.WebAppException;
-import com.requea.dysoweb.WebAppService;
 
 public interface IListenerDefinition {
 
 	public boolean isContextNotified();
 
 	public long getBundleId();
+	public void loadClass(Bundle bundle) throws WebAppException;
+	public ClassLoader getLoader();
 	
 	public void load() throws WebAppException;
 	public void unload();
@@ -30,8 +33,6 @@ public interface IListenerDefinition {
 
 	public String getClassName();
 	
-	public WebAppService getService();
-
 	public void setContextNotified(boolean b);
 	
 }

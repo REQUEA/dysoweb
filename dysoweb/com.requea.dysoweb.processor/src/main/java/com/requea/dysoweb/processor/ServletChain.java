@@ -53,7 +53,8 @@ public class ServletChain implements FilterChain {
 				Filter flt = def.getInstance();
 				// we have progressed in the chain
 				fPos ++;
-				th.setContextClassLoader(def.getLoader());
+				if(def.getLoader() != null)
+					th.setContextClassLoader(def.getLoader());
 				flt.doFilter(request, response, this);
 			} finally {
 				th.setContextClassLoader(cl);
@@ -61,7 +62,8 @@ public class ServletChain implements FilterChain {
 		} else if(fServletDefinition != null) {
 			// we are done with the filters: invoke the servlet
 			try {
-				th.setContextClassLoader(fServletDefinition.getLoader());
+				if(fServletDefinition.getLoader() != null)
+					th.setContextClassLoader(fServletDefinition.getLoader());
 				if(!fServletDefinition.isInitialized()) {
 					fServletDefinition.init(fServletContext);
 				}
