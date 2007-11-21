@@ -574,10 +574,24 @@ public class RequestProcessor implements IWebProcessor {
         // redirect to panel?
         HttpServletRequest hrequest = (HttpServletRequest)request;
         HttpServletResponse hresponse = (HttpServletResponse)response;
+        if(uri.length() == 0) {
+        	uri = "/";
+        }
         if("/".equals(uri)) {
-        	hresponse.sendRedirect(hrequest.getContextPath()+"/dysoweb/panel/panel.jsp");
-        	return;
-        } else if(chain != null) {
+        	// is there a JSP page to forward to?
+        	EntryInfo ei = getEntryInfo(uri+"index.jsp");
+        	if(ei != null) {
+        		RequestDispatcher rd = request.getRequestDispatcher(uri+"index.jsp");
+        		rd.forward(request, response);
+        		return;
+        	} else {
+        		// nothing to redirect to: we redirect to the panel
+	        	hresponse.sendRedirect(hrequest.getContextPath()+"/dysoweb/panel/panel.jsp");
+	        	return;
+        	}
+        } 
+
+        if(chain != null) {
         	// regular chain processing
         	chain.doFilter(request, response);
         } else {
