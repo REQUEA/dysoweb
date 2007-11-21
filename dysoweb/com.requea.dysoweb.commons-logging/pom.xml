@@ -3,7 +3,7 @@
     <parent>
         <artifactId>dysoweb</artifactId>
 	    <groupId>com.requea.dysoweb</groupId>
-	    <version>0.9.4</version>
+	    <version>0.9.5-SNAPSHOT</version>
     </parent>
     <properties>
         <pkgArtifactId>commons-logging</pkgArtifactId>
