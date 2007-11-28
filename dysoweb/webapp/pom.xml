@@ -97,17 +97,6 @@
 								<artifactItem>
 									<groupId>org.apache.felix</groupId>
 									<artifactId>
-										org.apache.felix.bundlerepository
-									</artifactId>
-									<type>jar</type>
-									<overWrite>true</overWrite>
-									<outputDirectory>
-										${project.build.directory}/dysoweb/WEB-INF/bundle
-									</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.apache.felix</groupId>
-									<artifactId>
 										org.apache.felix.shell
 									</artifactId>
 									<type>jar</type>

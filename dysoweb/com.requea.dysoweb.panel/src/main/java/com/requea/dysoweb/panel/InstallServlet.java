@@ -58,6 +58,7 @@ import org.osgi.service.packageadmin.PackageAdmin;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.requea.dysoweb.panel.bundlerepository.ObrCommandImpl;
 import com.requea.dysoweb.panel.bundlerepository.RepositoryAdminImpl;
 import com.requea.dysoweb.panel.bundlerepository.ResolverImpl;
 import com.requea.dysoweb.panel.monitor.AjaxProgressMonitor;
@@ -87,13 +88,67 @@ public class InstallServlet extends HttpServlet {
 	
 	private File fConfigDir;
 	private SSLSocketFactory fSocketFactory;
+	private RepositoryAdminImpl fRepo;
 
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		fConfigDir = SecurityFilter.getConfigDir(config.getServletContext());
+		fConfigDir.mkdirs();
+		// check if server certificate is there
+		File file = new File(fConfigDir, "dysoweb.p12");
+		if(!file.exists()) {
+			try {
+				SecurityServlet.updateServerRegistration(fConfigDir, null, null, null);
+			} catch(Exception e) {
+				// ignore
+			}
+		}
 		
+		// create the repo
+		BundleContext context = Activator.getDefault().getContext();
+		fRepo = new RepositoryAdminImpl(context);
+		fRepo.setSSLSocketFactory(getSSLSocketFactory());
+
+		String url = System.getProperty("com.requea.dysoweb.repo");
+		if(url == null) {
+			url = SecurityServlet.DEFAULT_REPO;
+		}
+		if(!url.endsWith("/")) {
+			url += "/";
+		}
+		url += "contents/repository.xml";
+		
+		try {
+			fRepo.addRepository(new URL(url));
+		} catch (MalformedURLException e) {
+			// cannot happen
+		} catch (Exception e) {
+			// ignore
+		}
+		
+		// register the repo command
+        // We dynamically import the impl service API, so it
+        // might not actually be available, so be ready to catch
+        // the exception when we try to register the command service.
+        try
+        {
+            // Register "obr" impl command service as a
+            // wrapper for the bundle repository service.
+            context.registerService(
+                org.apache.felix.shell.Command.class.getName(),
+                new ObrCommandImpl(context, fRepo), null);
+        }
+        catch (Throwable th)
+        {
+            // Ignore.
+        	th.printStackTrace();
+        }
 	}
 	
+	public void destroy() {
+		super.destroy();
+	}
+
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
@@ -303,23 +358,6 @@ public class InstallServlet extends HttpServlet {
 			Feature[] features = (Feature[])lst.toArray(new Feature[lst.size()]);
 			
 			// once we have the repo, we ask for deployment
-			RepositoryAdminImpl repo = new RepositoryAdminImpl(context);
-			repo.setSSLSocketFactory(getSSLSocketFactory());
-
-			String url = System.getProperty("com.requea.dysoweb.repo");
-			if(url == null) {
-				url = SecurityServlet.DEFAULT_REPO;
-			}
-			if(!url.endsWith("/")) {
-				url += "/";
-			}
-			url += "contents/repository.xml";
-			
-			try {
-				repo.addRepository(new URL(url));
-			} catch (MalformedURLException e) {
-				// cannot happend
-			}
 			
 			// create the progress monitor
 			AjaxProgressMonitor monitor = new AjaxProgressMonitor();
@@ -328,7 +366,7 @@ public class InstallServlet extends HttpServlet {
 			request.getSession().setAttribute(INSTALL_STATUS, status);
 
 			// launch the trhead to install the bundles
-			Thread th = new Thread(new Installer(context, repo, features, monitor, status));
+			Thread th = new Thread(new Installer(context, fRepo, features, monitor, status));
 			th.start();
 			
 			request.setAttribute(FEATURE, installedFeature);
@@ -941,7 +979,4 @@ public class InstallServlet extends HttpServlet {
 			return null;
 		}
 	}
-
-	
-	
 }

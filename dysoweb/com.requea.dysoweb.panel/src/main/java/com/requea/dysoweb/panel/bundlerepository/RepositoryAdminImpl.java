@@ -74,6 +74,7 @@ public class RepositoryAdminImpl implements RepositoryAdmin
         }
 
         // Use the default URL if none were specified.
+        /*
         if (m_urlList.size() == 0)
         {
             try
@@ -85,6 +86,7 @@ public class RepositoryAdminImpl implements RepositoryAdmin
                 System.err.println("RepositoryAdminImpl: " + ex);
             }
         }
+        */
     }
 
     

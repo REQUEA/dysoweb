@@ -33,6 +33,11 @@
             <artifactId>org.osgi.core</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.shell</artifactId>
+            <scope>provided</scope>
+        </dependency>
 		<dependency>
 			<groupId>com.requea.dysoweb</groupId>
 			<artifactId>com.requea.dysoweb.api</artifactId>
@@ -48,11 +53,6 @@
 			<artifactId>jsp-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
-	    <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.bundlerepository</artifactId>
-            <scope>provided</scope>
-	    </dependency>
 	    <dependency>
 			<groupId>net.sf.kxml</groupId>
 			<artifactId>kxml2</artifactId>
@@ -93,7 +93,8 @@
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
-                        <Bundle-Name>Requea Dysoweb Panel</Bundle-Name>                    
+                        <Bundle-Name>Requea Dysoweb Panel</Bundle-Name>   
+                        <Export-Package>org.osgi.service.obr</Export-Package>                 
 			            <Private-Package>
 			            	com.requea.dysoweb.panel,
 			            	com.requea.dysoweb.panel.tags,

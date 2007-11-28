@@ -49,16 +49,6 @@ public class SecurityServlet extends HttpServlet {
 		super.init(config);
 		fConfigDir = SecurityFilter.getConfigDir(getServletContext());
 		fConfigDir.mkdirs();
-
-		// check if server certificate is there
-		File file = new File(fConfigDir, "dysoweb.p12");
-		if(!file.exists()) {
-			try {
-				updateServerRegistration(fConfigDir, null, null, null);
-			} catch(Exception e) {
-				// ignore
-			}
-		}
 	}
 
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
