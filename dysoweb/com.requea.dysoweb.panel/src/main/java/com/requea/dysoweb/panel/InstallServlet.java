@@ -125,6 +125,11 @@ public class InstallServlet extends HttpServlet {
 		} catch (Exception e) {
 			// ignore
 		}
+
+		// register the repo service
+		context.registerService(
+                RepositoryAdmin.class.getName(),
+                fRepo, null);
 		
 		// register the repo command
         // We dynamically import the impl service API, so it
