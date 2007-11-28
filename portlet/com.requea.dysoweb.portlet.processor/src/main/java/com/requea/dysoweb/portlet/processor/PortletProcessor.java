@@ -17,7 +17,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.requea.dysoweb.WebAppException;
-import com.requea.dysoweb.WebAppService;
 import com.requea.dysoweb.portlet.IPortletProcessor;
 import com.requea.dysoweb.portlet.IPortletProcessorListener;
 import com.requea.dysoweb.portlet.util.XMLException;
@@ -38,9 +37,8 @@ public class PortletProcessor implements IPortletProcessor {
 				return def.fPortlet;
 			} else {
 				// instantiate the portlet
-				ClassLoader cl = def.fService.getClass().getClassLoader();
 				try {
-					Class cls = cl.loadClass(def.fClassName);
+					Class cls = def.fBundle.loadClass(def.fClassName);
 					Portlet portlet = (Portlet)cls.newInstance();
 					def.fPortlet = portlet;
 					def.fListener = listener;
@@ -64,22 +62,19 @@ public class PortletProcessor implements IPortletProcessor {
 		}
 	}
 
-	public void deploy(WebAppService service) throws WebAppException {
-		if(service == null) {
+	public void deploy(Bundle bundle) throws WebAppException {
+		if(bundle == null) {
 			// do nothing
 			return;
 		}
 		
-//		Bundle bundle = service.getBundle();
-/*		
 		// check if there is a portlet.xml descriptor
-		URL descURL = bundle.getResource(service.getWebPath()+"WEB-INF/portlet.xml");
+		URL descURL = bundle.getResource("/webapp/WEB-INF/portlet.xml");
 		if(descURL != null) {
 			// this dysoweb application contains portlets
 			// parse the descriptor and add the definitions to the list of portlets definitions
-			parsePortletDescriptor(service, bundle, descURL);
+			parsePortletDescriptor(bundle, descURL);
 		}
-*/
 	}
 
 
@@ -107,7 +102,7 @@ public class PortletProcessor implements IPortletProcessor {
 		}
 	}
 	
-	private void parsePortletDescriptor(WebAppService service, Bundle bundle, URL url) throws WebAppException {
+	private void parsePortletDescriptor(Bundle bundle, URL url) throws WebAppException {
 		try {
 			InputStream is = url.openStream();
 			Document doc = XMLUtils.parse(is);
@@ -123,7 +118,7 @@ public class PortletProcessor implements IPortletProcessor {
 					PortletDefinition def = new PortletDefinition();
 					def.fPortletName = portletName;
 					def.fClassName = portletClass;
-					def.fService = service;
+					def.fBundle = bundle;
 					def.fBundleId = bundle.getBundleId();
 					// add the definition to the definitions
 					fDefinitions.put(portletName, def);
@@ -141,10 +136,10 @@ public class PortletProcessor implements IPortletProcessor {
 	
 	private class PortletDefinition {
 		public String fPortletName;
-		public long fBundleId;
+		public Bundle fBundle;
+		public long   fBundleId;
 		public IPortletProcessorListener fListener;
 		public Portlet fPortlet;
-		public WebAppService fService;
 		public String fClassName; 
 		
 	}

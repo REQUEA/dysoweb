@@ -49,6 +49,11 @@
             <artifactId>com.requea.dysoweb.shell</artifactId>
             <scope>provided</scope>
         </dependency>
+		<dependency>
+			<groupId>com.requea.dysoweb</groupId>
+			<artifactId>com.requea.dysoweb.panel</artifactId>
+			<scope>provided</scope>
+		</dependency>
         <dependency>
             <groupId>com.requea.dysoweb</groupId>
             <artifactId>com.requea.dysoweb.commons-logging</artifactId>
@@ -72,7 +77,7 @@
 						<configuration>
 							<tasks>
 								<echo>Processing dysoweb.properties file with ${version}</echo>
-								<copy file="src/main/resources/dysoweb.properties" toFile="target/dysoweb/WEB-INF/classes/dysoweb.properties" />
+								<copy file="src/main/config/dysoweb.properties" toFile="target/dysoweb/WEB-INF/classes/dysoweb.properties" />
 								<replace file="target/dysoweb/WEB-INF/classes/dysoweb.properties">
 									<replacetoken>@version</replacetoken>
 									<replacevalue>${Version}</replacevalue>							
@@ -139,6 +144,19 @@
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/dysoweb/WEB-INF/bundle</outputDirectory>
                                 </artifactItem>
+								<artifactItem>
+									<groupId>
+										com.requea.dysoweb
+									</groupId>
+									<artifactId>
+										com.requea.dysoweb.panel
+									</artifactId>
+									<type>jar</type>
+									<overWrite>true</overWrite>
+									<outputDirectory>
+										${project.build.directory}/dysoweb/WEB-INF/bundle
+									</outputDirectory>
+								</artifactItem>
                                 <artifactItem>
                                     <groupId>com.requea.dysoweb</groupId>
                                     <artifactId>com.requea.dysoweb.commons-logging</artifactId>
