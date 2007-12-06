@@ -407,3 +407,12 @@ a.rplaunch:hover {
 .rqwait span {
 	visibility:hidden;
 }
+.plugin {
+	padding:10px;
+	border:1px solid #ccc;
+	margin-bottom:10px;
+}
+.bundleinfo {
+	width:320px;
+}
+

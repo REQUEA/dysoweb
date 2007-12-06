@@ -8,7 +8,6 @@
 	<title>Dysoweb Control Panel</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <link href="<%= request.getContextPath() %>/dysoweb/panel/css/style-1.0.0.css" rel="stylesheet" type="text/css" />
-    <link href="<%= request.getContextPath() %>/dysoweb/demo/style.css" rel="stylesheet" type="text/css" />
 	<dw:insert bundle="com.requea.dysoweb.demo2">
     <link href="<%= request.getContextPath() %>/dysoweb/demo/style2.css" rel="stylesheet" type="text/css" />
 	</dw:insert>

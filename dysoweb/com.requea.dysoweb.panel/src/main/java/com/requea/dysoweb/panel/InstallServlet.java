@@ -21,6 +21,7 @@ import java.security.SecureRandom;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -532,21 +533,31 @@ public class InstallServlet extends HttpServlet {
 		
 		// get the list of resources added
 		long lSize = 0;
-		Resource[] resources = resolver.getRequiredResources();
+		Map deployMap = new HashMap();
+		Resource[] resources = resolver.getAddedResources();
 		if(resources != null) {
 			for(int i=0; i<resources.length; i++) {
-				Long size = (Long)resources[i].getProperties().get("size");
-				if(size != null)
-					lSize += size.longValue();
+	            deployMap.put(resources[i], resources[i]);
+			}
+		}
+		resources = resolver.getRequiredResources();
+		if(resources != null) {
+			for(int i=0; i<resources.length; i++) {
+	            deployMap.put(resources[i], resources[i]);
 			}
 		}
 		resources = resolver.getOptionalResources();
 		if(resources != null) {
 			for(int i=0; i<resources.length; i++) {
-				Long size = (Long)resources[i].getProperties().get("size");
-				if(size != null)
-					lSize += size.longValue();
+	            deployMap.put(resources[i], resources[i]);
 			}
+		}
+		Iterator iter = (Iterator)deployMap.values().iterator();
+		while(iter.hasNext()) {
+			Resource res = (Resource)iter.next();
+			Long size = (Long)res.getProperties().get("size");
+			if(size != null)
+				lSize += size.longValue();
 		}
 		return lSize;
 	}
@@ -604,35 +615,36 @@ public class InstallServlet extends HttpServlet {
             if (resolver.resolve())
             {
     			long lSize = 0;
-            	Resource[] resources = resolver.getRequiredResources();
+    			Map deployMap = new HashMap();
+            	Resource[] resources = resolver.getAddedResources();
         		if(resources != null && resources.length > 0) {
         			for(int i=0; i<resources.length; i++) {
-        				Resource resource = resources[i];
-        				Long size = (Long)resource.getProperties().get("size");
-        				if(size != null) {
-        					lSize += size.longValue();
-        				}
-	                	Element elBundle = XMLUtils.addElement(elBundles, "bundle");
-		                elBundle.setAttribute("symbolicName", resource.getSymbolicName());
-		                elBundle.setAttribute("name", resource.getPresentationName());
-		                elBundle.setAttribute("version", resource.getVersion().toString());
-		                elBundle.setAttribute("type", "required");
+        				deployMap.put(resources[i], resources[i]);
+        			}
+        		}
+            	resources = resolver.getRequiredResources();
+        		if(resources != null && resources.length > 0) {
+        			for(int i=0; i<resources.length; i++) {
+        				deployMap.put(resources[i], resources[i]);
         			}
         		}
         		resources = resolver.getOptionalResources();
         		if(resources != null && resources.length > 0) {
         			for(int i=0; i<resources.length; i++) {
-        				Resource resource = resources[i];
-        				Long size = (Long)resource.getProperties().get("size");
-        				if(size != null) {
-        					lSize += size.longValue();
-        				}
-	                	Element elBundle = XMLUtils.addElement(elBundles, "bundle");
-		                elBundle.setAttribute("symbolicName", resource.getSymbolicName());
-		                elBundle.setAttribute("name", resource.getPresentationName());
-		                elBundle.setAttribute("version", resource.getVersion().toString());
-		                elBundle.setAttribute("type", "optional");
+        				deployMap.put(resources[i], resources[i]);
         			}
+        		}
+        		Iterator iter = deployMap.values().iterator();
+        		while(iter.hasNext()) {
+        			Resource resource = (Resource)iter.next();
+    				Long size = (Long)resource.getProperties().get("size");
+    				if(size != null) {
+    					lSize += size.longValue();
+    				}
+                	Element elBundle = XMLUtils.addElement(elBundles, "bundle");
+	                elBundle.setAttribute("symbolicName", resource.getSymbolicName());
+	                elBundle.setAttribute("name", resource.getPresentationName());
+	                elBundle.setAttribute("version", resource.getVersion().toString());
         		}
         		IProgressMonitor monitor = new SubProgressMonitor(parentMonitor, (int)lSize);
         		try {

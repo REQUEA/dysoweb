@@ -37,6 +37,16 @@
  	</servlet>
  <!--  end of Dysoweb servlet implementation -->
 
+    <servlet>
+        <servlet-name>DysowebPortlet</servlet-name>
+        <servlet-class>org.apache.pluto.core.PortletServlet</servlet-class>
+        <init-param>
+            <param-name>portlet-name</param-name>
+            <param-value>DysowebPortlet</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
  <!--  Dysoweb servlet implementation -->
  	<servlet-mapping>
  		<servlet-name>dysoweb</servlet-name>
@@ -48,5 +58,10 @@
         <url-pattern>*.jsp</url-pattern>
  	</servlet-mapping>
  <!--  end of Dysoweb servlet implementation -->
+
+    <servlet-mapping>
+        <servlet-name>DysowebPortlet</servlet-name>
+        <url-pattern>/PlutoInvoker/DysowebPortlet</url-pattern>
+    </servlet-mapping>
 
 </web-app>
