@@ -110,22 +110,7 @@ public class InstallServlet extends HttpServlet {
 		fRepo = new RepositoryAdminImpl(context);
 		fRepo.setSSLSocketFactory(getSSLSocketFactory());
 
-		String url = System.getProperty("com.requea.dysoweb.repo");
-		if(url == null) {
-			url = SecurityServlet.DEFAULT_REPO;
-		}
-		if(!url.endsWith("/")) {
-			url += "/";
-		}
-		url += "contents/repository.xml";
-		
-		try {
-			fRepo.addRepository(new URL(url));
-		} catch (MalformedURLException e) {
-			// cannot happen
-		} catch (Exception e) {
-			// ignore
-		}
+		addRepoURL();
 
 		// register the repo service
 		context.registerService(
@@ -151,6 +136,25 @@ public class InstallServlet extends HttpServlet {
         }
 	}
 	
+	private void addRepoURL() {
+		String url = System.getProperty("com.requea.dysoweb.repo");
+		if(url == null) {
+			url = SecurityServlet.DEFAULT_REPO;
+		}
+		if(!url.endsWith("/")) {
+			url += "/";
+		}
+		url += "contents/repository.xml";
+		
+		try {
+			fRepo.addRepository(new URL(url));
+		} catch (MalformedURLException e) {
+			// cannot happen
+		} catch (Exception e) {
+			// ignore
+		}
+	}
+
 	public void destroy() {
 		super.destroy();
 	}
@@ -371,6 +375,7 @@ public class InstallServlet extends HttpServlet {
 			request.getSession().setAttribute(INSTALL_MONITOR, monitor);
 			request.getSession().setAttribute(INSTALL_STATUS, status);
 
+			addRepoURL();
 			// launch the trhead to install the bundles
 			Thread th = new Thread(new Installer(context, fRepo, features, monitor, status));
 			th.start();
