@@ -3,7 +3,7 @@
 	<groupId>com.requea.dysoweb</groupId>
 	<artifactId>main</artifactId>
 	<packaging>pom</packaging>
-	<version>1.0.1-SNAPSHOT</version>
+	<version>1.0.0-SNAPSHOT</version>
 	<name>Requea Dysoweb</name>
 	<url>http://www.requea.com</url>
 	<modules>

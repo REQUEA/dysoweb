@@ -70,13 +70,14 @@ public class ResourceImpl implements Resource
     {
         if (o instanceof Resource)
         {
-        	if(getSymbolicName() == null) {
+        	if(getSymbolicName() == null || ((Resource) o).getSymbolicName() == null) {
         		// compare on the presentation names
 	            return ((Resource) o).getPresentationName().equals(getPresentationName())
 	            	&& ((Resource) o).getVersion().equals(getVersion());
-        	} else {
+        	} else if(((Resource) o).getSymbolicName() != null) {
 	            return ((Resource) o).getSymbolicName().equals(getSymbolicName())
-	                && ((Resource) o).getVersion().equals(getVersion());
+	                && ((Resource
+	                		) o).getVersion().equals(getVersion());
         	}
         }
         return false;
