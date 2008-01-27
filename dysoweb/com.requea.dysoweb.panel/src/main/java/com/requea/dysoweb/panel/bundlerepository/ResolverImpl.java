@@ -760,10 +760,14 @@ public class ResolverImpl implements Resolver
         for (int i = 0; i < localResources.length; i++)
         {
             String localSymName = localResources[i].getSymbolicName();
+            // use the presentation name if local sym name is null
+            if(localSymName == null) {
+            	localSymName = localResources[i].getPresentationName();
+            }
             if ((localSymName != null) && localSymName.equals(symName))
             {
                 matchList.add(localResources[i]);
-            }
+            } 
         }
         return (Resource[]) matchList.toArray(new Resource[matchList.size()]);
     }

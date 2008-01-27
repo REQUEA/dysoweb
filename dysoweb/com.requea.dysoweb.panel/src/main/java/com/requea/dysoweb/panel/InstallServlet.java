@@ -647,7 +647,9 @@ public class InstallServlet extends HttpServlet {
     					lSize += size.longValue();
     				}
                 	Element elBundle = XMLUtils.addElement(elBundles, "bundle");
-	                elBundle.setAttribute("symbolicName", resource.getSymbolicName());
+                	if(resource.getSymbolicName() != null) {
+    	                elBundle.setAttribute("symbolicName", resource.getSymbolicName());
+                	}
 	                elBundle.setAttribute("name", resource.getPresentationName());
 	                elBundle.setAttribute("version", resource.getVersion().toString());
         		}
@@ -795,7 +797,12 @@ public class InstallServlet extends HttpServlet {
 				boolean first = true;
 				while(elBundle != null) {
 					if(first) { first = false; } else { sb.append(","); }
-					sb.append(elBundle.getAttribute("symbolicName") + ":" + elBundle.getAttribute("version"));
+					String symName = elBundle.getAttribute("symbolicName");
+					if(symName != null) {
+						sb.append(symName + ":" + elBundle.getAttribute("version"));
+					} else {
+						sb.append(elBundle.getAttribute("name"));
+					}
 					elBundle = XMLUtils.getNextSibling(elBundle);
 				}
 				osw.write("&bundles=" + URLEncoder.encode(sb.toString(), "UTF-8"));

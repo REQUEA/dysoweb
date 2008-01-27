@@ -37,15 +37,9 @@ public class BundleServlet extends HttpServlet {
 		Bundle bundle = null;
 		Activator act = Activator.getInstance();
 		if(act != null) {
+			long bundleId = Long.parseLong(bn);
 			// retrieve the bundle
-			Bundle[] bundles = act.getContext().getBundles();
-			for(int i=0; bundle == null && i<bundles.length; i++) {
-				String sym = bundles[i].getSymbolicName();
-				if(sym != null && sym.equals(bn)) {
-					// we have found the bundle
-					bundle = bundles[i];
-				}
-			}
+			bundle = act.getContext().getBundle(bundleId);
 		}
 		
 		

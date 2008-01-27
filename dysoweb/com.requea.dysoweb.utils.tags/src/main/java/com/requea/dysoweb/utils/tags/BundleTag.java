@@ -14,9 +14,6 @@
 
 package com.requea.dysoweb.utils.tags;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.TagSupport;
@@ -93,11 +90,7 @@ public class BundleTag extends TagSupport {
 				tw.append(fCommand);
 			}
 			tw.append("?bndl=");
-			try {
-				tw.append(URLEncoder.encode(bundle.getSymbolicName(), "UTF-8"));
-			} catch (UnsupportedEncodingException e) {
-				// ignore
-			}
+			tw.append(Long.toString(bundle.getBundleId()));
 			tw.append("&op=");
 			tw.append(op);
 			tw.append("\"");

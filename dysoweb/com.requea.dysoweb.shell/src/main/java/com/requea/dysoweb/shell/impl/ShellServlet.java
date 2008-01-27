@@ -102,7 +102,7 @@ public class ShellServlet extends HttpServlet {
 				if(shell != null) {
 					// retrieve the op
 					String cmd = request.getParameter("command");
-					if(cmd != null) {
+					if(cmd != null && cmd.length() > 0) {
 						cmd = cmd.trim();
 			            ByteArrayOutputStream out = new ByteArrayOutputStream();
 			            ByteArrayOutputStream err = new ByteArrayOutputStream();
@@ -115,9 +115,9 @@ public class ShellServlet extends HttpServlet {
 				            appendResult(elMsg, outMsg);
 				            if(errMsg == null || errMsg.length() == 0) {
 				            	if(outMsg != null && outMsg.length() > 0) {
-					            	appendResult(elMsg, "\n");
+					            	appendResult(elMsg, " \n");
 				            	}
-				            	appendResult(elMsg, "Command executed");
+				            	appendResult(elMsg, " \nCommand executed");
 				            }
 			            } catch(Exception e) {
 			            	setText(el, "Error: " + e.getMessage());
