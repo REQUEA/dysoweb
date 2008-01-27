@@ -39,7 +39,7 @@
 									<li>CSS, Images (JPG) for the look and feel</li>
 								</ul>
 							</p>
-							<p>This bundle is currently '<dw:bundle bundle="com.requea.dysoweb.demo2" property="stateimg" />&nbsp;&nbsp;<dw:bundle bundle="com.requea.dysoweb.demo2" property="state" />'. <dw:bundle bundle="com.requea.dysoweb.demo2" property="command" command="dwdemobndl" /></p>
+							<p>This bundle is currently '<dw:bundle bundle="com.requea.dysoweb.demo2" property="stateimg" />&nbsp;&nbsp;<dw:bundle bundle="com.requea.dysoweb.demo2" property="state" />'. <dw:bundle bundle="com.requea.dysoweb.demo2" property="command" command="dwbndl" /></p>
 							
 							<h3>Requea Dysoweb  Demo3 Google Search bar (com.requea.dysoweb.demo3)</h3>
 							<p>
@@ -48,7 +48,7 @@
 									<li>A JSP page that is included into the demo page on the condition that this bundle is started</li>
 								</ul>
 							</p>
-							<p>This bundle is currently '<dw:bundle bundle="com.requea.dysoweb.demo3" property="stateimg" />&nbsp;&nbsp;<dw:bundle bundle="com.requea.dysoweb.demo3" property="state" />'. <dw:bundle bundle="com.requea.dysoweb.demo3" property="command" command="dwdemobndl" /></p>
+							<p>This bundle is currently '<dw:bundle bundle="com.requea.dysoweb.demo3" property="stateimg" />&nbsp;&nbsp;<dw:bundle bundle="com.requea.dysoweb.demo3" property="state" />'. <dw:bundle bundle="com.requea.dysoweb.demo3" property="command" command="dwbndl" /></p>
 							
 							<h3>Requea Dysoweb  Demo4 Vote widget (com.requea.dysoweb.demo4)</h3>
 							<p>
@@ -59,20 +59,20 @@
 									<li>Java classes and supporting jar files (JFreeChart)</li>
 								</ul>
 							</p>
-							<p>This bundle is currently '<dw:bundle bundle="com.requea.dysoweb.demo4" property="stateimg" />&nbsp;&nbsp;<dw:bundle bundle="com.requea.dysoweb.demo4" property="state" />'. <dw:bundle bundle="com.requea.dysoweb.demo4" property="command" command="dwdemobndl" /></p>
+							<p>This bundle is currently '<dw:bundle bundle="com.requea.dysoweb.demo4" property="stateimg" />&nbsp;&nbsp;<dw:bundle bundle="com.requea.dysoweb.demo4" property="state" />'. <dw:bundle bundle="com.requea.dysoweb.demo4" property="command" command="dwbndl" /></p>
 							</div>
 							</td>
 							<td width="320">
 							<div class="plugin">
 							<div class="bundleinfo">
-								Vote widget is provided by bundle demo4 <dw:bundle bundle="com.requea.dysoweb.demo4" property="command" command="dwdemobndl" />
+								Vote widget is provided by bundle demo4 <dw:bundle bundle="com.requea.dysoweb.demo4" property="command" command="dwbndl" />
 							</div>
 							<dw:insert bundle="com.requea.dysoweb.demo4" path="/demo4/vote" />
 							</div>
 							
 							<div class="plugin">
 							<div class="bundleinfo">
-								Google search is provided by bundle demo3 <dw:bundle bundle="com.requea.dysoweb.demo3" property="command"  command="dwdemobndl" />
+								Google search is provided by bundle demo3 <dw:bundle bundle="com.requea.dysoweb.demo3" property="command"  command="dwbndl" />
 							</div>
 							<dw:insert bundle="com.requea.dysoweb.demo3" path="/google/jsp/requea.jsp" />
 							</div>
