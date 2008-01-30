@@ -90,6 +90,17 @@ public class XMPPShell {
 	}
 	
 	public synchronized void connect() throws Exception {
+		
+		if(fCnx != null) {
+			// disconnecting from the previous one
+			try {
+				fCnx.disconnect();
+			} catch(Exception e) {
+				// ignore
+			}
+			fCnx = null;
+		}
+		
 		// check the connection params
 		Preferences prefs = Preferences.userNodeForPackage(XMPPShell.class);
 		if(prefs == null) {
@@ -183,14 +194,6 @@ public class XMPPShell {
 			
 		});
 		
-		// we are connected
-		if(fCnx != null) {
-			try {
-				fCnx.disconnect();
-			} catch(Exception e) {
-				// ignore
-			}
-		}
 		fCnx = cnx;
 		fMaster = master;
 		// we are available
@@ -199,6 +202,17 @@ public class XMPPShell {
 
 	
 	public synchronized void register() throws Exception {
+		
+		if(fCnx != null) {
+			// disconnecting from the previous one
+			try {
+				fCnx.disconnect();
+			} catch(Exception e) {
+				// ignore
+			}
+			fCnx = null;
+		}
+		
 		// check the connection params
 		Preferences prefs = Preferences.userNodeForPackage(XMPPShell.class);
 		if(prefs == null) {
