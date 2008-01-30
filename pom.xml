@@ -10,6 +10,7 @@
 		<module>dysoweb</module>
 		<module>dysoweb.demo</module>
 		<module>portlet</module>
+		<module>sandbox</module>
 	</modules>
 
 	<dependencyManagement>

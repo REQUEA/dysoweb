@@ -1,0 +1,18 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.requea.dysoweb</groupId>
+	<artifactId>sandbox</artifactId>
+	<packaging>pom</packaging>
+	<version>1.0.1-SNAPSHOT</version>
+	<name>Requea Dysoweb</name>
+	<url>http://www.requea.com</url>
+	<parent>
+		<artifactId>main</artifactId>
+		<groupId>com.requea.dysoweb</groupId>
+		<version>1.0.1-SNAPSHOT</version>
+	</parent>
+	<modules>
+		<module>com.requea.dysoweb.xmppshell</module>
+	</modules>
+
+</project>
