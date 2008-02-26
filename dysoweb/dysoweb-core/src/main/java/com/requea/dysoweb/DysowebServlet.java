@@ -200,7 +200,6 @@ public class DysowebServlet extends HttpServlet {
 		fCache.mkdirs();
 		// setup the local cache path
 		configMap.put(BundleCache.CACHE_PROFILE_DIR_PROP, fCache.getAbsolutePath());
-		configMap.put("osgi.contextClassLoaderParent", "ccl");
 		
 		Thread th = Thread.currentThread();
 		ClassLoader cl = th.getContextClassLoader();
