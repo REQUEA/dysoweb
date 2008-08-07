@@ -9,7 +9,7 @@
     <artifactId>portlet</artifactId>
     <packaging>war</packaging>
     <name>Requea Dysoweb Portlet WebApp</name>
-    <version>1.0.1-SNAPSHOT</version>
+	<version>1.0.1-SNAPSHOT</version>
     <url>http://www.requea.com</url>
     <dependencies>
         <dependency>

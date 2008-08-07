@@ -32,26 +32,26 @@
 			    <version>1.0</version>
 			</dependency>
 
+			<dependency>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>org.apache.felix.framework</artifactId>
+				<version>1.0.4</version>
+			</dependency>
 	        <dependency>
 	            <groupId>org.apache.felix</groupId>
 	            <artifactId>org.osgi.core</artifactId>
-	            <version>1.0.0</version>
+	            <version>1.0.1</version>
 	        </dependency>
 	        <dependency>
 	            <groupId>org.apache.felix</groupId>
 	            <artifactId>org.apache.felix.shell</artifactId>
-	            <version>1.0.0</version>
+	            <version>1.0.1</version>
 	        </dependency>
 	        <dependency>
 	            <groupId>org.apache.felix</groupId>
 	            <artifactId>org.apache.felix.shell.tui</artifactId>
 	            <version>1.0.0-dysoweb</version>
 	        </dependency>
-			<dependency>
-				<groupId>org.apache.felix</groupId>
-				<artifactId>org.apache.felix.framework</artifactId>
-				<version>1.0.1</version>
-			</dependency>
 			
 	        <dependency>
 	            <groupId>requeabuild</groupId>
