@@ -62,5 +62,11 @@
         <url-pattern>*.jsp</url-pattern>
  	</servlet-mapping>
  
- <!--  end of servlet implementation -->
+	 <env-entry>
+		<env-entry-name>dysoweb.home</env-entry-name>
+		<env-entry-value>./dysoweb.home</env-entry-value>
+		<env-entry-type>java.lang.String</env-entry-type>
+	</env-entry>
+	
+    <!--  end of servlet implementation -->
 </web-app>

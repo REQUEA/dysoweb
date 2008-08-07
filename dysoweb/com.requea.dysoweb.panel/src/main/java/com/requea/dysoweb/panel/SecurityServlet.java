@@ -37,7 +37,7 @@ import org.w3c.dom.Element;
 import com.requea.dysoweb.panel.SecurityFilter;
 import com.requea.dysoweb.panel.tags.ErrorTag;
 import com.requea.dysoweb.panel.utils.xml.Base64;
-import com.requea.dysoweb.panel.utils.xml.XMLUtils;
+import com.requea.dysoweb.util.xml.XMLUtils;
 
 public class SecurityServlet extends HttpServlet {
 
@@ -295,7 +295,9 @@ public class SecurityServlet extends HttpServlet {
 			elServer.setAttribute("sysId", sysId);
 
 		// store the password
-		XMLUtils.addElement(elServer, "Password", encrypt(strPassword));
+		if(strPassword != null && strPassword.length() > 0) {
+			XMLUtils.addElement(elServer, "Password", encrypt(strPassword));
+		}
 		if(contactName != null && contactName.length() > 0) {
 			XMLUtils.addElement(elServer, "ContactName", contactName);
 		}

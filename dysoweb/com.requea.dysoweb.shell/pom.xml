@@ -29,6 +29,12 @@
 	<url>http://www.requea.com</url>
     <dependencies>
         <dependency>
+            <groupId>com.requea.dysoweb</groupId>
+            <artifactId>com.requea.dysoweb.processor</artifactId>
+            <scope>provided</scope>
+            <version>${version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.osgi.core</artifactId>
             <scope>provided</scope>
@@ -53,6 +59,11 @@
 			<artifactId>jsp-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -64,7 +75,7 @@
 				<configuration>
 					<instructions>
                         <Bundle-Name>Requea Dysoweb Ajax Shell Webapp</Bundle-Name>                    
-			            <Private-Package>com.requea.dysoweb.shell.impl,com.requea.dysoweb.shell.xml,com.requea.dysoweb.util.xml,com.requea.dysoweb.util.xml.impl</Private-Package>
+			            <Private-Package>com.requea.dysoweb.shell.impl,com.requea.dysoweb.shell.util.xml</Private-Package>
                         <Bundle-Vendor>Requea.com</Bundle-Vendor>
 			            <Bundle-SymbolicName>${pom.artifactId}</Bundle-SymbolicName>
 			            <Bundle-Activator>com.requea.dysoweb.shell.impl.Activator</Bundle-Activator>
@@ -72,11 +83,13 @@
                         <Include-Resource>webapp=src/main/webapp</Include-Resource>
                         <Import-Package>
                         	javax.servlet,
+                        	javax.xml.parsers,
+                        	javax.servlet.resources,
                         	javax.servlet.http,
                         	javax.servlet.jsp,
 							javax.servlet.jsp.el,
 							javax.servlet.jsp.tagext,
-                        	!sun.*,*
+                        	!sun.*,!com.sun.*,*
                         </Import-Package>
 					</instructions>
 				</configuration>

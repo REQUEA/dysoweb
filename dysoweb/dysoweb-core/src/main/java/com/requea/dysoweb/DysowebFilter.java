@@ -34,6 +34,7 @@ public class DysowebFilter implements Filter {
 	
 
 	public void destroy() {
+		DysowebServlet.stopFelix();
 	}
 
 	public void doFilter(ServletRequest request, ServletResponse response,

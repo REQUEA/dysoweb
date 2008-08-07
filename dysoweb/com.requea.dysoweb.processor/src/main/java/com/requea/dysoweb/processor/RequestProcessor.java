@@ -440,7 +440,6 @@ public class RequestProcessor implements IWebProcessor {
 			fPrefix = prefix;
 		}
 		
-		
 		public String getContextPath() {
 			return fContextPath + fPrefix;
 		}
@@ -1627,7 +1626,7 @@ public class RequestProcessor implements IWebProcessor {
 						}
 						def.init(contextWrapper);
 					}
-				} catch(Exception e) {
+				} catch(Throwable e) {
 					fLog.error("Unable to initialize servlet " + def.getName(), e);
 				} finally {
 					th.setContextClassLoader(contextClassLoader);
@@ -1656,7 +1655,7 @@ public class RequestProcessor implements IWebProcessor {
 			// for BEA WLS, that is another story 
 			try {
 				// add at least the core jar file to compile taglibs
-				URL coreJar = fServletContext.getResource("/WEB-INF/lib/dysoweb-core-0.7.4-SNAPSHOT.jar");
+				URL coreJar = fServletContext.getResource("/WEB-INF/lib/dysoweb-core-1.0.1.jar");
 				parentURL = new URL[] { coreJar };
 			} catch (MalformedURLException e) {
 				// use a default URL

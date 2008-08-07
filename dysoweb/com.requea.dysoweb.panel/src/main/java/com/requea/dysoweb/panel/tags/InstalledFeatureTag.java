@@ -7,7 +7,7 @@ import javax.servlet.jsp.tagext.TagSupport;
 import org.w3c.dom.Element;
 
 import com.requea.dysoweb.panel.InstallServlet;
-import com.requea.dysoweb.panel.utils.xml.XMLUtils;
+import com.requea.dysoweb.util.xml.XMLUtils;
 
 public class InstalledFeatureTag extends TagSupport {
 

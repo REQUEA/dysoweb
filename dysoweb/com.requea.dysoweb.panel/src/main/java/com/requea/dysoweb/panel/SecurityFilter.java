@@ -21,7 +21,7 @@ import javax.servlet.http.HttpSession;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.requea.dysoweb.panel.utils.xml.XMLUtils;
+import com.requea.dysoweb.util.xml.XMLUtils;
 
 public class SecurityFilter implements Filter {
 

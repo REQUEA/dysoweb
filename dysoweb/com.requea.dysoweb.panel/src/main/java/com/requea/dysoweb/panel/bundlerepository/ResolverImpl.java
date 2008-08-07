@@ -28,14 +28,14 @@ import javax.net.ssl.SSLSocketFactory;
 
 import com.requea.dysoweb.panel.bundlerepository.LocalRepositoryImpl;
 import com.requea.dysoweb.panel.bundlerepository.Util;
-import org.osgi.framework.*;
-import org.osgi.service.obr.*;
-
 import com.requea.dysoweb.panel.bundlerepository.LocalRepositoryImpl.LocalResourceImpl;
 import com.requea.dysoweb.panel.monitor.IProgressMonitor;
 import com.requea.dysoweb.panel.monitor.NullProgressMonitor;
 import com.requea.dysoweb.panel.monitor.ProgressMonitorInputStream;
 import com.requea.dysoweb.panel.monitor.SubProgressMonitor;
+
+import org.osgi.framework.*;
+import org.osgi.service.obr.*;
 
 public class ResolverImpl implements Resolver
 {
@@ -428,88 +428,6 @@ public class ResolverImpl implements Resolver
         return best;
     }
 
-    public synchronized void deploy(boolean start)
-    {
-    	deploy(start, new NullProgressMonitor());
-    }
-    
-    private long getResourceSize(Resource res) {
-    	Long size = (Long)res.getProperties().get(ResourceImpl.SIZE);
-    	return size == null ? 0 : size.longValue();
-    }
-    
-    public synchronized Resource[] getResourcesToDeploy() {
-        // Must resolve if not already resolved.
-        if (!m_resolved && !resolve())
-        {
-            // TODO: OBR - Use logger if possible.
-            System.err.println("Resolver: Cannot resolve target resources.");
-            return null;
-        }
-        // Check to make sure that our local state cache is up-to-date
-        // and error if it is not. This is not completely safe, because
-        // the state can still change during the operation, but we will
-        // be optimistic. This could also be made smarter so that it checks
-        // to see if the local state changes overlap with the resolver.
-        if (m_local.getLastModified() != m_local.getCurrentTimeStamp())
-        {
-            throw new IllegalStateException("Framework state has changed, must resolve again.");
-        }
-        
-        // Eliminate duplicates from target, required, optional resources.
-        Map deployMap = new HashMap();
-        Resource[] resources = getAddedResources();
-        for (int i = 0; (resources != null) && (i < resources.length); i++)
-        {
-            deployMap.put(resources[i], resources[i]);
-        }
-        resources = getRequiredResources();
-        for (int i = 0; (resources != null) && (i < resources.length); i++)
-        {
-            deployMap.put(resources[i], resources[i]);
-        }
-        resources = getOptionalResources();
-        for (int i = 0; (resources != null) && (i < resources.length); i++)
-        {
-            deployMap.put(resources[i], resources[i]);
-        }
-        Resource[] deployResources = (Resource[])
-            deployMap.keySet().toArray(new Resource[deployMap.size()]);
-
-        // List to hold all resources to be started.
-        List deployList = new ArrayList();
-        // calculate the total size to download
-        for (int i = 0; i < deployResources.length; i++)
-        {
-            // For the resource being deployed, see if there is an older
-            // version of the resource already installed that can potentially
-            // be updated.
-            LocalRepositoryImpl.LocalResourceImpl localResource =
-                findUpdatableLocalResource(deployResources[i]);
-            // If a potentially updatable older version was found,
-            // then verify that updating the local resource will not
-            // break any of the requirements of any of the other
-            // resources being deployed.
-            if ((localResource != null) &&
-                isResourceUpdatable(localResource, deployResources[i], deployResources))
-            {
-                // Only update if it is a different version.
-                if (!localResource.equals(deployResources[i]))
-                {
-                	deployList.add(localResource);
-                }
-            }
-            else
-            {
-                // Install the bundle.
-            	deployList.add(deployResources[i]);
-            }
-        }
-
-        // get the list
-        return (Resource[])deployList.toArray(new Resource[deployList.size()]);
-    }
-    
     public synchronized void deploy(boolean start, IProgressMonitor monitor)
     {
         // Must resolve if not already resolved.
@@ -554,7 +472,9 @@ public class ResolverImpl implements Resolver
         List startList = new ArrayList();
 
 
-        // calculate the total size to download
+        // Deploy each resource, which will involve either finding a locally
+        // installed resource to update or the installation of a new version
+        // of the resource to be deployed.
         int size = 0;
         for (int i = 0; i < deployResources.length; i++)
         {
@@ -704,6 +624,89 @@ public class ResolverImpl implements Resolver
         }
     }
 
+
+    public synchronized void deploy(boolean start)
+    {
+    	deploy(start, new NullProgressMonitor());
+    }
+    
+    private long getResourceSize(Resource res) {
+    	Long size = (Long)res.getProperties().get(ResourceImpl.SIZE);
+    	return size == null ? 0 : size.longValue();
+    }
+    
+    public synchronized Resource[] getResourcesToDeploy() {
+        // Must resolve if not already resolved.
+        if (!m_resolved && !resolve())
+        {
+            // TODO: OBR - Use logger if possible.
+            System.err.println("Resolver: Cannot resolve target resources.");
+            return null;
+        }
+        // Check to make sure that our local state cache is up-to-date
+        // and error if it is not. This is not completely safe, because
+        // the state can still change during the operation, but we will
+        // be optimistic. This could also be made smarter so that it checks
+        // to see if the local state changes overlap with the resolver.
+        if (m_local.getLastModified() != m_local.getCurrentTimeStamp())
+        {
+            throw new IllegalStateException("Framework state has changed, must resolve again.");
+        }
+        
+        // Eliminate duplicates from target, required, optional resources.
+        Map deployMap = new HashMap();
+        Resource[] resources = getAddedResources();
+        for (int i = 0; (resources != null) && (i < resources.length); i++)
+        {
+            deployMap.put(resources[i], resources[i]);
+        }
+        resources = getRequiredResources();
+        for (int i = 0; (resources != null) && (i < resources.length); i++)
+        {
+            deployMap.put(resources[i], resources[i]);
+        }
+        resources = getOptionalResources();
+        for (int i = 0; (resources != null) && (i < resources.length); i++)
+        {
+            deployMap.put(resources[i], resources[i]);
+        }
+        Resource[] deployResources = (Resource[])
+            deployMap.keySet().toArray(new Resource[deployMap.size()]);
+
+        // List to hold all resources to be started.
+        List deployList = new ArrayList();
+        // calculate the total size to download
+        for (int i = 0; i < deployResources.length; i++)
+        {
+            // For the resource being deployed, see if there is an older
+            // version of the resource already installed that can potentially
+            // be updated.
+            LocalRepositoryImpl.LocalResourceImpl localResource =
+                findUpdatableLocalResource(deployResources[i]);
+            // If a potentially updatable older version was found,
+            // then verify that updating the local resource will not
+            // break any of the requirements of any of the other
+            // resources being deployed.
+            if ((localResource != null) &&
+                isResourceUpdatable(localResource, deployResources[i], deployResources))
+            {
+                // Only update if it is a different version.
+                if (!localResource.equals(deployResources[i]))
+                {
+                	deployList.add(localResource);
+                }
+            }
+            else
+            {
+                // Install the bundle.
+            	deployList.add(deployResources[i]);
+            }
+        }
+
+        // get the list
+        return (Resource[])deployList.toArray(new Resource[deployList.size()]);
+    }
+    
     private void addReason(Resource resource, Requirement req)
     {
         Requirement[] reasons = (Requirement[]) m_reasonMap.get(resource);

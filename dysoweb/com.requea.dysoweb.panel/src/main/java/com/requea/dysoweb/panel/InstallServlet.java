@@ -67,8 +67,8 @@ import com.requea.dysoweb.panel.monitor.IProgressMonitor;
 import com.requea.dysoweb.panel.monitor.SubProgressMonitor;
 import com.requea.dysoweb.panel.tags.ErrorTag;
 import com.requea.dysoweb.panel.utils.xml.ISO8601DateTimeFormat;
-import com.requea.dysoweb.panel.utils.xml.XMLException;
-import com.requea.dysoweb.panel.utils.xml.XMLUtils;
+import com.requea.dysoweb.util.xml.XMLException;
+import com.requea.dysoweb.util.xml.XMLUtils;
 
 
 public class InstallServlet extends HttpServlet {

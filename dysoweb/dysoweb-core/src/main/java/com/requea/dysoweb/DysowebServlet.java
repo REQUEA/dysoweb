@@ -7,6 +7,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -58,11 +59,16 @@ public class DysowebServlet extends HttpServlet {
 
 	public void destroy() {
 		super.destroy();
+		stopFelix();
+	}
+
+
+	public static synchronized void stopFelix() {
 		if(fPlatform != null) {
+			fPlatform.stopAndWait();
 			fPlatform = null;
 		}
 	}
-
 
 	public void service(ServletRequest request, ServletResponse response)
 			throws ServletException, IOException {
@@ -150,11 +156,13 @@ public class DysowebServlet extends HttpServlet {
 
 		// add extra properties
 		configMap.put(FelixConstants.SERVICE_URLHANDLERS_PROP, "false");
+		configMap.put(FelixConstants.EMBEDDED_EXECUTION_PROP, "true");
+		
 		// parse the autostart property, and add URL handlers
 		Iterator iter = configMap.keySet().iterator();
 		while(iter.hasNext()) {
 			String key = (String)iter.next();
-			if(key.startsWith(FelixConstants.AUTO_START_PROP)) {
+			if(key.startsWith(AutoActivator.AUTO_START_PROP)) {
 				String autoStart = (String)configMap.get(key);
 				StringBuffer sb = new StringBuffer();
 				StringTokenizer st = new StringTokenizer(autoStart,",");
@@ -205,8 +213,14 @@ public class DysowebServlet extends HttpServlet {
 		ClassLoader cl = th.getContextClassLoader();
 		try {
 			th.setContextClassLoader(DysowebServlet.class.getClassLoader());
+			
+            List list = new ArrayList();
+            list.add(new AutoActivator(configMap));
+            // Create a case-insensitive property map.
+            Map cisMap = new StringMap(configMap, false);
+			
 			// Now create an instance of the framework.
-			Felix felix = new Felix(configMap, null);
+			Felix felix = new Felix(cisMap, list);
 			felix.start();
 			fPlatform = felix;
 			

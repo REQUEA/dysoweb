@@ -29,6 +29,12 @@
 	<url>http://www.requea.com</url>
     <dependencies>
         <dependency>
+            <groupId>com.requea.dysoweb</groupId>
+            <artifactId>com.requea.dysoweb.processor</artifactId>
+            <scope>provided</scope>
+            <version>${version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.osgi.core</artifactId>
             <scope>provided</scope>

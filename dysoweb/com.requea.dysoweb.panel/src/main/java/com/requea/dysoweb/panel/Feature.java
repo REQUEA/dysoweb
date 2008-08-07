@@ -8,7 +8,8 @@ import java.util.TreeMap;
 
 import org.w3c.dom.Element;
 
-import com.requea.dysoweb.panel.utils.xml.XMLUtils;
+import com.requea.dysoweb.util.xml.XMLUtils;
+
 
 public class Feature implements Serializable {
 

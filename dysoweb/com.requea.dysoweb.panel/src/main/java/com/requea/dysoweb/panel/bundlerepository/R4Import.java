@@ -18,11 +18,6 @@
  */
 package com.requea.dysoweb.panel.bundlerepository;
 
-import com.requea.dysoweb.panel.bundlerepository.R4Attribute;
-import com.requea.dysoweb.panel.bundlerepository.R4Directive;
-import com.requea.dysoweb.panel.bundlerepository.R4Export;
-import com.requea.dysoweb.panel.bundlerepository.R4Package;
-import com.requea.dysoweb.panel.bundlerepository.VersionRange;
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
 

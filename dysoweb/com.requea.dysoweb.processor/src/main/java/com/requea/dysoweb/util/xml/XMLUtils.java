@@ -49,7 +49,7 @@ import org.xml.sax.SAXParseException;
  */
 public class XMLUtils {
 
-    private static DocumentBuilderFactory fFactory;
+    private static DocumentBuilderFactory fDocumentFactory;
     private static Stack fParsersPool = new Stack();
 
     /**
@@ -97,19 +97,23 @@ public class XMLUtils {
 	WEBAPP_DTD_RESOURCE_PATH_23,
     };
 
-    
-    static {
-        fFactory =
+
+    private static synchronized void initFactory() {
+    	if(fDocumentFactory != null) 
+    		return;
+    	
+    	fDocumentFactory =
             DocumentBuilderFactory.newInstance();
-        fFactory.setNamespaceAware(true);
-        fFactory.setIgnoringElementContentWhitespace(true);
-        fFactory.setValidating(false);
+    	fDocumentFactory.setNamespaceAware(true);
+    	fDocumentFactory.setIgnoringElementContentWhitespace(true);
+    	fDocumentFactory.setValidating(false);
     }
     
     public static synchronized DocumentBuilder getParser() throws ParserConfigurationException {
     	if(fParsersPool.isEmpty()) {
     		// create a new parser
-    		DocumentBuilder builder = fFactory.newDocumentBuilder();
+    		initFactory();
+    		DocumentBuilder builder = fDocumentFactory.newDocumentBuilder();
             builder.setEntityResolver(entityResolver);
     		return builder;
     	} else {

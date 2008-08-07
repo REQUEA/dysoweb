@@ -20,8 +20,8 @@ import org.w3c.dom.Element;
 import com.requea.dysoweb.panel.InstallServlet;
 import com.requea.dysoweb.panel.SecurityFilter;
 import com.requea.dysoweb.panel.utils.xml.ISO8601DateTimeFormat;
-import com.requea.dysoweb.panel.utils.xml.XMLException;
-import com.requea.dysoweb.panel.utils.xml.XMLUtils;
+import com.requea.dysoweb.util.xml.XMLException;
+import com.requea.dysoweb.util.xml.XMLUtils;
 
 public class InstalledFeaturesTag extends BodyTagSupport {
 

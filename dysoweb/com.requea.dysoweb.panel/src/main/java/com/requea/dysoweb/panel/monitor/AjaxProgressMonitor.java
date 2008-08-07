@@ -4,7 +4,7 @@ import java.text.DecimalFormat;
 
 import org.w3c.dom.Element;
 
-import com.requea.dysoweb.panel.utils.xml.XMLUtils;
+import com.requea.dysoweb.util.xml.XMLUtils;
 
 /**
  * This progress monitor directs all task information to std.out.

@@ -18,7 +18,7 @@
     <parent>
         <artifactId>dysoweb</artifactId>
         <groupId>com.requea.dysoweb</groupId>
-        <version>1.0.1-SNAPSHOT</version>
+		<version>1.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.requea.dysoweb</groupId>
@@ -230,7 +230,8 @@
 							javax.servlet.jsp;version="2.4.0",
 							javax.servlet.jsp.resources;version="2.4.0",
 							javax.servlet.jsp.el;version="2.4.0",
-							javax.servlet.jsp.tagext;version="2.4.0"
+							javax.servlet.jsp.tagext;version="2.4.0",
+							com.requea.dysoweb.util.xml
                         </Export-Package>
                         <Import-Package>
                         	javax.servlet.resources,

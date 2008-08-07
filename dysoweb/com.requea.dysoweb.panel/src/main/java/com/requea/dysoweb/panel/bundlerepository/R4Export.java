@@ -20,10 +20,6 @@ package com.requea.dysoweb.panel.bundlerepository;
 
 import java.util.*;
 
-import com.requea.dysoweb.panel.bundlerepository.R4Attribute;
-import com.requea.dysoweb.panel.bundlerepository.R4Directive;
-import com.requea.dysoweb.panel.bundlerepository.R4Package;
-import com.requea.dysoweb.panel.bundlerepository.Util;
 import org.osgi.framework.Constants;
 
 public class R4Export extends R4Package

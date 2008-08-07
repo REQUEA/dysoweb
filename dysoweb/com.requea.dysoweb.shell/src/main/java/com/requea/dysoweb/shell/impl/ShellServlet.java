@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.util.StringTokenizer;
 import java.util.zip.GZIPOutputStream;
@@ -28,17 +27,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 import org.apache.felix.shell.ShellService;
 import org.w3c.dom.Document;
@@ -46,10 +34,12 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 
+import com.requea.dysoweb.util.xml.XMLUtils;
+
+
 public class ShellServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
-	private static DocumentBuilderFactory fFactory;
 
 	
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -63,9 +53,7 @@ public class ShellServlet extends HttpServlet {
 	protected void process(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
 		try {
-			DocumentBuilder builder = fFactory.newDocumentBuilder();
-
-			Document doc = builder.newDocument();
+			Document doc = XMLUtils.newDocument();
 			Element el = doc.createElement("result");
 			doc.appendChild(el);
 
@@ -131,15 +119,7 @@ public class ShellServlet extends HttpServlet {
 			}
 			
 			// ajax response
-	    	Source source = new DOMSource(el);
-			StringWriter out = new StringWriter();
-			
-			StreamResult result = new StreamResult(out);
-			Transformer xformer = TransformerFactory.newInstance().newTransformer();
-			xformer.setOutputProperty("indent", "yes");
-			xformer.transform(source, result);
-			
-	        String xml = out.toString();
+	        String xml = XMLUtils.ElementToString(el);
 	        response.setContentType("text/xml");
 	        String encoding = null;
 	        if(!"false".equals(System.getProperty("com.requea.dynpage.compressoutput"))) {
@@ -161,14 +141,7 @@ public class ShellServlet extends HttpServlet {
 	        w.write(xml);
 	        w.close();
 		
-		
-		} catch (ParserConfigurationException e) {
-			throw new ServletException(e);
-		} catch (TransformerConfigurationException e) {
-			throw new ServletException(e);
-		} catch (TransformerFactoryConfigurationError e) {
-			throw new ServletException(e);
-		} catch (TransformerException e) {
+		} catch (Exception e) {
 			throw new ServletException(e);
 		}
 		
@@ -206,13 +179,4 @@ public class ShellServlet extends HttpServlet {
         }
 	}
 	
-    static {
-        fFactory =
-            DocumentBuilderFactory.newInstance();
-        fFactory.setNamespaceAware(true);
-        fFactory.setIgnoringElementContentWhitespace(true);
-        fFactory.setValidating(false);
-    }
-
-    
 }
