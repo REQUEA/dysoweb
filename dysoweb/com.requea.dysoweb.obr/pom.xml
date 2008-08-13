@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+<!-- 
+// ========================================================================
+// Copyright 2007 Requea.
+
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at 
+// http://www.apache.org/licenses/LICENSE-2.0
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ========================================================================
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<parent>
+		<artifactId>dysoweb</artifactId>
+		<groupId>com.requea.dysoweb</groupId>
+		<version>1.0.1-SNAPSHOT</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.requea.dysoweb</groupId>
+	<artifactId>com.requea.dysoweb.obr</artifactId>
+	<packaging>bundle</packaging>
+	<name>Requea Dysoweb OBR</name>
+	<version>1.0.1-SNAPSHOT</version>
+	<url>http://www.requea.com</url>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.osgi.core</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.osgi.service.obr</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.shell</artifactId>
+            <scope>provided</scope>
+        </dependency>
+		<dependency>
+			<groupId>com.requea.dysoweb</groupId>
+			<artifactId>com.requea.dysoweb.api</artifactId>
+   			<scope>provided</scope>
+		</dependency>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+	    <dependency>
+			<groupId>net.sf.kxml</groupId>
+			<artifactId>kxml2</artifactId>
+			<version>2.2.2</version>
+	    </dependency>
+        <dependency>
+            <groupId>com.requea.dysoweb</groupId>
+            <artifactId>com.requea.dysoweb.service.obr</artifactId>
+            <scope>provided</scope>
+            <version>${version}</version>
+        </dependency>
+	</dependencies>
+	<build>
+		<plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+									<groupId>net.sf.kxml</groupId>
+									<artifactId>kxml2</artifactId>
+									<version>2.2.2</version>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>   		
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+			    <version>1.0.0</version>
+				<extensions>true</extensions>
+				<configuration>
+					<instructions>
+                        <Bundle-Name>Requea Dysoweb OBR</Bundle-Name>                    
+			            <Private-Package>com.requea.dysoweb.bundlerepository,com.requea.dysoweb.bundlerepository.metadataparser,com.requea.dysoweb.bundlerepository.metadataparser.kxmlsax</Private-Package>
+                        <Bundle-Vendor>Requea.com</Bundle-Vendor>
+			            <Bundle-SymbolicName>${pom.artifactId}</Bundle-SymbolicName>
+			            <Bundle-Activator>com.requea.dysoweb.bundlerepository.Activator</Bundle-Activator>
+                        <Bundle-ClassPath>.,lib/kxml2-2.2.2.jar</Bundle-ClassPath>
+                        <Import-Package>
+                        	!sun.*,!com.sun.*,*
+                        </Import-Package>
+                        <Include-Resource>lib=target/lib</Include-Resource>
+					</instructions>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

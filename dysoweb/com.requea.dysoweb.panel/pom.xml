@@ -18,14 +18,14 @@
 	<parent>
 		<artifactId>dysoweb</artifactId>
 		<groupId>com.requea.dysoweb</groupId>
-		<version>1.0.1</version>
+		<version>1.0.1-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.requea.dysoweb</groupId>
 	<artifactId>com.requea.dysoweb.panel</artifactId>
 	<packaging>bundle</packaging>
 	<name>Requea Dysoweb Panel</name>
-	<version>1.0.1</version>
+	<version>1.0.1-SNAPSHOT</version>
 	<url>http://www.requea.com</url>
     <dependencies>
         <dependency>
@@ -41,9 +41,10 @@
         </dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.shell</artifactId>
+            <artifactId>org.osgi.service.obr</artifactId>
             <scope>provided</scope>
         </dependency>
+        
 		<dependency>
 			<groupId>com.requea.dysoweb</groupId>
 			<artifactId>com.requea.dysoweb.api</artifactId>
@@ -59,39 +60,15 @@
 			<artifactId>jsp-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
-	    <dependency>
-			<groupId>net.sf.kxml</groupId>
-			<artifactId>kxml2</artifactId>
-			<version>2.2.2</version>
-	    </dependency>
+        <dependency>
+            <groupId>com.requea.dysoweb</groupId>
+            <artifactId>com.requea.dysoweb.service.obr</artifactId>
+            <scope>provided</scope>
+            <version>${version}</version>
+        </dependency>
 	</dependencies>
 	<build>
 		<plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-									<groupId>net.sf.kxml</groupId>
-									<artifactId>kxml2</artifactId>
-									<version>2.2.2</version>
-                                    <type>jar</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>${project.build.directory}/lib</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>   		
             <plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
@@ -100,32 +77,30 @@
 				<configuration>
 					<instructions>
                         <Bundle-Name>Requea Dysoweb Panel</Bundle-Name>   
-                        <Export-Package>org.osgi.service.obr</Export-Package>                 
 			            <Private-Package>
 			            	com.requea.dysoweb.panel,
 			            	com.requea.dysoweb.panel.tags,
+			            	com.requea.dysoweb.panel.utils,
 			            	com.requea.dysoweb.panel.utils.xml,
-			            	com.requea.dysoweb.panel.bundlerepository,
-			            	com.requea.dysoweb.panel.bundlerepository.metadataparser,
-			            	com.requea.dysoweb.panel.bundlerepository.metadataparser.kxmlsax,
 			            	com.requea.dysoweb.panel.monitor
 			            </Private-Package>
                         <Bundle-Vendor>Requea.com</Bundle-Vendor>
 			            <Bundle-SymbolicName>${pom.artifactId}</Bundle-SymbolicName>
-                        <Bundle-ClassPath>.,lib/kxml2-2.2.2.jar</Bundle-ClassPath>
 			            <Bundle-Activator>com.requea.dysoweb.panel.Activator</Bundle-Activator>
 						<Import-Package>
                             org.osgi.framework,
+							org.osgi.service.obr,
                         	javax.servlet,
                         	javax.servlet.http,
                         	javax.servlet.jsp,
 							javax.servlet.jsp.el,
 							javax.servlet.jsp.tagext,
+							com.requea.dysoweb.util.xml,
 							com.requea.dysoweb.utils.tags,
 							com.requea.dysoweb.repo.tags;resolution:=optional,
 							*
 						</Import-Package>
-                        <Include-Resource>lib=target/lib,webapp=src/main/webapp</Include-Resource>
+                        <Include-Resource>webapp=src/main/webapp</Include-Resource>
 					</instructions>
 				</configuration>
 			</plugin>

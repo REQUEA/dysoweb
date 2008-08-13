@@ -9,15 +9,11 @@
 
 	<filter-mapping>
 		<filter-name>dysowebSecurityFilter</filter-name>
-        <url-pattern>/dysoweb/panel/install</url-pattern>
+        <url-pattern>/dysoweb/panel/secure/*</url-pattern>
 	</filter-mapping>
 	<filter-mapping>
 		<filter-name>dysowebSecurityFilter</filter-name>
-        <url-pattern>/dysoweb/panel/jsp/bundles.jsp</url-pattern>
-	</filter-mapping>
-	<filter-mapping>
-		<filter-name>dysowebSecurityFilter</filter-name>
-        <url-pattern>/dysoweb/panel/jsp/shell.jsp</url-pattern>
+        <url-pattern>/dysoweb/shell/*</url-pattern>
 	</filter-mapping>
 	<filter-mapping>
 		<filter-name>dysowebSecurityFilter</filter-name>
@@ -26,10 +22,6 @@
 	<filter-mapping>
 		<filter-name>dysowebSecurityFilter</filter-name>
         <url-pattern>/dwbndl</url-pattern>
-	</filter-mapping>
-	<filter-mapping>
-		<filter-name>dysowebSecurityFilter</filter-name>
-        <url-pattern>/dysoweb/panel/shell.jsp</url-pattern>
 	</filter-mapping>
 
 
@@ -43,14 +35,23 @@
         <servlet-class>com.requea.dysoweb.panel.InstallServlet</servlet-class>
  		<load-on-startup>1</load-on-startup>
     </servlet>
+    <servlet>
+        <servlet-name>dysowebSettingsServlet</servlet-name>
+        <servlet-class>com.requea.dysoweb.panel.SettingsServlet</servlet-class>
+ 		<load-on-startup>1</load-on-startup>
+    </servlet>
 
     <servlet-mapping>
+        <servlet-name>dysowebSettingsServlet</servlet-name>
+        <url-pattern>/dysoweb/panel/secure/settings</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
         <servlet-name>dysowebInstallServlet</servlet-name>
-        <url-pattern>/dysoweb/panel/install</url-pattern>
+        <url-pattern>/dysoweb/panel/secure/install</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>dysowebSecurityServlet</servlet-name>
-        <url-pattern>/dysoweb/panel/secure</url-pattern>
+        <url-pattern>/dysoweb/panel/auth</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>bundleServlet</servlet-name>

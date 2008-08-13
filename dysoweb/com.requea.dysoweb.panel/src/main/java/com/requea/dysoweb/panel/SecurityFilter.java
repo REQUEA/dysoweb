@@ -41,8 +41,9 @@ public class SecurityFilter implements Filter {
 
 		// check if we are authenticated
 		HttpSession session = ((HttpServletRequest)request).getSession();
+		String op = request.getParameter("op");
 		Object obj = session.getAttribute(AUTH);
-		if(Boolean.TRUE.equals(obj)) {
+		if("register".equals(op) || Boolean.TRUE.equals(obj)) {
 			// ok
 			chain.doFilter(request, response);
 			return;

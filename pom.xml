@@ -3,7 +3,7 @@
 	<groupId>com.requea.dysoweb</groupId>
 	<artifactId>main</artifactId>
 	<packaging>pom</packaging>
-	<version>1.0.1</version>
+	<version>1.0.1-SNAPSHOT</version>
 	<name>Requea Dysoweb</name>
 	<url>http://www.requea.com</url>
 	<modules>
@@ -36,6 +36,16 @@
 				<groupId>org.apache.felix</groupId>
 				<artifactId>org.apache.felix.framework</artifactId>
 				<version>1.0.4</version>
+				<exclusions>
+				  	<exclusion>
+				    	<groupId>org.apache.felix</groupId>
+				    	<artifactId>org.osgi.compendium</artifactId>
+				  	</exclusion>
+				  	<exclusion>
+				    	<groupId>org.apache.felix</groupId>
+				    	<artifactId>org.osgi.foundation</artifactId>
+				  	</exclusion>
+				</exclusions>
 			</dependency>
 	        <dependency>
 	            <groupId>org.apache.felix</groupId>
@@ -52,6 +62,21 @@
 	            <artifactId>org.apache.felix.shell.tui</artifactId>
 	            <version>1.0.0-dysoweb</version>
 	        </dependency>
+			<dependency>
+			    <groupId>org.apache.felix</groupId>
+			    <artifactId>org.osgi.service.obr</artifactId>
+	            <version>1.0.2</version>
+				<exclusions>
+				  	<exclusion>
+				    	<groupId>org.apache.felix</groupId>
+				    	<artifactId>org.osgi.compendium</artifactId>
+				  	</exclusion>
+				  	<exclusion>
+				    	<groupId>org.apache.felix</groupId>
+				    	<artifactId>org.osgi.foundation</artifactId>
+				  	</exclusion>
+				</exclusions>
+			</dependency>
 			
 	        <dependency>
 	            <groupId>requeabuild</groupId>
@@ -87,6 +112,16 @@
 	        <dependency>
 	            <groupId>com.requea.dysoweb</groupId>
 	            <artifactId>com.requea.dysoweb.panel</artifactId>
+	            <version>${version}</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>com.requea.dysoweb</groupId>
+	            <artifactId>com.requea.dysoweb.service.obr</artifactId>
+	            <version>${version}</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>com.requea.dysoweb</groupId>
+	            <artifactId>com.requea.dysoweb.obr</artifactId>
 	            <version>${version}</version>
 	        </dependency>
 	        <dependency>
@@ -163,9 +198,9 @@
 	</repositories>
 
 	<scm>
-		<connection>scm:svn:svn+ssh://null@svn.forge.objectweb.org/svnroot/dysoweb/tags/main-1.0.1</connection>
-		<developerConnection>scm:svn:svn+ssh://null@svn.forge.objectweb.org/svnroot/dysoweb/tags/main-1.0.1</developerConnection>
-		<url>scm:svn:svn+ssh://null@svn.forge.objectweb.org/svnroot/dysoweb/tags/main-1.0.1</url>
+		<connection>scm:svn:svn+ssh://null@svn.forge.objectweb.org/svnroot/dysoweb/tags/main-1.0.1-SNAPSHOT</connection>
+		<developerConnection>scm:svn:svn+ssh://null@svn.forge.objectweb.org/svnroot/dysoweb/tags/main-1.0.1-SNAPSHOT</developerConnection>
+		<url>scm:svn:svn+ssh://null@svn.forge.objectweb.org/svnroot/dysoweb/tags/main-1.0.1-SNAPSHOT</url>
 	</scm>
 	<build>
 		<plugins>

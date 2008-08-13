@@ -27,7 +27,7 @@
 							<h2><span>Dysoweb Login</span></h2>
 							<p>This platform requires authentication. Please enter your password to login and access to this feature.</p>
 							<panel:error />
-							<form method="post" action="<%=request.getContextPath()%>/dysoweb/panel/secure" class="secure">
+							<form method="post" action="<%=request.getContextPath()%>/dysoweb/panel/auth" class="secure">
 							<input name="ru" type="hidden" value="<%=request.getAttribute("com.requea.dysoweb.panel.ru") %>" />
 							<input name="op" type="hidden" value="auth" />
 							<table width="100%">

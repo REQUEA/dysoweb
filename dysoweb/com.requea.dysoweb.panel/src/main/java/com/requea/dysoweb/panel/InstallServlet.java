@@ -12,7 +12,8 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.InetAddress;
-import java.net.MalformedURLException;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
@@ -54,22 +55,23 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
 import org.osgi.service.obr.RepositoryAdmin;
 import org.osgi.service.obr.Requirement;
+import org.osgi.service.obr.Resolver;
 import org.osgi.service.obr.Resource;
 import org.osgi.service.packageadmin.PackageAdmin;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.requea.dysoweb.panel.bundlerepository.ObrCommandImpl;
-import com.requea.dysoweb.panel.bundlerepository.RepositoryAdminImpl;
-import com.requea.dysoweb.panel.bundlerepository.ResolverImpl;
 import com.requea.dysoweb.panel.monitor.AjaxProgressMonitor;
-import com.requea.dysoweb.panel.monitor.IProgressMonitor;
-import com.requea.dysoweb.panel.monitor.SubProgressMonitor;
 import com.requea.dysoweb.panel.tags.ErrorTag;
-import com.requea.dysoweb.panel.utils.xml.ISO8601DateTimeFormat;
+import com.requea.dysoweb.panel.utils.Base64;
+import com.requea.dysoweb.panel.utils.ISO8601DateTimeFormat;
+import com.requea.dysoweb.panel.utils.Util;
+import com.requea.dysoweb.service.obr.ClientAuthRepositoryAdmin;
+import com.requea.dysoweb.service.obr.MonitoredResolver;
+import com.requea.dysoweb.service.obr.IProgressMonitor;
+import com.requea.dysoweb.service.obr.SubProgressMonitor;
 import com.requea.dysoweb.util.xml.XMLException;
 import com.requea.dysoweb.util.xml.XMLUtils;
-
 
 public class InstallServlet extends HttpServlet {
 
@@ -82,6 +84,9 @@ public class InstallServlet extends HttpServlet {
 
 	private static final String INSTALL_MONITOR = "com.requea.dysoweb.panel.install.monitor";
 	private static final String INSTALL_STATUS = "com.requea.dysoweb.panel.install.status";
+	
+	public static final String DEFAULT_REPO = "https://repo.requea.com/dysoweb/repo/contents/repository.xml";
+	
 
 	private static final long serialVersionUID = -680556291402571674L;
 	
@@ -89,70 +94,69 @@ public class InstallServlet extends HttpServlet {
 	
 	private File fConfigDir;
 	private SSLSocketFactory fSocketFactory;
-	private RepositoryAdminImpl fRepo;
+	private Proxy fProxy;
+	private String fProxyAuth;
+	
 
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		fConfigDir = SecurityFilter.getConfigDir(config.getServletContext());
 		fConfigDir.mkdirs();
-		// check if server certificate is there
-		File file = new File(fConfigDir, "dysoweb.p12");
-		if(!file.exists()) {
-			try {
-				SecurityServlet.updateServerRegistration(fConfigDir, null, null, null);
-			} catch(Exception e) {
-				// ignore
+	}
+	
+	public static RepositoryAdmin initRepo(File configDir, Element elConfig) throws Exception {
+		
+		// get the repo
+		RepositoryAdmin repo = Activator.getDefault().getRepo();
+		if(repo == null) {
+			// not initialized
+			throw new Exception("No repository service available at this time");
+		}
+		String repoURL = XMLUtils.getChildText(elConfig, "RepoURL");
+		if(repoURL == null) {
+			repoURL = DEFAULT_REPO;
+		}
+		repo.addRepository(new URL(repoURL));
+
+		// init proxy settings
+		String proxy = XMLUtils.getChildText(elConfig, "Proxy");
+		String proxyHost = XMLUtils.getChildText(elConfig, "ProxyHost");
+		String proxyPort = XMLUtils.getChildText(elConfig, "ProxyPort");
+		String proxyAuth = XMLUtils.getChildText(elConfig, "ProxyAuth");
+		
+		// ssl client certificate and proxy settings
+		if(repo instanceof ClientAuthRepositoryAdmin) {
+			ClientAuthRepositoryAdmin clr = (ClientAuthRepositoryAdmin)repo;
+			if("manual".equals(proxy)) {
+				clr.setProxy(proxyHost, Integer.parseInt(proxyPort), proxyAuth);
+			} else {
+				try {
+				    System.setProperty("java.net.useSystemProxies","true");
+				} catch (SecurityException e) {
+				    ; // failing to set this property isn't fatal
+				}
+			}
+			clr.setSSLSocketFactory(initSocketFactory(configDir));
+		} else {
+			if("manual".equals(proxy)) {
+				// force system wide proxy settings
+				try {
+				    System.setProperty("http.proxyHost",proxyHost);
+				    System.setProperty("http.proxyPort",proxyPort);
+				    System.setProperty("http.proxyAuth",proxyAuth);
+				} catch (SecurityException e) {
+				    ; // failing to set this property isn't fatal
+				}
+			} else {
+				try {
+				    System.setProperty("java.net.useSystemProxies","true");
+				} catch (SecurityException e) {
+				    ; // failing to set this property isn't fatal
+				}
 			}
 		}
 		
-		// create the repo
-		BundleContext context = Activator.getDefault().getContext();
-		fRepo = new RepositoryAdminImpl(context);
-		fRepo.setSSLSocketFactory(getSSLSocketFactory());
-
-		addRepoURL();
-
-		// register the repo service
-		context.registerService(
-                RepositoryAdmin.class.getName(),
-                fRepo, null);
-		
-		// register the repo command
-        // We dynamically import the impl service API, so it
-        // might not actually be available, so be ready to catch
-        // the exception when we try to register the command service.
-        try
-        {
-            // Register "obr" impl command service as a
-            // wrapper for the bundle repository service.
-            context.registerService(
-                org.apache.felix.shell.Command.class.getName(),
-                new ObrCommandImpl(context, fRepo), null);
-        }
-        catch (Throwable th)
-        {
-            // Ignore.
-        	th.printStackTrace();
-        }
-	}
-	
-	private void addRepoURL() {
-		String url = System.getProperty("com.requea.dysoweb.repo");
-		if(url == null) {
-			url = SecurityServlet.DEFAULT_REPO;
-		}
-		if(!url.endsWith("/")) {
-			url += "/";
-		}
-		url += "contents/repository.xml";
-		
-		try {
-			fRepo.addRepository(new URL(url));
-		} catch (MalformedURLException e) {
-			// cannot happen
-		} catch (Exception e) {
-			// ignore
-		}
+		return repo;
 	}
 
 	public void destroy() {
@@ -183,20 +187,81 @@ public class InstallServlet extends HttpServlet {
 	private void process(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		
-		Element elConfig = getServerConfig();
+		String op = request.getParameter("op");
+		Element elConfig = getServerConfig(fConfigDir);
 		// first of all, check if the server is a registered server
-		if (elConfig == null) {
+		if (elConfig == null && !"register".equals(op)) {
 			// include registration page
 			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure.jsp");
 			rd.forward(request, response);
 			return;
 		}
-
-		String op = request.getParameter("op");
 		if("status".equals(op)) {
 			handleStatusRequest(request, response);
 			return;
+		} else if ("register".equals(op)) {
+
+			String ru = request.getParameter("ru");
+			request.setAttribute("com.requea.dysoweb.panel.ru", ru == null ? ""
+					: ru);
+
+			if (!checkParameters(request, response)) {
+				// re forward to registration for correction of errors
+				RequestDispatcher rd = request
+						.getRequestDispatcher("/dysoweb/panel/secure.jsp");
+				rd.forward(request, response);
+				return;
+			}
+
+			// register the server and goes back to callers page
+			try {
+				String contactName = request.getParameter("ContactName");
+				String contactEMail = request.getParameter("ContactEMail");
+				String strPassword = request.getParameter("Password");
+				updateServerRegistration(fConfigDir, contactName, contactEMail, strPassword);
+				// reset the socket factory
+				fSocketFactory = null;
+				// init the repo
+				initRepo(fConfigDir, elConfig);				
+	        	request.getSession().removeAttribute(InstallServlet.FEATURES);
+
+				// from this point on, we are authenticated
+				request.getSession().setAttribute(SecurityFilter.AUTH,
+						Boolean.TRUE);
+				request.getSession().setAttribute("com.requea.dysoweb.shell.auth", Boolean.TRUE);
+			} catch (Exception e) {
+				request.setAttribute(ErrorTag.ERROR,
+						"Unable to register server: " + e.getMessage());
+				// re forward to registration for correction of errors
+				RequestDispatcher rd = request
+						.getRequestDispatcher("/dysoweb/panel/secure.jsp");
+				rd.forward(request, response);
+				return;
+			}
+
+			// registration was ok, redirect
+			if (ru != null && ru.length() > 0 && !"null".equals(ru)) {
+				response.sendRedirect(ru);
+				return;
+			} else {
+				response.sendRedirect(request.getContextPath()
+						+ "/dysoweb/panel/panel.jsp");
+			}
+			
 		} else if("install".equals(op)) {
+			// check if server certificate is there
+			File file = new File(fConfigDir, "dysoweb.p12");
+			if(!file.exists() && !"register".equals(op)) {
+				try {
+					updateServerRegistration(fConfigDir, null, null, null);
+					// reset the socket factory
+					fSocketFactory = null;
+					
+				} catch(Exception e) {
+					// ignore
+				}
+			}
+			
 			handleInstallBundleRequest(request, response, elConfig);
 		} else if("image".equals(op)) {
 			// render the image
@@ -232,12 +297,28 @@ public class InstallServlet extends HttpServlet {
 			} catch (Exception e) {
 				// show the error
 				request.setAttribute(ErrorTag.ERROR, "Unable to retrieve installable application list. Please try later");
-				RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/install.jsp");
+				RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure/secure/install.jsp");
 				rd.forward(request, response);
 			}
 		}
 	}
 
+	private boolean checkParameters(HttpServletRequest request,
+			HttpServletResponse response) {
+		// check the parameters
+		String pass1 = request.getParameter("Password");
+		if (pass1 == null) {
+			request.setAttribute(ErrorTag.ERROR, "Password is required");
+			return false;
+		}
+		String pass2 = request.getParameter("Password2");
+		if (!pass1.equals(pass2)) {
+			request.setAttribute(ErrorTag.ERROR, "Passwords do not match");
+			return false;
+		}
+		return true;
+	}
+	
 	private void handleStatusRequest(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		try {
 			// retrieve the monitor
@@ -375,18 +456,18 @@ public class InstallServlet extends HttpServlet {
 			request.getSession().setAttribute(INSTALL_MONITOR, monitor);
 			request.getSession().setAttribute(INSTALL_STATUS, status);
 
-			addRepoURL();
+			RepositoryAdmin repo = initRepo(fConfigDir, elConfig);
 			// launch the trhead to install the bundles
-			Thread th = new Thread(new Installer(context, fRepo, features, monitor, status));
+			Thread th = new Thread(new Installer(context, repo, features, monitor, status));
 			th.start();
 			
 			request.setAttribute(FEATURE, installedFeature);
-			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/installing.jsp");
+			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure/installing.jsp");
 			rd.forward(request, response);
 		} catch (Exception e) {
 			// show the error
 			request.setAttribute(ErrorTag.ERROR, "Unable to install features: " + e.getMessage());
-			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/install.jsp");
+			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure/secure/install.jsp");
 			rd.forward(request, response);
 		}
 	}
@@ -449,13 +530,13 @@ public class InstallServlet extends HttpServlet {
 	private class Installer implements Runnable {
 		
 		
-		private RepositoryAdminImpl fRepo;
+		private RepositoryAdmin fRepo;
 		private BundleContext fContext;
 		private Feature[] fFeatures;
 		private IProgressMonitor fProgressMonitor;
 		private Status fStatus;
 		
-		Installer(BundleContext context, RepositoryAdminImpl repo, Feature[] features, IProgressMonitor monitor, Status status) {
+		Installer(BundleContext context, RepositoryAdmin repo, Feature[] features, IProgressMonitor monitor, Status status) {
 			fContext = context;
 			fFeatures = features;
 			fRepo = repo;
@@ -505,10 +586,10 @@ public class InstallServlet extends HttpServlet {
 		}
 	}
 	
-	private long calcTotalDownloadSize(BundleContext context, RepositoryAdminImpl repo, Feature[] features) throws Exception {
+	private long calcTotalDownloadSize(BundleContext context, RepositoryAdmin repo, Feature[] features) throws Exception {
 
 		
-		ResolverImpl resolver = (ResolverImpl)repo.resolver();
+		Resolver resolver = (Resolver)repo.resolver();
 		// add the bundles for all the features
 		for(int i=0; i<features.length; i++) {
 			
@@ -567,7 +648,7 @@ public class InstallServlet extends HttpServlet {
 		return lSize;
 	}
 	
-	private void installFeature(BundleContext context, RepositoryAdminImpl repo, Feature feature, IProgressMonitor parentMonitor) throws Exception {
+	private void installFeature(BundleContext context, RepositoryAdmin repo, Feature feature, IProgressMonitor parentMonitor) throws Exception {
 
 		// create an XML document for the feature
 		Element elFeature = XMLUtils.newElement("feature");
@@ -598,7 +679,7 @@ public class InstallServlet extends HttpServlet {
 		
 		// retrieve the bundles id
 		StringTokenizer st = new StringTokenizer(bundles,",");
-        ResolverImpl resolver = (ResolverImpl)repo.resolver();
+        Resolver resolver = (Resolver)repo.resolver();
         while(st.hasMoreTokens()) {
         	String bundleId = st.nextToken();
             // Find the target's bundle resource.
@@ -658,8 +739,12 @@ public class InstallServlet extends HttpServlet {
         			monitor.beginTask("Installing feature " + feature.getName(), (int)lSize);
 	                try
 	                {
-	            		SubProgressMonitor subMonitor = new SubProgressMonitor(monitor, (int)lSize);
-	                    resolver.deploy(true, subMonitor);
+	            		if(resolver instanceof MonitoredResolver) {
+		            		SubProgressMonitor subMonitor = new SubProgressMonitor(monitor, (int)lSize);
+	            			((MonitoredResolver)resolver).deploy(true, subMonitor);
+	            		} else {
+	            			resolver.deploy(true);
+	            		}
 	                    // register the new application if something was installed
                     	registerInstalledApplication(feature, elFeature);
 	                }
@@ -720,7 +805,18 @@ public class InstallServlet extends HttpServlet {
 				File fileImage = new File(fConfigDir, "features/"+sysId+".jpg");
 				URL url = new URL(strURL);
 	            OutputStream os = new FileOutputStream(fileImage);
-	            URLConnection conn = url.openConnection();
+	            URLConnection conn = fProxy == null ? url.openConnection() : url.openConnection(fProxy);
+                // Support for http proxy authentication
+                if ((fProxyAuth != null) && (fProxyAuth.length() > 0))
+                {
+                    if ("http".equals(url.getProtocol()) ||
+                        "https".equals(url.getProtocol()))
+                    {
+                        String base64 = Util.base64Encode(fProxyAuth);
+                        conn.setRequestProperty(
+                            "Proxy-Authorization", "Basic " + base64);
+                    }
+                }
 	            InputStream is = conn.getInputStream();
 	            byte[] buffer = new byte[4096];
 	            int count = 0;
@@ -758,24 +854,8 @@ public class InstallServlet extends HttpServlet {
         // post install info the the repo server
         try {
     		// retrieve the list of applications that can be installed
-    		String strUrl = System.getProperty("com.requea.dysoweb.repo");
-    		if(strUrl == null) {
-    			strUrl = SecurityServlet.DEFAULT_REPO;
-    		}
-    		if(!strUrl.endsWith("/")) {
-    			strUrl += "/";
-    		}
-    		strUrl += "contents/registerinstall";
-        	
-			URL url = new URL(strUrl);
-			URLConnection connection = url.openConnection();
-	        if(connection instanceof HttpsURLConnection) {
-	        	SSLSocketFactory sslSocketFactory = getSSLSocketFactory();
-	        	if(sslSocketFactory != null) {
-	        		HttpsURLConnection secureCon = (HttpsURLConnection) connection;
-	                secureCon.setSSLSocketFactory(sslSocketFactory);
-	        	}
-	        }
+        	Element elConfig = getServerConfig(fConfigDir);
+        	URLConnection connection = openConnection(elConfig, "contents/registerinstall");
 			connection.setDoOutput(true);
 			OutputStreamWriter osw = new OutputStreamWriter(
 	                connection.getOutputStream());
@@ -816,7 +896,51 @@ public class InstallServlet extends HttpServlet {
         }
 	}
 	
-    private Resource[] searchRepository(BundleContext context, RepositoryAdmin repo, String targetId, String targetVersion)
+    private URLConnection openConnection(Element elConfig, String path) throws Exception {
+		String repoURL = XMLUtils.getChildText(elConfig, "RepoURL");
+		if(repoURL == null) {
+			repoURL = DEFAULT_REPO;
+		}
+		URL baseURL = new URL(repoURL);
+		URL url = path == null ? baseURL : new URL(baseURL,path);
+		
+		String proxy = XMLUtils.getChildText(elConfig, "Proxy");
+		String proxyHost = XMLUtils.getChildText(elConfig, "ProxyHost");
+		String proxyPort = XMLUtils.getChildText(elConfig, "ProxyPort");
+		String proxyAuth = XMLUtils.getChildText(elConfig, "ProxyAuth");
+		
+		URLConnection cnx;
+		if("manual".equals(proxy)) {
+			Proxy p = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, Integer.parseInt(proxyPort)));
+			cnx = url.openConnection(p);
+			// proxy auth?
+			if(proxyAuth != null && proxyAuth.length() > 0) {
+                String base64 = Base64.encode(proxyAuth.getBytes());
+                cnx.setRequestProperty(
+                    "Proxy-Authorization", "Basic " + base64);
+			}
+		} else {
+			// open the connection with default settings
+			// set proxy autodetect
+			try {
+			    System.setProperty("java.net.useSystemProxies","true");
+			} catch (SecurityException e) {
+			    ; // failing to set this property isn't fatal
+			}
+			cnx = url.openConnection();	
+		}
+        if(cnx instanceof HttpsURLConnection) {
+        	SSLSocketFactory sslSocketFactory = getSSLSocketFactory();
+        	if(sslSocketFactory != null) {
+        		HttpsURLConnection secureCon = (HttpsURLConnection) cnx;
+                secureCon.setSSLSocketFactory(sslSocketFactory);
+        	}
+        }
+
+		return cnx;
+	}
+
+	private Resource[] searchRepository(BundleContext context, RepositoryAdmin repo, String targetId, String targetVersion)
     {
         // Try to see if the targetId is a bundle ID.
         try
@@ -881,11 +1005,11 @@ public class InstallServlet extends HttpServlet {
 		if(feature != null) {
 			req.setAttribute(FEATURE, feature);
 			// show feature detail
-			RequestDispatcher rd = req.getRequestDispatcher("/dysoweb/panel/installfeat.jsp");
+			RequestDispatcher rd = req.getRequestDispatcher("/dysoweb/panel/secure/installfeat.jsp");
 			rd.forward(req, resp);
 		} else {
 			// show list of features
-			RequestDispatcher rd = req.getRequestDispatcher("/dysoweb/panel/install.jsp");
+			RequestDispatcher rd = req.getRequestDispatcher("/dysoweb/panel/secure/install.jsp");
 			rd.forward(req, resp);
 		}		
 		return;
@@ -927,28 +1051,9 @@ public class InstallServlet extends HttpServlet {
 		
 		HttpSession session = req.getSession();
 		
-		// retrieve the list of applications that can be installed
-		String strUrl = System.getProperty("com.requea.dysoweb.repo");
-		if(strUrl == null) {
-			strUrl = SecurityServlet.DEFAULT_REPO;
-		}
-		if(!strUrl.endsWith("/")) {
-			strUrl += "/";
-		}
-		strUrl += "contents/feature.xml";
-		
-        URL url = new URL(strUrl);
-        URLConnection con = url.openConnection();
-        if(con instanceof HttpsURLConnection) {
-        	SSLSocketFactory sslSocketFactory = getSSLSocketFactory();
-        	if(sslSocketFactory != null) {
-        		HttpsURLConnection secureCon = (HttpsURLConnection) con;
-                secureCon.setSSLSocketFactory(sslSocketFactory);
-        	}
-        }
-
+		URLConnection cnx = openConnection(elConfig, "feature.xml");
         try {
-			Document doc = XMLUtils.parse(con.getInputStream());
+			Document doc = XMLUtils.parse(cnx.getInputStream());
 			// parse the list of installable features
 			Feature[] features = Feature.parse(doc.getDocumentElement());
 	
@@ -965,9 +1070,9 @@ public class InstallServlet extends HttpServlet {
 		}
 	}
 
-	private Element getServerConfig() {
+	private static Element getServerConfig(File configDir) {
 
-		File f = new File(fConfigDir, "server.xml");
+		File f = new File(configDir, "server.xml");
 		if (!f.exists()) {
 			return null;
 		}
@@ -983,6 +1088,163 @@ public class InstallServlet extends HttpServlet {
 			// should not happen: XML is corrupted. Better to ignore it
 			return null;
 		}
+	}
+
+	
+	public static void updateServerRegistration(File configDir, String contactName, String contactEMail, String strPassword) throws Exception {
+
+		if (!configDir.exists()) {
+			configDir.mkdirs();
+		}
+		
+		Element elConfig = getServerConfig(configDir);
+		String repoURL = XMLUtils.getChildText(elConfig, "RepoURL");
+		if(repoURL == null) {
+			repoURL = DEFAULT_REPO;
+		}
+		URL url = new URL(repoURL);
+		// check if there is a certificate?
+		File fileCert = new File(configDir, "dysoweb.p12"); 
+		if(fileCert.exists()) {
+			url = new URL(url, "update");
+		} else {
+			url = new URL(url, "../init");
+		}
+		
+		Element elServer = null;
+		String sysId = null;
+
+		try {
+			String proxy = XMLUtils.getChildText(elConfig, "Proxy");
+			String proxyHost = XMLUtils.getChildText(elConfig, "ProxyHost");
+			String proxyPort = XMLUtils.getChildText(elConfig, "ProxyPort");
+			String proxyAuth = XMLUtils.getChildText(elConfig, "ProxyAuth");
+			
+			URLConnection cnx;
+			if("manual".equals(proxy)) {
+				Proxy p = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, Integer.parseInt(proxyPort)));
+				cnx = url.openConnection(p);
+				// proxy auth?
+				if(proxyAuth != null && proxyAuth.length() > 0) {
+                    String base64 = Base64.encode(proxyAuth.getBytes());
+                    cnx.setRequestProperty(
+                        "Proxy-Authorization", "Basic " + base64);
+				}
+			} else {
+				// open the connection with default settings
+				// set proxy autodetect
+				try {
+				    System.setProperty("java.net.useSystemProxies","true");
+				} catch (SecurityException e) {
+				    ; // failing to set this property isn't fatal
+				}
+				cnx = url.openConnection();	
+			}
+			
+	        if(fileCert.exists() && cnx instanceof HttpsURLConnection) {
+	        	SSLSocketFactory sslSocketFactory = initSocketFactory(configDir);
+	        	if(sslSocketFactory != null) {
+	        		HttpsURLConnection secureCon = (HttpsURLConnection) cnx;
+	                secureCon.setSSLSocketFactory(sslSocketFactory);
+	        	}
+	        }
+			
+	        cnx.setDoOutput(true);
+			OutputStreamWriter out = new OutputStreamWriter(
+					cnx.getOutputStream());
+			
+			// send name and some patform info for support and OBR repository
+			// selection
+			String name = null;
+	    	try {
+				name = InetAddress.getLocalHost().getHostName();
+			} catch (Throwable e) {
+				// ignore
+				name = "unknown";
+	        }
+	
+			out.write("Name=" + URLEncoder.encode(name, "UTF-8"));
+			
+			try {
+				Document doc = XMLUtils.parse(new FileInputStream(new File(configDir, "server.xml")));
+				elServer = doc.getDocumentElement();
+			} catch(Exception e) {
+				elServer = null;
+			}
+			
+			// get the contact name and contact email if possible
+			if(contactName != null && elServer != null) {
+				contactName = XMLUtils.getChildText(elServer, "ContactName");
+			}
+			if(contactEMail != null && elServer != null) {
+				contactEMail = XMLUtils.getChildText(elServer, "ContactEMail");
+			}
+			
+			if(contactName != null && contactName.length() > 0) {
+				out.write("&ContactName=" + URLEncoder.encode(contactName, "UTF-8"));
+			}
+			if(contactEMail != null && contactEMail.length() > 0) {
+				out.write("&ContactEMail=" + URLEncoder.encode(contactEMail, "UTF-8"));
+			}
+			out.write("&LocalIP=" + URLEncoder.encode(InetAddress.getLocalHost().getHostAddress(), "UTF-8"));
+			out.write("&java.version=" + URLEncoder.encode(System.getProperty("java.version"), "UTF-8"));
+			out.write("&java.vendor=" + URLEncoder.encode(System.getProperty("java.vendor"), "UTF-8"));
+			out.write("&os.name=" + URLEncoder.encode(System.getProperty("os.name"), "UTF-8"));
+			out.write("&os.arch=" + URLEncoder.encode(System.getProperty("os.arch"), "UTF-8"));
+			out.write("&os.version=" + URLEncoder.encode(System.getProperty("os.version"), "UTF-8"));
+			out.close();
+			
+			// execute method and handle any error responses.
+			InputStream in = cnx.getInputStream();
+			// parse the XML document if any
+			Document doc = XMLUtils.parse(in);
+			Element el = doc.getDocumentElement();
+			
+			// retrieve the certificate if any
+			String strCertificate = XMLUtils.getChildText(el, "certificate");
+			if(strCertificate != null) {
+				byte[] certificate = Base64.decode(strCertificate);
+				FileOutputStream fos = new FileOutputStream(new File(configDir, "dysoweb.p12"));
+				fos.write(certificate);
+				fos.close();
+			}
+			// get the server id
+			sysId = el.getAttribute("sysId");
+		} catch(Exception e) {
+			// unable to register the server on the remote repository
+		}
+
+		// update the server config
+		elServer = XMLUtils.newElement("server");
+		if (sysId != null)
+			elServer.setAttribute("sysId", sysId);
+
+		// store the password
+		if(strPassword != null && strPassword.length() > 0) {
+			XMLUtils.addElement(elServer, "Password", SecurityServlet.encrypt(strPassword));
+		}
+		if(contactName != null && contactName.length() > 0) {
+			XMLUtils.addElement(elServer, "ContactName", contactName);
+		}
+		if(contactEMail != null && contactEMail.length() > 0) {
+			XMLUtils.addElement(elServer, "ContactEMail", contactEMail);
+		}
+
+		// output the content as XML
+		Source source = new DOMSource(elServer);
+		StringWriter sw = new StringWriter();
+
+		StreamResult result = new StreamResult(sw);
+		Transformer xformer = TransformerFactory.newInstance().newTransformer();
+		xformer.setOutputProperty("indent", "yes");
+		xformer.transform(source, result);
+		String xml = sw.toString();
+
+		OutputStream os = new FileOutputStream(new File(configDir, "server.xml"));
+		Writer w = new OutputStreamWriter(os, "UTF-8");
+		w.write(xml);
+		w.close();
+		
 	}
 
 	public static SSLSocketFactory initSocketFactory(File configDir) {

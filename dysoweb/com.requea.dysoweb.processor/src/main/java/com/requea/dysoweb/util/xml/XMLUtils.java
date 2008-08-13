@@ -297,6 +297,9 @@ public class XMLUtils {
      * @return
      */
     public static Element getFirstChild(Element el) {
+    	if(el == null) {
+    		return null;
+    	}
         NodeList lst = el.getChildNodes();
         int len = lst.getLength();
         for (int i = 0; i < len; i++) {

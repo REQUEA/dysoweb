@@ -2,6 +2,8 @@ package com.requea.dysoweb.panel.monitor;
 
 import java.text.DecimalFormat;
 
+import com.requea.dysoweb.service.obr.IProgressMonitor;
+
 /**
  * This progress monitor directs all task information to std.out.
  */

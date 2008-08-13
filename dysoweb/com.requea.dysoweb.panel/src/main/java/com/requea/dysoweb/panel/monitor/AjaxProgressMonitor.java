@@ -4,6 +4,7 @@ import java.text.DecimalFormat;
 
 import org.w3c.dom.Element;
 
+import com.requea.dysoweb.service.obr.IProgressMonitor;
 import com.requea.dysoweb.util.xml.XMLUtils;
 
 /**

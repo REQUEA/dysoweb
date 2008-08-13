@@ -1,20 +1,18 @@
 body {
-	background:#babbbd;
+	background:#fff;
 	font-family: "Lucida grande",Verdana,arial,sans-serif;
     margin:0px;
 	font-size: 70%;
 }	
-	
-#it {
-	background:url('bktop.gif') repeat-x #d4d8da;
+a {
+	color:#00c;	
 }
-#il {
-	background:url('bkbottom.gif') repeat-x 0% 100%;
+a:hover {
+	color:#c00;	
 }
+
 #top {
-	background:url('top.jpg') no-repeat;
-	color:#ccc;
-	height:64px;
+	height:20px;
 }
 #inner {
 	padding:0px;	
@@ -41,34 +39,6 @@ body {
 	clear:both;
 }
 
-/*****************************************
-	PORTLET RENDERING
-******************************************/
-.rqportlet 
-{
-	margin:0px 5px 5px 0px;
-	border:1px solid #aaa;
-	background:#fff;
-	padding:0px;
-	position:relative;
-}
-.rqhdr 
-{
-	background:url('hdr.gif') repeat-x;
-	color:#fff;
-	margin:0px;
-	padding:0px;
-	height:23px;
-}
-.rqhdr h3 
-{
-    margin:0px;
-    color:#555;
-	padding:4px;
-	font-weight:normal;
-	font-size:100%;
-    color:#fff;
-}
 .rqview {
 	background:#fff;
 	padding:5px;
@@ -81,11 +51,14 @@ body {
 }
 .rqview .val {
 }
+.radio {
+	margin-left:15px;
+}
 
 .rqview h2 {
-	font-size:100%;
+	font-size:120%;
 	font-weight: normal;
-	letter-spacing: 1px; 
+	letter-spacing: 0.2em; 
     color: #666666;
 	border-bottom: 1px solid #ccc;
 	margin:4px 0px 10px 0px;	
@@ -103,20 +76,24 @@ body {
 	MENUBAR STYLES
 ******************************************/
 .mbar {
-	margin-bottom:20px;
-	padding:13px 20px 0px 20px;
+	padding:0px 0px 0px 0px;
+	margin:5px 12px 0px 10px;
 }
 
 .mb {
-	position: relative;
+	border-left:1px solid #ccc;
+	border-right:1px solid #ccc;
+	background:url('menbk.gif') repeat-x;
+	width:100%;
+	height:30px;
 }
 .mbb {
+	
 }
 
 .mb ul.mbp {
 	margin: 0px;
 	padding: 0px;
-	position: absolute;
 }
 
 .mb ul.mbp li  {
@@ -125,94 +102,59 @@ body {
 }
 .mbpcmen {
 	cursor:pointer;
-	background:url('mbbcm.gif') no-repeat #fafaff 5px 5px;
 	display: block;
-	float: left;
 	padding: 4px 20px 4px 20px;
 	margin: 0px 2px 0px 0px;
 	text-align: center;
 	font-size: 100%;
 	text-decoration: none;
 	color: #afccdc;
+	float:left;
 }
 
 .mb ul.mbp a.mbpmen {
 	display: block;
-	float: left;
-	padding: 4px 20px 4px 20px;
-	margin: 0px 2px 0px 0px;
+	padding: 8px 20px 0px 20px;
+	margin: 0px;
 	text-align: center;
 	font-size: 100%;
 	text-decoration: none;
 	color: #333;
-	border: 1px solid #aaa;
-	border-bottom: 1px solid #afccdc;
-	background: #fff;
+	background: url('men.gif');
+	float:left;
+	border:none;
+	height:22px;
+	border-right:1px solid #ccc;
+}
+.mb ul.mbp a.mbpmen:hover {
+	background: url('mencur.gif');
 }
 
 .mb ul.mbp span,.mb ul.mbp a.current,.mb ul.mbp a.current:hover {
-	border: 1px solid #afccdc;
-	border-bottom:3px solid #659343;
-	font-weight:normal;
-	color:#157cc1;
-	padding-bottom: 3px;
-	margin-top: 0;
-}
-
-
-
-.mb ul.mbs {
-	position: absolute;
-	margin: 0px;
-	padding: 0px;
-	left: 1px;
-	top:28px;
-	width: 50em; /* a width is required for Opera, older Mozilla browsers, and Konqueror browsers */
-}
-
-
-.mb ul.mbs li a,.mb ul.mbs li span {
-	width: auto;
 	display: block;
-	float: left;
-	padding: 0 10px;
-	margin: 0;
-	text-align: auto;
-	border: none;
-	background: none;
+	padding: 8px 20px 0px 20px;
+	margin: 0px;
+	text-align: center;
+	font-size: 100%;
+	text-decoration: none;
+	color: #333;
+	float:left;
+	background: url('mensel.gif');
+	height:22px;
+	border:none;
+	border-right:1px solid #ccc;
 }
 
-.mb ul.mbs li a {
-	padding-top:4px;
-	color: #777;
-	font-size:75%;
+.mli {
+	font-size:120%;	
 }
-.mb ul.mbs li a.mbbro,.mb ul.mbs li a.mbbro:hover,.mb ul.mbs li a.mbbro:active {
-	padding-top:4px;
-	padding-left:4px;
-	margin-left:4px;
-}
-
-.mb ul.mbs li a:hover {
-	color: #c00;
-	background: transparent;
-	padding: 0 10px;
-	border: none;
-	border-right: 1px dotted #AAA;
-	text-decoration: underline;
-}
-
-.mb ul.mbs li a:active {
-	color: #000;
-	background: transparent;
-}
-
-.mb ul.mbs li:last-child a { border: none; }
-
 
 /*****************************************
 	FOOTER STYLES
 ******************************************/
+#ifooter {
+    margin-top:50px;
+}
 #cfooter 
 {
 	color:#777;
@@ -323,8 +265,6 @@ a.rpurl:hover {
 	font-weight:bold;	
 }
 .rpfeatinst {
-	background:#eee;
-	border:1px solid #999;
 	margin:0px 10px 0px 0px;
 	padding:4px;	
 }
@@ -415,4 +355,14 @@ a.rplaunch:hover {
 .bundleinfo {
 	width:320px;
 }
+
+
+.testok {
+	background:url("document_check.gif") no-repeat;
+	height:48px;
+	font-size:140%;
+	padding-left:58px;	
+	padding-top:12px;	
+}
+
 

@@ -2,9 +2,9 @@
   <classpathentry kind="src" path="src/main/java"/>
   <classpathentry kind="output" path="target/classes"/>
   <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-  <classpathentry kind="var" path="M2_REPO/org/apache/felix/org.osgi.core/1.0.1/org.osgi.core-1.0.1.jar"/>
   <classpathentry kind="var" path="M2_REPO/commons-logging/commons-logging-api/1.1/commons-logging-api-1.1.jar"/>
-  <classpathentry kind="var" path="M2_REPO/requeabuild/smackx/3.0.4/smackx-3.0.4.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/apache/felix/org.apache.felix.shell/1.0.1/org.apache.felix.shell-1.0.1.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/felix/org.osgi.core/1.0.1/org.osgi.core-1.0.1.jar"/>
   <classpathentry kind="var" path="M2_REPO/requeabuild/smack/3.0.4/smack-3.0.4.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/felix/org.apache.felix.shell/1.0.1/org.apache.felix.shell-1.0.1.jar"/>
+  <classpathentry kind="var" path="M2_REPO/requeabuild/smackx/3.0.4/smackx-3.0.4.jar"/>
 </classpath>

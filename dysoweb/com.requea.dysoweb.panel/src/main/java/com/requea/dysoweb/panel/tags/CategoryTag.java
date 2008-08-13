@@ -40,7 +40,7 @@ public class CategoryTag extends TagSupport {
         	TagWriter tw = new TagWriter();
         	tw.append("<a href=\"");
         	tw.append(request.getContextPath());
-        	tw.append("/dysoweb/panel/install?category=");
+        	tw.append("/dysoweb/panel/secure/install?category=");
         	tw.append(id);
         	tw.append("\"");
         	if(fStyle != null) {

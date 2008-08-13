@@ -19,7 +19,7 @@ import org.w3c.dom.Element;
 
 import com.requea.dysoweb.panel.InstallServlet;
 import com.requea.dysoweb.panel.SecurityFilter;
-import com.requea.dysoweb.panel.utils.xml.ISO8601DateTimeFormat;
+import com.requea.dysoweb.panel.utils.ISO8601DateTimeFormat;
 import com.requea.dysoweb.util.xml.XMLException;
 import com.requea.dysoweb.util.xml.XMLUtils;
 

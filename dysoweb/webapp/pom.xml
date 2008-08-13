@@ -2,34 +2,29 @@
 	<parent>
 		<artifactId>dysoweb</artifactId>
 		<groupId>com.requea.dysoweb</groupId>
-		<version>1.0.1</version>
+		<version>1.0.1-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.requea.dysoweb</groupId>
 	<artifactId>webapp</artifactId>
 	<packaging>war</packaging>
 	<name>Requea Dysoweb WebApp</name>
-	<version>1.0.1</version>
+	<version>1.0.1-SNAPSHOT</version>
 	<url>http://www.requea.com</url>
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.felix</groupId>
 			<artifactId>org.apache.felix.framework</artifactId>
-			<exclusions>
-			  	<exclusion>
-			    	<groupId>org.apache.felix</groupId>
-			    	<artifactId>org.osgi.compendium</artifactId>
-			  	</exclusion>
-			  	<exclusion>
-			    	<groupId>org.apache.felix</groupId>
-			    	<artifactId>org.osgi.foundation</artifactId>
-			  	</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.felix</groupId>
 			<artifactId>org.apache.felix.shell</artifactId>
 		</dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.osgi.service.obr</artifactId>
+            <scope>provided</scope>
+        </dependency>
 		<dependency>
 			<groupId>com.requea.dysoweb</groupId>
 			<artifactId>dysoweb-core</artifactId>
@@ -58,6 +53,16 @@
 		<dependency>
 			<groupId>com.requea.dysoweb</groupId>
 			<artifactId>com.requea.dysoweb.panel</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.requea.dysoweb</groupId>
+			<artifactId>com.requea.dysoweb.obr</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.requea.dysoweb</groupId>
+			<artifactId>com.requea.dysoweb.service.obr</artifactId>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -127,6 +132,15 @@
 									</outputDirectory>
 								</artifactItem>
 								<artifactItem>
+									<groupId>org.apache.felix</groupId>
+						            <artifactId>org.osgi.service.obr</artifactId>
+									<type>jar</type>
+									<overWrite>true</overWrite>
+									<outputDirectory>
+										${project.build.directory}/dysoweb/WEB-INF/bundle
+									</outputDirectory>
+								</artifactItem>
+								<artifactItem>
 									<groupId>
 										com.requea.dysoweb
 									</groupId>
@@ -171,6 +185,32 @@
 									</groupId>
 									<artifactId>
 										com.requea.dysoweb.shell
+									</artifactId>
+									<type>jar</type>
+									<overWrite>true</overWrite>
+									<outputDirectory>
+										${project.build.directory}/dysoweb/WEB-INF/bundle
+									</outputDirectory>
+								</artifactItem>
+								<artifactItem>
+									<groupId>
+										com.requea.dysoweb
+									</groupId>
+									<artifactId>
+										com.requea.dysoweb.service.obr
+									</artifactId>
+									<type>jar</type>
+									<overWrite>true</overWrite>
+									<outputDirectory>
+										${project.build.directory}/dysoweb/WEB-INF/bundle
+									</outputDirectory>
+								</artifactItem>
+								<artifactItem>
+									<groupId>
+										com.requea.dysoweb
+									</groupId>
+									<artifactId>
+										com.requea.dysoweb.obr
 									</artifactId>
 									<type>jar</type>
 									<overWrite>true</overWrite>
