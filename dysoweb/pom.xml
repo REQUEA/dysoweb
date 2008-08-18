@@ -23,5 +23,6 @@
 		<module>com.requea.dysoweb.obr</module>
 		<module>com.requea.dysoweb.utils.tags</module>
 	    <module>com.requea.dysoweb.commons-logging</module>
+		<module>log4j</module>
 	</modules>
 </project>

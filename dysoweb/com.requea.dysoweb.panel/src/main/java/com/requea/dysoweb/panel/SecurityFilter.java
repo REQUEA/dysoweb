@@ -54,9 +54,8 @@ public class SecurityFilter implements Filter {
 			
 			// not authenticated yet
 			File f = new File(fConfigDir,"server.xml");
-			File fCert = new File(fConfigDir,"dysoweb.p12");
 			boolean bSecured = false;
-			if(f.exists() && fCert.exists()) {
+			if(f.exists()) {
 				try {
 					Document doc = XMLUtils.parse(new FileInputStream(f));
 					Element el = doc.getDocumentElement();

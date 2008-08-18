@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Proxy;
@@ -104,7 +105,7 @@ public class SettingsServlet extends HttpServlet {
 			        if(repoURL.startsWith("https://repo.requea.com")) {
 			        	// update server registration if not already done
 			        	InstallServlet.updateServerRegistration(fConfigDir, null, null, null);
-						// reinit the repo
+						// try to reinit the repo
 			        	InstallServlet.initRepo(fConfigDir, elConfig);	
 			        	request.getSession().removeAttribute(InstallServlet.FEATURES);
 			        }
@@ -170,21 +171,24 @@ public class SettingsServlet extends HttpServlet {
 				cnx = url.openConnection();	
 			}
 			// present the client certificate?
-			if(cnx instanceof HttpsURLConnection) {
+			File fileCertificate = new File(fConfigDir, "dysoweb.p12");
+			if(cnx instanceof HttpsURLConnection && fileCertificate.exists()) {
 				SSLSocketFactory factory = InstallServlet.initSocketFactory(fConfigDir);
 				((HttpsURLConnection)cnx).setSSLSocketFactory(factory);
 			}
 
-			// read the first line
-			String type = cnx.getContentType();
-			// must be of type "text/xml"
-			if(type == null || !type.startsWith("text/xml")) {
-				throw new Exception("Incorrect type for content, check the URL ("+type+")");
+			// check the response code
+			if(cnx instanceof HttpURLConnection) {
+				HttpURLConnection hc = (HttpURLConnection)cnx;
+				if(hc.getResponseCode() != 200) {
+					throw new Exception("Unable to open connection. Check the URL. Response code:"+hc.getResponseCode()+" "+hc.getResponseMessage());
+				}
 			}
-			// read the content type to make sure that we have something
+
+			// open the stream to make sure that we have something
 			InputStream is = cnx.getInputStream();
 			is.close();
-			
+
 			// it was successful
 			request.setAttribute(InputTag.INFO, "Successful repository connection to " + repoURL);
 			

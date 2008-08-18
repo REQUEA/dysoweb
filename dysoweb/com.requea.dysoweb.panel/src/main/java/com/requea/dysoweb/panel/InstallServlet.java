@@ -61,6 +61,8 @@ import org.osgi.service.packageadmin.PackageAdmin;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.requea.dysoweb.panel.InstallServlet;
+import com.requea.dysoweb.panel.SecurityFilter;
 import com.requea.dysoweb.panel.monitor.AjaxProgressMonitor;
 import com.requea.dysoweb.panel.tags.ErrorTag;
 import com.requea.dysoweb.panel.utils.Base64;
@@ -91,6 +93,7 @@ public class InstallServlet extends HttpServlet {
 	private static final long serialVersionUID = -680556291402571674L;
 	
     protected static final DateFormat format = new ISO8601DateTimeFormat();
+	private static final int DEFAULT_REPO_REGISTRATION_TIMEOUT = 30000;
 	
 	private File fConfigDir;
 	private SSLSocketFactory fSocketFactory;
@@ -221,14 +224,11 @@ public class InstallServlet extends HttpServlet {
 				updateServerRegistration(fConfigDir, contactName, contactEMail, strPassword);
 				// reset the socket factory
 				fSocketFactory = null;
-				// init the repo
-				initRepo(fConfigDir, elConfig);				
-	        	request.getSession().removeAttribute(InstallServlet.FEATURES);
-
+				HttpSession session = request.getSession(true);
+				session.removeAttribute(InstallServlet.FEATURES);
 				// from this point on, we are authenticated
-				request.getSession().setAttribute(SecurityFilter.AUTH,
-						Boolean.TRUE);
-				request.getSession().setAttribute("com.requea.dysoweb.shell.auth", Boolean.TRUE);
+				session.setAttribute(SecurityFilter.AUTH, Boolean.TRUE);
+				session.setAttribute("com.requea.dysoweb.shell.auth", Boolean.TRUE);
 			} catch (Exception e) {
 				request.setAttribute(ErrorTag.ERROR,
 						"Unable to register server: " + e.getMessage());
@@ -241,11 +241,11 @@ public class InstallServlet extends HttpServlet {
 
 			// registration was ok, redirect
 			if (ru != null && ru.length() > 0 && !"null".equals(ru)) {
-				response.sendRedirect(ru);
+				response.sendRedirect(response.encodeURL(ru));
 				return;
 			} else {
-				response.sendRedirect(request.getContextPath()
-						+ "/dysoweb/panel/panel.jsp");
+				response.sendRedirect(response.encodeURL(request.getContextPath()
+						+ "/dysoweb/panel/panel.jsp"));
 			}
 			
 		} else if("install".equals(op)) {
@@ -296,8 +296,8 @@ public class InstallServlet extends HttpServlet {
 				handleInstallPanelRequest(request, response, elConfig);
 			} catch (Exception e) {
 				// show the error
-				request.setAttribute(ErrorTag.ERROR, "Unable to retrieve installable application list. Please try later");
-				RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure/secure/install.jsp");
+				request.setAttribute(ErrorTag.ERROR, "Unable to retrieve installable application list: " + e.getMessage());
+				RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure/install.jsp");
 				rd.forward(request, response);
 			}
 		}
@@ -1148,7 +1148,8 @@ public class InstallServlet extends HttpServlet {
 	                secureCon.setSSLSocketFactory(sslSocketFactory);
 	        	}
 	        }
-			
+	        // set a default timeout
+			cnx.setReadTimeout(DEFAULT_REPO_REGISTRATION_TIMEOUT);
 	        cnx.setDoOutput(true);
 			OutputStreamWriter out = new OutputStreamWriter(
 					cnx.getOutputStream());
