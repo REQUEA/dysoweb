@@ -55,7 +55,9 @@ public class ServletChain implements FilterChain {
 				fPos ++;
 				if(def.getLoader() != null)
 					th.setContextClassLoader(def.getLoader());
-				flt.doFilter(request, response, this);
+				if(flt != null) {
+					flt.doFilter(request, response, this);
+				}
 			} finally {
 				th.setContextClassLoader(cl);
 			}
