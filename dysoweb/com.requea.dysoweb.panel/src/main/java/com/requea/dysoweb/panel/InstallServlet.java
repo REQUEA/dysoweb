@@ -42,10 +42,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
@@ -320,85 +317,73 @@ public class InstallServlet extends HttpServlet {
 	}
 	
 	private void handleStatusRequest(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-		try {
-			// retrieve the monitor
-			HttpSession session = request.getSession();
-			AjaxProgressMonitor monitor = (AjaxProgressMonitor)session.getAttribute(INSTALL_MONITOR);
-			Status status = (Status)session.getAttribute(INSTALL_STATUS);
-			
-			if(monitor == null || status == null) {
-				return;
-			}
-			// retrieve the monitor result
-			Element el = XMLUtils.newElement("div");
+		// retrieve the monitor
+		HttpSession session = request.getSession();
+		AjaxProgressMonitor monitor = (AjaxProgressMonitor)session.getAttribute(INSTALL_MONITOR);
+		Status status = (Status)session.getAttribute(INSTALL_STATUS);
+		
+		if(monitor == null || status == null) {
+			return;
+		}
+		// retrieve the monitor result
+		Element el = XMLUtils.newElement("div");
 
-			// set the status
-			if(status.getStatus() == Status.ERROR) {
-				el.setAttribute("status", "error");
-				// set the error message
-				Element elMsg = XMLUtils.addElement(el, "div");
-				elMsg.setAttribute("class", "rqerror");
-				if(status.getException() != null) {
-					String msg = status.getException().getMessage();
-					XMLUtils.setText(elMsg, msg);
-				} else {
-					XMLUtils.setText(elMsg, "Error");
-				}
-				
-			} else if(status.getStatus() == Status.DONE) {
-				el.setAttribute("status", "done");
-				Element elMsg = XMLUtils.addElement(el, "div");
-				elMsg.setAttribute("class", "rqtask");
-				XMLUtils.setText(elMsg, "Application installed successfully");
-			} else if(status.getStatus() == Status.NEW) {
-				// still waiting to start
-				Element elMsg = XMLUtils.addElement(el, "div");
-				XMLUtils.setText(elMsg, "Installation in progress. Please wait");
-				Element elWait = XMLUtils.addElement(el, "div");
-				elWait.setAttribute("class", "rqwait");
-				XMLUtils.addElement(elWait, "span", "Please wait");
+		// set the status
+		if(status.getStatus() == Status.ERROR) {
+			el.setAttribute("status", "error");
+			// set the error message
+			Element elMsg = XMLUtils.addElement(el, "div");
+			elMsg.setAttribute("class", "rqerror");
+			if(status.getException() != null) {
+				String msg = status.getException().getMessage();
+				XMLUtils.setText(elMsg, msg);
 			} else {
-				monitor.renderProgress(el);
+				XMLUtils.setText(elMsg, "Error");
 			}
-
-			// render the response as an ajax packet
-	    	Source source = new DOMSource(el);
-			StringWriter out = new StringWriter();
 			
-			StreamResult result = new StreamResult(out);
-			Transformer xformer = TransformerFactory.newInstance().newTransformer();
-			xformer.setOutputProperty("indent", "yes");
-			xformer.transform(source, result);
-			
-	        String xml = out.toString();
+		} else if(status.getStatus() == Status.DONE) {
+			el.setAttribute("status", "done");
+			Element elMsg = XMLUtils.addElement(el, "div");
+			elMsg.setAttribute("class", "rqtask");
+			XMLUtils.setText(elMsg, "Application installed successfully");
+		} else if(status.getStatus() == Status.NEW) {
+			// still waiting to start
+			Element elMsg = XMLUtils.addElement(el, "div");
+			XMLUtils.setText(elMsg, "Installation in progress. Please wait");
+			Element elWait = XMLUtils.addElement(el, "div");
+			elWait.setAttribute("class", "rqwait");
+			XMLUtils.addElement(elWait, "span", "Please wait");
+		} else {
+			monitor.renderProgress(el);
+		}
 
-	        response.setContentType("text/xml");
-	        String encoding = null;
-	        if(!"false".equals(System.getProperty("com.requea.dynpage.compressoutput"))) {
-	        	encoding = request.getHeader("Accept-Encoding");
-	        }
-	        boolean supportsGzip = false;
-	        if (encoding != null) {
-		    	if (encoding.toLowerCase().indexOf("gzip") > -1) {
-		    		supportsGzip = true;
-	    		}
-	    	}
-	        // then write the content as utf-8: zip it if the requests accept zip, since xml compresses VERY well
-	        OutputStream os = response.getOutputStream();
-	        if(supportsGzip) {
-	        	os = new GZIPOutputStream(os);
-	        	response.setHeader("Content-Encoding", "gzip");
-	        }
-	        Writer w = new OutputStreamWriter(os, "UTF-8");
-	        w.write(xml);
-	        w.close();
-		} catch (TransformerConfigurationException e) {
-			throw new ServletException(e);
-		} catch (TransformerFactoryConfigurationError e) {
-			throw new ServletException(e);
-		} catch (TransformerException e) {
+		// render the response as an ajax packet
+		String xml;
+		try {
+			xml = XMLUtils.DocumentToString(el.getOwnerDocument());
+		} catch (XMLException e) {
 			throw new ServletException(e);
 		}
+        response.setContentType("text/xml");
+        String encoding = null;
+        if(!"false".equals(System.getProperty("com.requea.dynpage.compressoutput"))) {
+        	encoding = request.getHeader("Accept-Encoding");
+        }
+        boolean supportsGzip = false;
+        if (encoding != null) {
+	    	if (encoding.toLowerCase().indexOf("gzip") > -1) {
+	    		supportsGzip = true;
+    		}
+    	}
+        // then write the content as utf-8: zip it if the requests accept zip, since xml compresses VERY well
+        OutputStream os = response.getOutputStream();
+        if(supportsGzip) {
+        	os = new GZIPOutputStream(os);
+        	response.setHeader("Content-Encoding", "gzip");
+        }
+        Writer w = new OutputStreamWriter(os, "UTF-8");
+        w.write(xml);
+        w.close();
 	}
 
 	private void handleInstallBundleRequest(HttpServletRequest request,
