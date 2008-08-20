@@ -11,13 +11,18 @@
     </properties>
     <groupId>com.requea.dysoweb</groupId>
     <artifactId>${pom.groupId}.${pkgArtifactId}</artifactId>
-    <version>1.1</version>
+    <version>1.0.3-SNAPSHOT</version>
     <packaging>bundle</packaging>
-    <name>${pkgArtifactId} bundle</name>
+    <name>Requea Dysoweb Commons Logging Wrapper</name>
     <description>
         This bundle simply wraps ${pkgArtifactId}-${pkgVersion}.jar.
     </description>
     <dependencies>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.osgi.core</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>${pkgArtifactId}</artifactId>
@@ -33,9 +38,13 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-SymbolicName>
-                            ${pom.artifactId}
-                        </Bundle-SymbolicName>
+						<Bundle-Name>commons logging wrapper</Bundle-Name>
+						<Bundle-Activator>
+                            com.requea.dysoweb.commons.logging.Activator
+                        </Bundle-Activator>
+						<Bundle-SymbolicName>
+							${pom.artifactId}
+						</Bundle-SymbolicName>
                         <Import-Package>
                             javax.servlet;resolution:=optional,
                             org.apache.avalon.framework.logger;resolution:=optional,
@@ -51,6 +60,10 @@
                             @${pkgArtifactId}-${pkgVersion}.jar!/META-INF/LICENSE.txt,
                             @${pkgArtifactId}-${pkgVersion}.jar!/META-INF/NOTICE.txt
                         </Include-Resource>
+						<Private-Package>
+							com.requea.dysoweb.commons.logging,
+							org.apache.commons.logging.*
+						</Private-Package>
                     </instructions>
                 </configuration>
             </plugin>

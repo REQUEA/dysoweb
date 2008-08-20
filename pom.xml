@@ -129,11 +129,15 @@
 	            <artifactId>com.requea.dysoweb.processor</artifactId>
 	            <version>${version}</version>
 	        </dependency>
-
+	        <dependency>
+	            <groupId>com.requea.dysoweb</groupId>
+	            <artifactId>com.requea.dysoweb.log4j</artifactId>
+	            <version>${version}</version>
+	        </dependency>
 	        <dependency>
 	            <groupId>com.requea.dysoweb</groupId>
 	            <artifactId>com.requea.dysoweb.commons-logging</artifactId>
-	            <version>1.1</version>
+	            <version>${version}</version>
 	        </dependency>
 
 

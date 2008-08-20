@@ -287,6 +287,15 @@ public class DysowebServlet extends HttpServlet {
 					System.out.println("Active Dysoweb Processor is bundle " + ref.getBundle().getBundleId());
 				}
 				setActiveProcessor(servletContext, context, ref);
+			} else {
+				// deactivate the old one if there is one
+				if(fActiveProcessor != null) {
+					fActiveProcessor.deactivate();
+				}
+				// no active processor
+				fActiveProcessor = null;
+				fActiveProcessorBundle = null;
+				fActiveProcessorVersion = null;
 			}
 		} catch (InvalidSyntaxException e) {
 			// ignore this one

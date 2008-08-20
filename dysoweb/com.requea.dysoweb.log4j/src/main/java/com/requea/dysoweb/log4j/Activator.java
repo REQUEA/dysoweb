@@ -30,6 +30,9 @@ public class Activator implements BundleActivator {
 			}
 		} catch (NamingException nex) {
 			// not defined: use standard logging mechanism
+			System.err.println("Unable to configure log4j " + nex.getMessage());
+		} catch(Throwable t) {
+			System.err.println("Unable to configure log4j " + t.getMessage());
 		} finally {
 			th.setContextClassLoader(contextClassLoader);
 		}

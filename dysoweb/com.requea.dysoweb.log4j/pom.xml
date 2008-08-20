@@ -7,9 +7,9 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.requea.dysoweb</groupId>
-	<artifactId>log4j</artifactId>
-	<name>log4j</name>
-	<version>1.2.15</version>
+	<artifactId>com.requea.dysoweb.log4j</artifactId>
+	<name>Requea Dysoweb Log4j wrapper</name>
+	<version>1.0.3-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 	<url>http://www.requea.com</url>
 	<dependencies>
@@ -73,7 +73,7 @@
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
-						<Bundle-Name>log4j</Bundle-Name>
+						<Bundle-Name>Log4j wrapper</Bundle-Name>
 						<Bundle-Activator>
                             com.requea.dysoweb.log4j.Activator
                         </Bundle-Activator>
