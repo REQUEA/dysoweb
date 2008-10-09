@@ -22,5 +22,7 @@ body {
 	border:2px solid #000099;
 	font-size:90%;
 }
-
+.rqtopimg {
+	display:none;
+}
 

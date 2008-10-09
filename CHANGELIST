@@ -1,0 +1,25 @@
+1.0.5 VERSION
+- Bug fix: NPE on Felix OBR if bundle has null symbolic name
+- javax.jcr api included
+- Backward compatibility with older version of repo
+- Connectivity to repo v2.0 https//:repo.requea.com
+
+1.0.4 VERSION
+- Fixed a transformer factory on the install servlet on some instances of Tomcat
+
+1.0.3 VERSION
+- Fixed a bug when the dysoweb processor was halted and restarted
+- Log4j wrapper added to the core dysoweb platform to facilitate logging
+
+1.0.2 VERSION
+- Bug with Repo registration when connectivity to repo is not established
+- BEA Weblogic 10.3 support (Oracle Weblogic 10gR3)
+- BEA Weblogic 10.0 support
+
+1.0.1 VERSION
+ChangeList:
+- ProxySettings page for the repo. Used when java settings do no work
+- Oracle AS support (10g 1.0.3)
+- JAXP problems (Oracle AS)
+- Simplification of the panel UI
+- Upgrade to Felix 1.0.4
