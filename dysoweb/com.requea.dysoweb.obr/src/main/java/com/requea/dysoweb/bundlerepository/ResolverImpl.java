@@ -505,8 +505,10 @@ public class ResolverImpl implements MonitoredResolver
             else
             {
                 // Install the bundle.
-            	int lSize = (int) ((Long)deployResources[i].getProperties().get("size")).longValue();
-        		size += lSize;
+            	Long lSize = (Long)deployResources[i].getProperties().get("size");
+            	if(lSize != null) {
+            		size += lSize.intValue();
+            	}
             }
         }
 
@@ -587,10 +589,13 @@ public class ResolverImpl implements MonitoredResolver
 	                    // bundle JAR URL for the bundle location, since this will
 	                    // limit OBR's ability to manipulate bundle versions. Instead,
 	                    // use a unique timestamp as the bundle location.
-	                    URL url = deployResources[i].getURL();
+	                	ResourceImpl res = (ResourceImpl)deployResources[i];
+	                	Repository repo = res.getRepository();
+	                	URL repoURL = repo.getURL();
+	                	
+	                    URL url = repoURL.getPath().endsWith("zip") ? repoURL : res.getURL();
 	                    if (url != null)
 	                    {
-	                    	
 	                    	URLConnection con = m_proxy == null ? url.openConnection() : url.openConnection(m_proxy);
 	                        // Support for http proxy authentication
 	                        if ((m_proxyAuth != null) && (m_proxyAuth.length() > 0))
@@ -606,7 +611,8 @@ public class ResolverImpl implements MonitoredResolver
 	                    	if(m_sslSocketFactory != null && con instanceof HttpsURLConnection) {
 	                    		((HttpsURLConnection)con).setSSLSocketFactory(m_sslSocketFactory);
 	                    	}
-	                    	InputStream is = con.getInputStream();
+	                    	InputStream is = RepositoryImpl.openStream(repoURL, con, res.getURI());
+	                    	
 	                    	long lSize = getResourceSize(deployResources[i]);
 	                    	IProgressMonitor subMonitor = new SubProgressMonitor(monitor, (int)lSize);
 	                    	subMonitor.setTaskName("Installing " + deployResources[i].getSymbolicName() + " " + deployResources[i].getVersion().toString());

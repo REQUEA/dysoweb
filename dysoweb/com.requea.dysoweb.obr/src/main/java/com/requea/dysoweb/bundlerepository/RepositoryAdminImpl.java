@@ -47,6 +47,7 @@ public class RepositoryAdminImpl implements ClientAuthRepositoryAdmin
 	private SSLSocketFactory m_sslFactory;
 	private Proxy m_proxy;
 	private String m_proxyAuth;
+	private URL m_repoURL;
 
     private static final String DEFAULT_REPOSITORY_URL =
         "http://oscar-osgi.sf.net/obr2/repository.xml";
@@ -213,6 +214,10 @@ public class RepositoryAdminImpl implements ClientAuthRepositoryAdmin
     }
 
 
+    public void setRepoURL(URL repoURL) {
+    	m_repoURL = repoURL;
+    }
+    
 	public void setProxy(String proxyHost, int proxyPort, String proxyAuth) {
 		if(proxyHost == null || proxyHost.length() == 0) {
 			m_proxy = null;

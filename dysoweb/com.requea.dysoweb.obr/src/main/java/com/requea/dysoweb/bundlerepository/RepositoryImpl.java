@@ -28,6 +28,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -172,31 +173,11 @@ public class RepositoryImpl implements Repository
                         "Proxy-Authorization", "Basic " + base64);
                 }
             }
-
-            if (m_url.getPath().endsWith(".zip"))
-            {
-                ZipInputStream zin = new ZipInputStream(conn.getInputStream());
-                ZipEntry entry = zin.getNextEntry();
-                while (entry != null)
-                {
-                    if (entry.getName().equals("repository.xml"))
-                    {
-                        is = zin;
-                        break;
-                    }
-                    entry = zin.getNextEntry();
-                }
+            // set the client certificate if any
+            if(m_sslSocketFactory != null && conn instanceof HttpsURLConnection) {
+            	((HttpsURLConnection)conn).setSSLSocketFactory(m_sslSocketFactory);
             }
-            else
-            {
-                // set the client certificate if any
-                if(m_sslSocketFactory != null && conn instanceof HttpsURLConnection) {
-                	((HttpsURLConnection)conn).setSSLSocketFactory(m_sslSocketFactory);
-                }
-                is = conn.getInputStream();
-            } 
-            
-
+            is = openStream(m_url, conn, "repository.xml");
             if (is != null)
             {
                 // Create the parser Kxml
@@ -252,4 +233,36 @@ public class RepositoryImpl implements Repository
 	public static Proxy getProxy(String host, int port) {
 		return Proxy.NO_PROXY;
 	}
+	
+	public static InputStream openStream(URL repoURL, URLConnection cnx, String path) throws IOException {
+		if(repoURL.getPath().endsWith("zip")) {
+			if(repoURL.getProtocol().equals("file")) {
+				// use a zip file, since this is way faster
+				File f = new File(repoURL.getFile());
+				ZipFile zf = new ZipFile(f);
+				ZipEntry ze = zf.getEntry(path);
+				if(ze != null) {
+					return zf.getInputStream(ze);
+				} else {
+					return null;
+				}
+			} else {
+	            ZipInputStream zin = new ZipInputStream(cnx.getInputStream());
+	            ZipEntry entry = zin.getNextEntry();
+	            while (entry != null)
+	            {
+	                if (entry.getName().equalsIgnoreCase(path))
+	                {
+	                    return zin;
+	                }
+	                entry = zin.getNextEntry();
+	            }
+	            // nothing found
+	            return null;
+			}
+		} else {
+			return cnx.getInputStream();
+		}
+	}
+	
 }

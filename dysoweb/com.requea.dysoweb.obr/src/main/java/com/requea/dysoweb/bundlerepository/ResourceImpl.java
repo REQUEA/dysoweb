@@ -86,7 +86,12 @@ public class ResourceImpl implements Resource
 
     public int hashCode()
     {
-        return getSymbolicName().hashCode() ^ getVersion().hashCode();
+    	String symName = getSymbolicName();
+    	if(symName != null) {
+    		return symName.hashCode() ^ getVersion().hashCode();
+    	} else {
+    		return getPresentationName().hashCode() ^ getVersion().hashCode();
+    	}
     }
 
     public Map getProperties()
@@ -117,7 +122,11 @@ public class ResourceImpl implements Resource
     {
         return (Version) m_map.get(VERSION);
     }
-
+    
+    public String getURI() {
+    	return m_resourceURI;
+    }
+    
     public URL getURL()
     {
         if (!m_converted)
