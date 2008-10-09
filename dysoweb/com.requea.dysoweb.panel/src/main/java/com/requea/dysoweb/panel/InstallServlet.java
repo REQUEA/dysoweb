@@ -11,6 +11,7 @@ import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
@@ -28,6 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.zip.GZIPOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManagerFactory;
@@ -75,11 +79,11 @@ import com.requea.dysoweb.util.xml.XMLUtils;
 public class InstallServlet extends HttpServlet {
 
 	public static final String CATEGORIES = "com.requea.dysoweb.categories";
-	public static final String FEATURES = "com.requea.dysoweb.features";
+	public static final String INSTALLABLES = "com.requea.dysoweb.installables";
 
 	public static final String CATEGORY = "com.requea.dysoweb.category";
-	public static final String FEATURE = "com.requea.dysoweb.feature";
-	public static final String INSTALLEDFEATURE = "com.requea.dysoweb.installedfeature";
+	public static final String INSTALLABLE = "com.requea.dysoweb.installable";
+	public static final String INSTALLED = "com.requea.dysoweb.installed";
 
 	private static final String INSTALL_MONITOR = "com.requea.dysoweb.panel.install.monitor";
 	private static final String INSTALL_STATUS = "com.requea.dysoweb.panel.install.status";
@@ -112,11 +116,6 @@ public class InstallServlet extends HttpServlet {
 			// not initialized
 			throw new Exception("No repository service available at this time");
 		}
-		String repoURL = XMLUtils.getChildText(elConfig, "RepoURL");
-		if(repoURL == null) {
-			repoURL = DEFAULT_REPO;
-		}
-		repo.addRepository(new URL(repoURL));
 
 		// init proxy settings
 		String proxy = XMLUtils.getChildText(elConfig, "Proxy");
@@ -155,6 +154,25 @@ public class InstallServlet extends HttpServlet {
 				}
 			}
 		}
+		
+		// update the repo URL
+		String repoURL = XMLUtils.getChildText(elConfig, "RepoURL");
+		if(repoURL == null) {
+			repoURL = DEFAULT_REPO;
+		}
+		String authKey = XMLUtils.getChildText(elConfig, "AuthKey");
+		if(authKey == null || authKey.length() == 0) {
+			authKey = "none";
+		}
+		// add the key to the auth?
+		if(repoURL.startsWith("http")) {
+			if(repoURL.indexOf("?") < 0) {
+				repoURL += "?AuthKey=" + URLEncoder.encode(authKey, "UTF-8");
+			} else {
+				repoURL += "&AuthKey=" + URLEncoder.encode(authKey, "UTF-8");
+			}
+		}
+		repo.addRepository(new URL(repoURL));
 		
 		return repo;
 	}
@@ -222,7 +240,7 @@ public class InstallServlet extends HttpServlet {
 				// reset the socket factory
 				fSocketFactory = null;
 				HttpSession session = request.getSession(true);
-				session.removeAttribute(InstallServlet.FEATURES);
+				session.removeAttribute(InstallServlet.INSTALLABLES);
 				// from this point on, we are authenticated
 				session.setAttribute(SecurityFilter.AUTH, Boolean.TRUE);
 				session.setAttribute("com.requea.dysoweb.shell.auth", Boolean.TRUE);
@@ -264,7 +282,7 @@ public class InstallServlet extends HttpServlet {
 			// render the image
 			String image = request.getParameter("image");
 			if(image != null) {
-				File f = new File(fConfigDir, "features/"+image);
+				File f = new File(fConfigDir, "products/image/"+image+".jpg");
 				if(!f.exists()) {
 					response.sendError(404);
 				} else {
@@ -393,18 +411,18 @@ public class InstallServlet extends HttpServlet {
 		BundleContext context = Activator.getDefault().getContext();
 
 		try {
-			Feature[] allFeatures = getFeatures(request, response, elConfig);
+			Installable[] all = getInstallables(request, response, elConfig);
 			
 			ArrayList lst = new ArrayList();
 
-			Feature installedFeature = null;
+			Installable installedResource = null;
 			
-			// get the list of features that need to be installed
+			// get the list of resources that need to be installed
 			Map map = request.getParameterMap();
 			Iterator iter = map.keySet().iterator();
 			while(iter.hasNext()) {
 				String strParam = (String)iter.next();
-				if(strParam.startsWith("feature")) {
+				if(strParam.startsWith("inst_")) {
 					Object value = map.get(strParam);
 					if(value instanceof String[]) {
 						String[] vals = (String[])value;
@@ -412,26 +430,29 @@ public class InstallServlet extends HttpServlet {
 							value = vals[0];
 					}
 					if("install".equals(value)) {
-						String strFeature = strParam.substring("feature".length());
-						// find the requested feature
-						Feature feature = findFeature(allFeatures, strFeature);
-						if(feature == null) {
-							throw new Exception("Unable to find feature '"+strFeature+"'. Cannot deploy");
-						}
-						installedFeature = feature;
-						
-						// find dependent features
-						getDependentFeatures(lst, allFeatures, feature);
-						if(!lst.contains(feature)) {
-							// adds at the end
-							lst.add(feature);
+						String strInstallable = strParam.substring("inst_".length());
+						if(strInstallable.length() > 0) {
+							// find the requested resource
+							Installable res = findResource(all, strInstallable);
+							if(res == null) {
+								throw new Exception("Unable to find resource '"+strInstallable+"'. Cannot deploy");
+							}
+							installedResource = res;
+
+							// find dependent features
+							getDependentFeatures(lst, all, res);
+
+							if(!lst.contains(res)) {
+								// adds at the end
+								lst.add(res);
+							}
 						}
 					}
 				}
 			}
 			
 			// turn it as an array
-			Feature[] features = (Feature[])lst.toArray(new Feature[lst.size()]);
+			Installable[] installables = (Installable[])lst.toArray(new Installable[lst.size()]);
 			
 			// once we have the repo, we ask for deployment
 			
@@ -443,29 +464,29 @@ public class InstallServlet extends HttpServlet {
 
 			RepositoryAdmin repo = initRepo(fConfigDir, elConfig);
 			// launch the trhead to install the bundles
-			Thread th = new Thread(new Installer(context, repo, features, monitor, status));
+			Thread th = new Thread(new Installer(context, repo, installables, monitor, status));
 			th.start();
 			
-			request.setAttribute(FEATURE, installedFeature);
+			request.setAttribute(INSTALLABLE, installedResource);
 			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure/installing.jsp");
 			rd.forward(request, response);
 		} catch (Exception e) {
 			// show the error
-			request.setAttribute(ErrorTag.ERROR, "Unable to install features: " + e.getMessage());
+			request.setAttribute(ErrorTag.ERROR, "Unable to install resources: " + e.getMessage());
 			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure/secure/install.jsp");
 			rd.forward(request, response);
 		}
 	}
 
-	private void getDependentFeatures(List lst, Feature[] allFeatures,
-			Feature feature) {
+	private void getDependentFeatures(List lst, Installable[] allFeatures,
+			Installable feature) {
 
 		List depends = feature.getDependsOn();
 		for(int i=0; i<depends.size(); i++) {
 			String sysId = (String)depends.get(i);
 			
 			// find the feature
-			Feature f = null;
+			Installable f = null;
 			for(int j=0; f == null && j<allFeatures.length; j++) {
 				if(sysId.equals(allFeatures[j].getSysId())) {
 					f = allFeatures[j];
@@ -517,13 +538,13 @@ public class InstallServlet extends HttpServlet {
 		
 		private RepositoryAdmin fRepo;
 		private BundleContext fContext;
-		private Feature[] fFeatures;
+		private Installable[] fResources;
 		private IProgressMonitor fProgressMonitor;
 		private Status fStatus;
 		
-		Installer(BundleContext context, RepositoryAdmin repo, Feature[] features, IProgressMonitor monitor, Status status) {
+		Installer(BundleContext context, RepositoryAdmin repo, Installable[] resources, IProgressMonitor monitor, Status status) {
 			fContext = context;
-			fFeatures = features;
+			fResources = resources;
 			fRepo = repo;
 			fProgressMonitor = monitor;
 			fStatus = status;
@@ -534,18 +555,18 @@ public class InstallServlet extends HttpServlet {
 			// calc the total download size
 			long lTotalSize = 0;
 			try {
-				lTotalSize = calcTotalDownloadSize(fContext, fRepo, fFeatures);
+				lTotalSize = calcTotalDownloadSize(fContext, fRepo, fResources);
 			} catch (Exception e) {
 				// we will not get the total size
 				lTotalSize = 0;
 			}
 			
 			try {
-				fProgressMonitor.beginTask("Installing feature ", lTotalSize == 0 ? IProgressMonitor.UNKNOWN : (int)lTotalSize);
+				fProgressMonitor.beginTask("Installing resource ", lTotalSize == 0 ? IProgressMonitor.UNKNOWN : (int)lTotalSize);
 				fStatus.setStatus(Status.STARTED);
-				for(int i=0; i<fFeatures.length; i++) {
+				for(int i=0; i<fResources.length; i++) {
 					try {
-						installFeature(fContext, fRepo, fFeatures[i], fProgressMonitor);
+						installResource(fContext, fRepo, fResources[i], fProgressMonitor);
 					} catch(Exception e) {
 						fStatus.setError(e);
 		        		// abort
@@ -571,32 +592,45 @@ public class InstallServlet extends HttpServlet {
 		}
 	}
 	
-	private long calcTotalDownloadSize(BundleContext context, RepositoryAdmin repo, Feature[] features) throws Exception {
+	private long calcTotalDownloadSize(BundleContext context, RepositoryAdmin repo, Installable[] installables) throws Exception {
 
 		
 		Resolver resolver = (Resolver)repo.resolver();
-		// add the bundles for all the features
-		for(int i=0; i<features.length; i++) {
-			
-			Feature feature = features[i];
-			String bundles = feature.getBundleList();
-			
-			// retrieve the bundles id
-			StringTokenizer st = new StringTokenizer(bundles,",");
-	        while(st.hasMoreTokens()) {
-	        	String bundleId = st.nextToken();
+		// add the bundles for all the resources
+		for(int i=0; i<installables.length; i++) {
+			Installable installable = installables[i];
+			if("bundle".equals(installable.getType()) || "product".equals(installable.getType())) {
 	            // Find the target's bundle resource.
-	            Resource resource = selectNewestVersion(
-	                searchRepository(context, repo, bundleId, null));
-	            if (resource != null)
+	            Resource[] resources = searchRepository(context, repo, installable.getName(), installable.getVersion());
+	            if (resources != null && resources.length > 0)
 	            {
-	                resolver.add(resource);
+	            	for(int j=0; j<resources.length; j++)
+	            		resolver.add(resources[j]);
 	            }
 	            else
 	            {
-	                throw new Exception("Unknown bundle - " + bundleId);
+	                throw new Exception("Unknown reource - " + installable.getName()+" ("+installable.getVersion()+")");
 	            }
-	        }
+			} else if("feature".equals(installable.getType())) {
+				String bundles = installable.getBundleList();
+				
+				// retrieve the bundles id
+				StringTokenizer st = new StringTokenizer(bundles,",");
+		        while(st.hasMoreTokens()) {
+		        	String bundleId = st.nextToken();
+		            // Find the target's bundle resource.
+		            Resource resource = selectNewestVersion(
+		                searchRepository(context, repo, bundleId, null));
+		            if (resource != null)
+		            {
+		                resolver.add(resource);
+		            }
+		            else
+		            {
+		                throw new Exception("Unknown bundle - " + bundleId);
+		            }
+		        }
+			}
 		}
 		
 		// then resolve
@@ -633,53 +667,60 @@ public class InstallServlet extends HttpServlet {
 		return lSize;
 	}
 	
-	private void installFeature(BundleContext context, RepositoryAdmin repo, Feature feature, IProgressMonitor parentMonitor) throws Exception {
+	private void installResource(BundleContext context, RepositoryAdmin repo, Installable installable, IProgressMonitor parentMonitor) throws Exception {
 
-		// create an XML document for the feature
-		Element elFeature = XMLUtils.newElement("feature");
-		elFeature.setAttribute("id", feature.getID());
-		String version = feature.getVersion();
+		// create an XML document for the resource
+		Element elResource = XMLUtils.newElement("resource");
+		elResource.setAttribute("id", installable.getID());
+		String version = installable.getVersion();
 		if(version != null) {
-			elFeature.setAttribute("version", version);
+			elResource.setAttribute("version", version);
 		}
-		// store the feature info
-		XMLUtils.addElement(elFeature, "title", feature.getName());
-		Element elDesc = XMLUtils.addElement(elFeature, "description");
-		XMLUtils.setCDATA(elDesc, feature.getDescription());
+		// store the resource info
+		XMLUtils.addElement(elResource, "title", installable.getName());
+		Element elDesc = XMLUtils.addElement(elResource, "description");
+		XMLUtils.setCDATA(elDesc, installable.getDescription());
 		
-		elDesc = XMLUtils.addElement(elFeature, "longDesc");
-		XMLUtils.setCDATA(elDesc, feature.getLongDesc());
+		elDesc = XMLUtils.addElement(elResource, "documentation");
+		XMLUtils.setCDATA(elDesc, installable.getLongDesc());
 		synchronized (format) {
-			elFeature.setAttribute("date", format.format(new Date()));
+			elResource.setAttribute("date", format.format(new Date()));
 		}
-		
-		Element elImage = feature.getImage();
-		if(elImage != null) {
-			elImage = (Element)elFeature.getOwnerDocument().importNode(elImage, true);
-			elFeature.appendChild(elImage);
-		}
-		Element elBundles = XMLUtils.addElement(elFeature, "bundles");
-		
-		String bundles = feature.getBundleList();
-		
-		// retrieve the bundles id
-		StringTokenizer st = new StringTokenizer(bundles,",");
-        Resolver resolver = (Resolver)repo.resolver();
-        while(st.hasMoreTokens()) {
-        	String bundleId = st.nextToken();
-            // Find the target's bundle resource.
-            Resource resource = selectNewestVersion(
-                searchRepository(context, repo, bundleId, null));
-            if (resource != null)
-            {
-                resolver.add(resource);
-            }
-            else
-            {
-                throw new Exception("Unknown bundle - " + bundleId);
-            }
-        }
 
+		// retrieve the bundles id
+        Resolver resolver = (Resolver)repo.resolver();
+		if("feature".equals(installable.getType())) {
+			String bundles = installable.getBundleList();
+			
+			// retrieve the bundles id
+			StringTokenizer st = new StringTokenizer(bundles,",");
+	        while(st.hasMoreTokens()) {
+	        	String bundleId = st.nextToken();
+	            // Find the target's bundle resource.
+	            Resource resource = selectNewestVersion(
+	                searchRepository(context, repo, bundleId, null));
+	            if (resource != null)
+	            {
+	                resolver.add(resource);
+	            }
+	            else
+	            {
+	                throw new Exception("Unknown bundle - " + bundleId);
+	            }
+	        }
+		} else {		
+	        // Find the target's bundle resource.
+	        Resource[] res = searchRepository(context, repo, installable.getName(), installable.getVersion());
+	        if (res != null && res.length > 0)
+	        {
+	        	for(int j=0; j<res.length; j++)
+	        		resolver.add(res[j]);
+	        }
+	        else
+	        {
+	            throw new Exception("Unknown resource - " + installable.getName()+" ("+installable.getVersion()+")");
+	        }
+		}
         if ((resolver.getAddedResources() != null) &&
             (resolver.getAddedResources().length > 0))
         {
@@ -712,7 +753,7 @@ public class InstallServlet extends HttpServlet {
     				if(size != null) {
     					lSize += size.longValue();
     				}
-                	Element elBundle = XMLUtils.addElement(elBundles, "bundle");
+                	Element elBundle = XMLUtils.addElement(elResource, "resource");
                 	if(resource.getSymbolicName() != null) {
     	                elBundle.setAttribute("symbolicName", resource.getSymbolicName());
                 	}
@@ -721,7 +762,7 @@ public class InstallServlet extends HttpServlet {
         		}
         		IProgressMonitor monitor = new SubProgressMonitor(parentMonitor, (int)lSize);
         		try {
-        			monitor.beginTask("Installing feature " + feature.getName(), (int)lSize);
+        			monitor.beginTask("Installing resource " + installable.getName(), (int)lSize);
 	                try
 	                {
 	            		if(resolver instanceof MonitoredResolver) {
@@ -731,7 +772,7 @@ public class InstallServlet extends HttpServlet {
 	            			resolver.deploy(true);
 	            		}
 	                    // register the new application if something was installed
-                    	registerInstalledApplication(feature, elFeature);
+                    	registerInstalledApplication(installable, elResource);
 	                }
 	                catch (IllegalStateException ex)
 	                {
@@ -768,26 +809,61 @@ public class InstallServlet extends HttpServlet {
         }
 	}
 	
-	private void registerInstalledApplication(Feature feature, Element elFeature) throws Exception {
+    public Resource selectNewestVersion(Resource[] resources)
+    {
+        int idx = -1;
+        Version v = null;
+        for (int i = 0; (resources != null) && (i < resources.length); i++)
+        {
+            if (i == 0)
+            {
+                idx = 0;
+                v = resources[i].getVersion();
+            }
+            else
+            {
+                Version vtmp = resources[i].getVersion();
+                if (vtmp.compareTo(v) > 0)
+                {
+                    idx = i;
+                    v = vtmp;
+                }
+            }
+        }
+
+        return (idx < 0) ? null : resources[idx];
+    }
+	
+	
+	private void registerInstalledApplication(Installable installable, Element elResource) throws Exception {
 		
-		String fileName = feature.getID();
-		String version = feature.getVersion();
+    	Element elConfig = getServerConfig(fConfigDir);
+		String repoURL = XMLUtils.getChildText(elConfig, "RepoURL");
+		if(repoURL != null) {
+			URL url = new URL(repoURL);
+			if(!url.getProtocol().startsWith("http") || !"repo.requea.com".equals(url.getHost())) {
+				// not registrable
+				return;
+			}
+		}
+		String fileName = installable.getID();
+		String version = installable.getVersion();
 		if(version != null) {
 			fileName += "-"+version;
 		}
 		fileName += ".xml";
 		
-		File file = new File(fConfigDir, "features/"+fileName);
+		File file = new File(fConfigDir, "install/"+fileName);
 		file.getParentFile().mkdirs();
 		
 		// get the image
-		Element elImage = XMLUtils.getChild(elFeature, "rqImage");
+		Element elImage = XMLUtils.getChild(elResource, "rqImage");
 		if(elImage != null) {
 			String sysId = elImage.getAttribute("sysId");
 			String strURL = elImage.getAttribute("url");
 			// copy the image on the local directory
 			try {
-				File fileImage = new File(fConfigDir, "features/"+sysId+".jpg");
+				File fileImage = new File(fConfigDir, "install/"+sysId+".jpg");
 				URL url = new URL(strURL);
 	            OutputStream os = new FileOutputStream(fileImage);
 	            URLConnection conn = fProxy == null ? url.openConnection() : url.openConnection(fProxy);
@@ -814,23 +890,15 @@ public class InstallServlet extends HttpServlet {
 	            is.close();
 	            
 	            // update the image
-	            elFeature.removeChild(elImage);
-	            XMLUtils.addElement(elFeature, "image", sysId+".jpg");
+	            elResource.removeChild(elImage);
+	            XMLUtils.addElement(elResource, "image", sysId+".jpg");
 			} catch(Exception e) {
 				
 			}
 		}
 		
 		// store the content as XML
-    	Source source = new DOMSource(elFeature);
-		StringWriter out = new StringWriter();
-		
-		StreamResult result = new StreamResult(out);
-		Transformer xformer = TransformerFactory.newInstance().newTransformer();
-		xformer.setOutputProperty("indent", "yes");
-		xformer.transform(source, result);
-		
-        String xml = out.toString();
+        String xml = XMLUtils.ElementToString(elResource, true);
         // then write the content as utf-8: zip it if the requests accept zip, since xml compresses VERY well
         Writer w = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
         w.write(xml);
@@ -839,14 +907,13 @@ public class InstallServlet extends HttpServlet {
         // post install info the the repo server
         try {
     		// retrieve the list of applications that can be installed
-        	Element elConfig = getServerConfig(fConfigDir);
         	URLConnection connection = openConnection(elConfig, "contents/registerinstall");
 			connection.setDoOutput(true);
 			OutputStreamWriter osw = new OutputStreamWriter(
 	                connection.getOutputStream());
 			
 			// send name and some platform info for support and OBR repository
-			osw.write("feature=" + feature.getSysId());
+			osw.write("feature=" + installable.getSysId());
 			osw.write("&LocalIP=" + URLEncoder.encode(InetAddress.getLocalHost().getHostAddress(), "UTF-8"));
 			osw.write("&java.version=" + URLEncoder.encode(System.getProperty("java.version"), "UTF-8"));
 			osw.write("&java.vendor=" + URLEncoder.encode(System.getProperty("java.vendor"), "UTF-8"));
@@ -856,7 +923,7 @@ public class InstallServlet extends HttpServlet {
 			
 			// bundles
 			StringBuffer sb = new StringBuffer();
-			Element elBundles = XMLUtils.getChild(elFeature, "bundles");
+			Element elBundles = XMLUtils.getChild(elResource, "bundles");
 			if(elBundles != null) {
 				Element elBundle = XMLUtils.getChild(elBundles, "bundle");
 				boolean first = true;
@@ -887,7 +954,13 @@ public class InstallServlet extends HttpServlet {
 			repoURL = DEFAULT_REPO;
 		}
 		URL baseURL = new URL(repoURL);
-		URL url = path == null ? baseURL : new URL(baseURL,path);
+		URL url;
+		if(path != null && repoURL.endsWith("zip")) {
+			// open the zip
+			url = baseURL;
+		} else {
+			url =new URL(baseURL,path);
+		}
 		
 		String proxy = XMLUtils.getChildText(elConfig, "Proxy");
 		String proxyHost = XMLUtils.getChildText(elConfig, "ProxyHost");
@@ -921,9 +994,40 @@ public class InstallServlet extends HttpServlet {
                 secureCon.setSSLSocketFactory(sslSocketFactory);
         	}
         }
-
+        
 		return cnx;
 	}
+	private InputStream openStream(String repoURL, URLConnection cnx, String path) throws IOException {
+		if(repoURL.endsWith("zip")) {
+			if(repoURL.startsWith("file:")) {
+				// use a zip file, since this is way faster
+				File f = new File(repoURL.substring("file:".length()));
+				ZipFile zf = new ZipFile(f);
+				ZipEntry ze = zf.getEntry(path);
+				if(ze != null) {
+					return zf.getInputStream(ze);
+				} else {
+					return null;
+				}
+			} else {
+	            ZipInputStream zin = new ZipInputStream(cnx.getInputStream());
+	            ZipEntry entry = zin.getNextEntry();
+	            while (entry != null)
+	            {
+	                if (entry.getName().equalsIgnoreCase(path))
+	                {
+	                    return zin;
+	                }
+	                entry = zin.getNextEntry();
+	            }
+	            // nothing found
+	            return null;
+			}
+		} else {
+			return cnx.getInputStream();
+		}
+	}
+    
 
 	private Resource[] searchRepository(BundleContext context, RepositoryAdmin repo, String targetId, String targetVersion)
     {
@@ -955,45 +1059,19 @@ public class InstallServlet extends HttpServlet {
         return repo.discoverResources(sb.toString());
     }
     
-    public Resource selectNewestVersion(Resource[] resources)
-    {
-        int idx = -1;
-        Version v = null;
-        for (int i = 0; (resources != null) && (i < resources.length); i++)
-        {
-            if (i == 0)
-            {
-                idx = 0;
-                v = resources[i].getVersion();
-            }
-            else
-            {
-                Version vtmp = resources[i].getVersion();
-                if (vtmp.compareTo(v) > 0)
-                {
-                    idx = i;
-                    v = vtmp;
-                }
-            }
-        }
-
-        return (idx < 0) ? null : resources[idx];
-    }
-
-	
 	private void handleInstallPanelRequest(HttpServletRequest req,
 			HttpServletResponse resp, Element elConfig) throws Exception {
 
-		Feature[] features = getFeatures(req, resp, elConfig);
-		Feature feature = findFeature(features, req.getParameter("feature"));
-		// lookup for the feature
-		if(feature != null) {
-			req.setAttribute(FEATURE, feature);
-			// show feature detail
+		Installable[] installables = getInstallables(req, resp, elConfig);
+		Installable resource = findResource(installables, req.getParameter("resource"));
+		// lookup for the resource
+		if(resource != null) {
+			req.setAttribute(INSTALLABLE, resource);
+			// show resource detail
 			RequestDispatcher rd = req.getRequestDispatcher("/dysoweb/panel/secure/installfeat.jsp");
 			rd.forward(req, resp);
 		} else {
-			// show list of features
+			// show list of resources
 			RequestDispatcher rd = req.getRequestDispatcher("/dysoweb/panel/secure/install.jsp");
 			rd.forward(req, resp);
 		}		
@@ -1001,58 +1079,143 @@ public class InstallServlet extends HttpServlet {
 	}
 	
 	
-	private Feature findFeature(Feature[] features, String strFeature) {
-		Feature feature = null;
-		if(features != null && strFeature != null) {
-			// retrieve the feature
-			for(int i=0; feature == null && i<features.length; i++) {
-				if(strFeature.equals(features[i].getID())) {
-					feature = features[i];
+	private Installable findResource(Installable[] installables, String str) {
+		Installable resource = null;
+		if(installables != null && str != null) {
+			// retrieve the resource
+			for(int i=0; resource == null && i<installables.length; i++) {
+				if(str.equals(installables[i].getID())) {
+					resource = installables[i];
 				}
 			}
 		}
-		return feature;
+		return resource;
 	}
 
-	private Feature[] getFeatures(HttpServletRequest req, HttpServletResponse resp, Element elConfig) throws Exception {
+	private Installable[] getInstallables(HttpServletRequest req, HttpServletResponse resp, Element elConfig) throws Exception {
 		
-		// do we already have the list of features and categories?
+		// do we already have the list of installables and categories?
 		HttpSession session = req.getSession();
-		Feature[] features;
-		Object o = session.getAttribute(FEATURES);
-		if(!"true".equals(req.getParameter("refresh")) && o instanceof Feature[]) {
-			// ok, we have the list of features
-			features = (Feature[])o;
-			req.setAttribute(FEATURES, features);
+		Installable[] installables;
+		Object o = session.getAttribute(INSTALLABLES);
+		if(!"true".equals(req.getParameter("refresh")) && o instanceof Installable[]) {
+			// ok, we have the list of resources
+			installables = (Installable[])o;
+			req.setAttribute(INSTALLABLES, installables);
 			req.setAttribute(CATEGORIES, session.getAttribute(CATEGORIES));
 		} else {
-			loadFeatures(req, resp, elConfig);
-			features = (Feature[])req.getAttribute(FEATURES);
+			loadInstallables(req, resp, elConfig);
+			installables = (Installable[])req.getAttribute(INSTALLABLES);
 		}
-		return features;
+		return installables;
 	}
-
-	private void loadFeatures(HttpServletRequest req, HttpServletResponse resp, Element elConfig) throws Exception {
+	
+	private void loadInstallables(HttpServletRequest req, HttpServletResponse resp, Element elConfig) throws Exception {
 		
 		HttpSession session = req.getSession();
+		String repoURL = XMLUtils.getChildText(elConfig, "RepoURL");
+		if(repoURL == null) {
+			repoURL = DEFAULT_REPO;
+		}
+		String authKey = XMLUtils.getChildText(elConfig, "AuthKey");
+		URLConnection cnx = openConnection(elConfig, "repository.xml");
+		if(authKey == null || authKey.length() == 0) {
+			authKey = "none";
+		}
+		if(authKey != null && authKey.length() > 0 && cnx instanceof HttpURLConnection) {
+	        cnx.setDoOutput(true);
+			OutputStreamWriter out = new OutputStreamWriter(
+					cnx.getOutputStream());
+			out.write("AuthKey=" + URLEncoder.encode(authKey, "UTF-8"));
+			out.close();
+		}
 		
-		URLConnection cnx = openConnection(elConfig, "feature.xml");
+		InputStream is = openStream(repoURL, cnx, "repository.xml");
+		if(is == null) {
+			throw new Exception("Unable to find entry 'repository.xml'");
+		}
         try {
-			Document doc = XMLUtils.parse(cnx.getInputStream());
-			// parse the list of installable features
-			Feature[] features = Feature.parse(doc.getDocumentElement());
-	
+			Document doc = XMLUtils.parse(is);
+			Element elRepository = doc.getDocumentElement();
+			if("error".equals(elRepository.getLocalName())) {
+				throw new Exception(XMLUtils.getChildText(elRepository, "message"));
+			}
+			Installable[] installables;			
+			String name = elRepository.getAttribute("name");
+			if("Requea Repository".equals(name)) {
+				// repo v1
+				List lstInstall = new ArrayList();
+				installables = parseInstallablesFromFeatures(elConfig);
+				for(int i=0; i<installables.length; i++) {
+					lstInstall.add(installables[i]);
+				}
+				// regular bundles
+				installables = Installable.parse(elRepository);
+				for(int i=0; i<installables.length; i++) {
+					lstInstall.add(installables[i]);
+				}
+				installables = (Installable[])lstInstall.toArray(new Installable[lstInstall.size()]);
+			} else {
+				// parse the list of installable resources
+				installables = Installable.parse(elRepository);
+			}
+			// grab all the images
+			for(int j=0; j<installables.length; j++) {
+				Installable f = installables[j];
+				String strImage = f.getImage();
+				if(strImage != null && !strImage.startsWith("http")) {
+					// grab the image
+					URLConnection cnxImg = openConnection(elConfig, strImage);
+					if(cnxImg != null) {
+						// copy the image on the local file
+						InputStream isImg = openStream(repoURL, cnxImg, strImage);
+						File file = new File(fConfigDir, "products/image/"+f.getName()+"-"+f.getVersion()+".jpg");
+						file.getParentFile().mkdirs();
+
+						OutputStream os = new FileOutputStream(file);
+			            byte[] buffer = new byte[4096];
+			            int count = 0;
+			            for (int len = isImg.read(buffer); len > 0; len = isImg.read(buffer))
+			            {
+			                count += len;
+			                os.write(buffer, 0, len);
+			            }
+			            os.close();
+			            isImg.close();
+			            
+					}
+				}
+			}
 			// get the category map
-			Map categories = Feature.buildCategories(features);
+			Map categories = Installable.buildCategories(installables);
 			
-			// ok, we have the list of features
-			session.setAttribute(FEATURES, features);
-			req.setAttribute(FEATURES, features);
+			// ok, we have the list of installables
+			session.setAttribute(INSTALLABLES, installables);
+			req.setAttribute(INSTALLABLES, installables);
 			session.setAttribute(CATEGORIES, categories);
 			req.setAttribute(CATEGORIES, categories);
 		} catch(XMLException e) {
 			req.setAttribute(ErrorTag.ERROR, "Unable to find repository information. Please try later, or check the repository URL");
 		}
+	}
+
+
+	private Installable[] parseInstallablesFromFeatures(Element elConfig) throws Exception {
+		String repoURL = XMLUtils.getChildText(elConfig, "RepoURL");
+		if(repoURL == null) {
+			repoURL = DEFAULT_REPO;
+		}
+		URLConnection cnx = openConnection(elConfig, "feature.xml");
+		InputStream is = openStream(repoURL, cnx, "feature.xml");
+		if(is == null) {
+			throw new Exception("Unable to find entry 'repository.xml'");
+		}
+		Document doc = XMLUtils.parse(is);
+		Element elFeatures = doc.getDocumentElement();
+		if("error".equals(elFeatures.getLocalName())) {
+			throw new Exception(XMLUtils.getChildText(elFeatures, "message"));
+		}
+		return Installable.parseAsFeature(elFeatures);
 	}
 
 	private static Element getServerConfig(File configDir) {

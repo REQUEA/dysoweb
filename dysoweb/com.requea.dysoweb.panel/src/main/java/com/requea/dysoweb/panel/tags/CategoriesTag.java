@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
-import com.requea.dysoweb.panel.Feature;
+import com.requea.dysoweb.panel.Installable;
 import com.requea.dysoweb.panel.InstallServlet;
 
 
@@ -33,7 +33,7 @@ public class CategoriesTag extends BodyTagSupport {
 		
 		Iterator iter = categories.values().iterator();
 		while(iter.hasNext()) {
-			Feature.Category c = (Feature.Category)iter.next();
+			Installable.Category c = (Installable.Category)iter.next();
 			if(!lstIds.contains(c.fId)) {
 				lstIds.add(c.fId);
 				lstLabels.add(c.fLabel);

@@ -44,9 +44,9 @@
 					</div>
 				</div>
 			</div>	
-			<dw:insert path="/dysoweb/panel/footer.jsp"/>		
 		</div>
 	</div>
 </div>
+<dw:insert path="/dysoweb/panel/footer.jsp"/>		
 </body>
 </html>

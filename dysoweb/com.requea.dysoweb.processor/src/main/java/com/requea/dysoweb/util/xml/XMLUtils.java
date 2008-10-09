@@ -497,6 +497,9 @@ public class XMLUtils {
         
         Element child = addElement(parent, name);
         // create a text node
+        if(textValue == null) {
+        	textValue = "";
+        }
         Text txt = child.getOwnerDocument().createTextNode(textValue);
         child.appendChild(txt);
         return child;
@@ -512,6 +515,9 @@ public class XMLUtils {
         while (el.getFirstChild() != null) {
             el.removeChild(el.getFirstChild());
         }
+        if(value == null) {
+        	value = "";
+        }
         Text txt = el.getOwnerDocument().createTextNode(value);
         el.appendChild(txt);
     }
@@ -525,6 +531,9 @@ public class XMLUtils {
         // remove the children if already exist
         while (el.getFirstChild() != null) {
             el.removeChild(el.getFirstChild());
+        }
+        if(value == null) {
+        	value = "";
         }
         CDATASection txt = el.getOwnerDocument().createCDATASection(value);
         el.appendChild(txt);

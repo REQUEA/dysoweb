@@ -93,11 +93,9 @@
                         	javax.servlet,
                         	javax.servlet.http,
                         	javax.servlet.jsp,
-							javax.servlet.jsp.el,
 							javax.servlet.jsp.tagext,
 							com.requea.dysoweb.util.xml,
 							com.requea.dysoweb.utils.tags,
-							com.requea.dysoweb.repo.tags;resolution:=optional,
 							*
 						</Import-Package>
                         <Include-Resource>webapp=src/main/webapp</Include-Resource>

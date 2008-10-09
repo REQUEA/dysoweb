@@ -53,6 +53,7 @@ function test(elt) {
 							<h2><span>Repository settings</span></h2>
 							<table width="100%">
 								<tr><td class="lbl">Repository URL:</td><td class="val"><panel:input name="RepoURL" size="60"/></td></tr>
+								<tr><td class="lbl">Authorization Key:</td><td class="val"><panel:input name="AuthKey" size="25"/></td></tr>
 							</table>							
 							<h2><span>Proxy settings</span></h2>
 							<table width="100%">
@@ -70,9 +71,9 @@ function test(elt) {
 					</div>
 				</div>
 			</div>
-			<dw:insert path="/dysoweb/panel/footer.jsp"/>		
 		</div>
 	</div>
 </div>
+<dw:insert path="/dysoweb/panel/footer.jsp"/>		
 </body>
 </html>

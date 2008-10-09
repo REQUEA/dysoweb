@@ -11,11 +11,12 @@ import org.w3c.dom.Element;
 import com.requea.dysoweb.util.xml.XMLUtils;
 
 
-public class Feature implements Serializable {
+public class Installable implements Serializable {
 
 	private static final long serialVersionUID = 150939454759622369L;
 	private String fID;
-	private Element fImage;
+	private String fType;
+	private String fImage;
 	private List   fCategories;
 	private String fName;
 	private String fDescription;
@@ -25,29 +26,97 @@ public class Feature implements Serializable {
 	private String fBaseURL;
 	private String fLongDesc;
 	private String fSysId;
+	private boolean fRoot;
 	private ArrayList fDependsOn;
 	
 	public static class Category {
-
 		public String fId;
 		public String fLabel;
-		
 	}
 	
-	public static Feature[] parse(Element el) {
+	public static Installable[] parse(Element el) {
+		
+		ArrayList lst = new ArrayList();
+		
+		Element elResource = XMLUtils.getChild(el, "resource");
+		while(elResource != null) {
+			Installable f = new Installable();
+			f.fID = elResource.getAttribute("symbolicname");
+			f.fName = elResource.getAttribute("presentationname");
+			f.fVersion = elResource.getAttribute("version");
+			f.parseCapabilities(elResource);
+			
+			f.fDescription = XMLUtils.getChildText(elResource, "description");
+			f.fLongDesc = XMLUtils.getChildText(elResource, "documentation");
+
+			f.fCategories = new ArrayList();
+			Element elCategory = XMLUtils.getChild(elResource, "category");
+			while(elCategory != null) {
+				Category c = new Category();
+				c.fId = elCategory.getAttribute("id");
+				c.fLabel = c.fId;
+				f.fCategories.add(c);
+				elCategory = XMLUtils.getNextSibling(elCategory);
+			}
+			
+			lst.add(f);
+
+			elResource = XMLUtils.getNextSibling(elResource);
+		}
+		
+		return (Installable[])lst.toArray(new Installable[lst.size()]);
+	}
+
+	private void parseCapabilities(Element elResource) {
+		Element elCap = XMLUtils.getChild(elResource, "capability");
+		while(elCap != null) {
+			String name = elCap.getAttribute("name");
+			if("bundle".equals(name)) {
+				fType = "bundle";
+			}
+			if("product".equals(name)) {
+				fType = "product";
+			}
+			if("bundle".equals(name) || "product".equals(name)) {
+				Element elProp = XMLUtils.getChild(elCap, "p");
+				while(elProp != null) {
+					String propName = elProp.getAttribute("n");
+					String propVal = elProp.getAttribute("v");
+					if("rqroot".equals(propName) && "true".equals(propVal)) {
+						// found a root resource
+						fRoot = true;
+					} else if("image".equals(propName)) {
+						fImage = propVal;
+					} else if("infoURL".equals(propName)) {
+						fInfoURL = propVal;
+					} else if("baseURL".equals(propName)) {
+						fBaseURL = propVal;
+					}
+					// next one
+					elProp = XMLUtils.getNextSibling(elProp);
+				}
+			}
+			// check the next one
+			elCap = XMLUtils.getNextSibling(elCap);
+		}
+	}
+	
+	public static Installable[] parseAsFeature(Element el) {
 		
 		ArrayList lst = new ArrayList();
 		
 		Element elFeature = XMLUtils.getChild(el, "rqRepoFeature");
 		while(elFeature != null) {
 			
-			Feature f = new Feature();
+			Installable f = new Installable();
 			f.fSysId = elFeature.getAttribute("sysId");
-			f.fID = XMLUtils.getChildText(elFeature, "rqID");
+			f.fID = "feature_"+XMLUtils.getChildText(elFeature, "rqID");
 			f.fName = XMLUtils.getChildText(elFeature, "rqName");
 			f.fDescription = XMLUtils.getChildText(elFeature, "rqDescription");
 			f.fLongDesc = XMLUtils.getChildText(elFeature, "rqLongDesc");
 			f.fCategories = new ArrayList();
+			f.fType = "feature";
+			f.fRoot = true;
 			Element elCategory = XMLUtils.getChild(elFeature, "rqCategory");
 			while(elCategory != null) {
 				Category c = new Category();
@@ -56,7 +125,12 @@ public class Feature implements Serializable {
 				f.fCategories.add(c);
 				elCategory = XMLUtils.getNextSibling(elCategory);
 			}
-			f.fImage = XMLUtils.getChild(elFeature, "rqImage");
+			Element elImage = XMLUtils.getChild(elFeature, "rqImage");
+			if(elImage == null) {
+				f.fImage = null;
+			} else {
+				f.fImage = elImage.getAttribute("url");
+			}
 			f.fBundleList = XMLUtils.getChildText(elFeature, "rqBundleList");
 			f.fVersion = XMLUtils.getChildText(elFeature, "rqVersion");
 			f.fInfoURL = XMLUtils.getChildText(elFeature, "rqInfoURL");
@@ -73,8 +147,9 @@ public class Feature implements Serializable {
 			elFeature = XMLUtils.getNextSibling(elFeature);
 		}
 		
-		return (Feature[])lst.toArray(new Feature[lst.size()]);
+		return (Installable[])lst.toArray(new Installable[lst.size()]);
 	}
+	
 
 	public String getID() {
 		return fID;
@@ -82,10 +157,6 @@ public class Feature implements Serializable {
 
 	public List getCategories() {
 		return fCategories;
-	}
-
-	public List getDependsOn() {
-		return fDependsOn;
 	}
 
 	public boolean isInCategory(String cat) {
@@ -115,7 +186,7 @@ public class Feature implements Serializable {
 		return fBaseURL;
 	}
 
-	public Element getImage() {
+	public String getImage() {
 		return fImage;
 	}
 
@@ -139,14 +210,14 @@ public class Feature implements Serializable {
 		return fName == null || fName.length() == 0 ? fID : fName;
 	}
 
-	public static Map buildCategories(Feature[] features) {
+	public static Map buildCategories(Installable[] features) {
 		
 		TreeMap map = new TreeMap();
 		
 		for(int i=0; i<features.length; i++) {
-			Feature f = features[i];
+			Installable f = features[i];
 			for(int j=0; j<f.fCategories.size(); j++) {
-				Feature.Category c = (Feature.Category)f.fCategories.get(j);
+				Installable.Category c = (Installable.Category)f.fCategories.get(j);
 				if(!map.containsKey(c.fLabel)) {
 					map.put(c.fLabel, c);
 				}
@@ -155,5 +226,16 @@ public class Feature implements Serializable {
 		
 		return map;
 	}
-	
+
+	public boolean isRoot() {
+		return fRoot;
+	}
+
+	public String getType() {
+		return fType;
+	}
+
+	public List getDependsOn() {
+		return fDependsOn;
+	}
 }

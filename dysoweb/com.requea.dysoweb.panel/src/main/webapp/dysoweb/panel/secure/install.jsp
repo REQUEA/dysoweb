@@ -24,25 +24,50 @@
 				<div class="rqportlet">
 					<div class="rqview">
 						<div>
-							<h2><span>Dysoweb Application installation</span></h2>
 							<panel:error />
 							<table width="100%" cellpadding="0" cellspacing="0" class="rpfeatlist"><tr valign="top">
 							<td>
 								<form method="post" name="frminstall" action="<%=request.getContextPath()%>/dysoweb/panel/secure/install">
 								<input type="hidden" name="op" value="install"/>
-								<div class="rpfeatinst"><input type="submit" value="Install Selected features"></input></div>
+								<div class="rpfeatinst"><input type="submit" value="Install Selected"></input></div>
+								<h2><span>Dysoweb Products</span></h2>
 								<table cellpadding="5">
-								<panel:features>
+								<panel:installables type="products">
 								<tr valign="center">
-									<td><panel:feature property="check"/></input></td>
-									<td width="200"><panel:feature style="rpimg" property="image"/></td>
+									<td><panel:installable property="check"/></input></td>
+									<td width="1"><panel:installable style="rpimg" property="image"/></td>
 									<td align="left">
-										<div class="rpfeatdesc"><panel:feature property="description"/></div>
-										<div class="rpfeatldesc"><panel:feature property="longDesc"/></div>
+										<div class="rpfeatdesc"><panel:installable property="title"/> (<panel:installable property="version"/>)</div>
+										<div class="rpfeatldesc"><panel:installable property="description"/></div>
+										<div class="rpfeaturl"><panel:installable property="infoURL"/></div>
 									</td></tr>
-								</panel:features>
+								</panel:installables>
 								</table>
-								<div class="rpfeatinst"><input type="submit" value="Install Selected features"></input></div>
+								<h2><span>Main Bundles</span></h2>
+								<table cellpadding="5">
+								<panel:installables type="rootbundles">
+								<tr valign="center">
+									<td><panel:installable property="check"/></input></td>
+									<td width="1"><panel:installable style="rpimg" property="image"/></td>
+									<td align="left">
+										<div class="rpfeatdesc"><panel:installable property="title"/> (<panel:installable property="version"/>)</div>
+										<div class="rpfeatldesc"><panel:installable property="description"/></div>
+									</td></tr>
+								</panel:installables>
+								</table>
+								<h2><span>Other Bundles (may be installed automatically with above selection)</span></h2>
+								<table cellpadding="5">
+								<panel:installables type="otherbundles">
+								<tr valign="center">
+									<td><panel:installable property="check"/></input></td>
+									<td width="1"><panel:installable style="rpimg" property="image"/></td>
+									<td align="left">
+										<div class="rpfeatdesc"><panel:installable property="title"/> (<panel:installable property="version"/>)</div>
+										<div class="rpfeatldesc"><panel:installable property="description"/></div>
+									</td></tr>
+								</panel:installables>
+								</table>
+								<div class="rpfeatinst"><input type="submit" value="Install Selected"></input></div>
 								</form>
 							</td>
 							<td width="200">
@@ -59,9 +84,9 @@
 					</div>
 				</div>
 			</div>
-			<dw:insert path="/dysoweb/panel/footer.jsp"/>		
 		</div>
 	</div>
 </div>
+<dw:insert path="/dysoweb/panel/footer.jsp"/>		
 </body>
 </html>

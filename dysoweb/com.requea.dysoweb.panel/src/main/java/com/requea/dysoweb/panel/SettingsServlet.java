@@ -13,6 +13,7 @@ import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.net.UnknownHostException;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -76,48 +77,53 @@ public class SettingsServlet extends HttpServlet {
 			// try to open the connection with the repo
 			test(request);
 		} else if("save".equals(op)) {
-			// save the content in the config file
-			Element elConfig = getServerConfig();
-			saveConfigValue(request, elConfig, "RepoURL");
-			saveConfigValue(request, elConfig, "Proxy");
-			String proxy = (String)request.getSession().getAttribute(COM_REQUEA_DYSOWEB_PANEL+"Proxy");
-			if("manual".equals(proxy)) {
-				saveConfigValue(request, elConfig, "ProxyHost");
-				saveConfigValue(request, elConfig, "ProxyPort");
-				saveConfigValue(request, elConfig, "ProxyAuth");
-			} else {
-				removeConfigValue(elConfig, "ProxyHost");
-				removeConfigValue(elConfig, "ProxyPort");
-				removeConfigValue(elConfig, "ProxyAuth");
-			}
-			// save the config
-			try {
-		        String xml = XMLUtils.DocumentToString(elConfig.getOwnerDocument(), true);
-		        File file = new File(fConfigDir, "server.xml");
-		        // then write the content as utf-8: zip it if the requests accept zip, since xml compresses VERY well
-		        Writer w = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
-		        w.write(xml);
-		        w.close();
-		        
-				File fileCertificate = new File(fConfigDir, "dysoweb.p12");
-				if(!fileCertificate.exists()) {
-			        String repoURL = getValueFromSession(request.getSession(), "RepoURL");
-			        if(repoURL.startsWith("https://repo.requea.com")) {
-			        	// update server registration if not already done
-			        	InstallServlet.updateServerRegistration(fConfigDir, null, null, null);
-						// try to reinit the repo
-			        	InstallServlet.initRepo(fConfigDir, elConfig);	
-			        	request.getSession().removeAttribute(InstallServlet.FEATURES);
-			        }
-				}
-			} catch(Exception e) {
-				request.setAttribute(ErrorTag.ERROR, e);
-			}
+			save(request);
 		}
 		// re forward to registration for correction of errors
 		RequestDispatcher rd = request
 				.getRequestDispatcher("/dysoweb/panel/secure/settings.jsp");
 		rd.forward(request, response);
+	}
+
+	private void save(HttpServletRequest request) {
+		// save the content in the config file
+		Element elConfig = getServerConfig();
+		saveConfigValue(request, elConfig, "RepoURL");
+		saveConfigValue(request, elConfig, "Proxy");
+		saveConfigValue(request, elConfig, "AuthKey");
+		String proxy = (String)request.getSession().getAttribute(COM_REQUEA_DYSOWEB_PANEL+"Proxy");
+		if("manual".equals(proxy)) {
+			saveConfigValue(request, elConfig, "ProxyHost");
+			saveConfigValue(request, elConfig, "ProxyPort");
+			saveConfigValue(request, elConfig, "ProxyAuth");
+		} else {
+			removeConfigValue(elConfig, "ProxyHost");
+			removeConfigValue(elConfig, "ProxyPort");
+			removeConfigValue(elConfig, "ProxyAuth");
+		}
+		// save the config
+		try {
+	        String xml = XMLUtils.DocumentToString(elConfig.getOwnerDocument(), true);
+	        File file = new File(fConfigDir, "server.xml");
+	        // then write the content as utf-8: zip it if the requests accept zip, since xml compresses VERY well
+	        Writer w = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
+	        w.write(xml);
+	        w.close();
+	        
+			File fileCertificate = new File(fConfigDir, "dysoweb.p12");
+			if(!fileCertificate.exists()) {
+		        String repoURL = getValueFromSession(request.getSession(), "RepoURL");
+		        if(repoURL.startsWith("https://repo.requea.com")) {
+		        	// update server registration if not already done
+		        	InstallServlet.updateServerRegistration(fConfigDir, null, null, null);
+		        }
+			}
+        	request.getSession().removeAttribute(InstallServlet.INSTALLABLES);
+			// try to reinit the repo
+        	InstallServlet.initRepo(fConfigDir, elConfig);	
+		} catch(Exception e) {
+			request.setAttribute(ErrorTag.ERROR, e);
+		}
 	}
 
 	private void removeConfigValue(Element elConfig, String name) {
@@ -130,17 +136,22 @@ public class SettingsServlet extends HttpServlet {
 	private void saveConfigValue(HttpServletRequest request, Element elConfig,
 			String name) {
 		
+		HttpSession session = request.getSession();
+		String value = (String)session.getAttribute(COM_REQUEA_DYSOWEB_PANEL+name);
+		if(value == null) {
+			value = "";
+		}
 		Element elVal = XMLUtils.getChild(elConfig, name);
 		if(elVal == null) {
 			elVal = XMLUtils.addElement(elConfig, name);
 		}
-		HttpSession session = request.getSession();
-		XMLUtils.setText(elVal, (String)session.getAttribute(COM_REQUEA_DYSOWEB_PANEL+name));
+		XMLUtils.setText(elVal, value);
 	}
 
 	private void test(HttpServletRequest request) {
 		HttpSession session = request.getSession();
 		String repoURL = getValueFromSession(session, "RepoURL");
+		String authKey = getValueFromSession(session, "AuthKey");
 		String proxy = getValueFromSession(session, "Proxy");
 		String proxyHost = getValueFromSession(session, "ProxyHost");
 		String proxyPort = getValueFromSession(session, "ProxyPort");
@@ -176,6 +187,16 @@ public class SettingsServlet extends HttpServlet {
 				SSLSocketFactory factory = InstallServlet.initSocketFactory(fConfigDir);
 				((HttpsURLConnection)cnx).setSSLSocketFactory(factory);
 			}
+			if(authKey == null || authKey.length() == 0) {
+				authKey = "none";
+			}
+			if(authKey != null && authKey.length() > 0 && cnx instanceof HttpURLConnection) {
+		        cnx.setDoOutput(true);
+				OutputStreamWriter out = new OutputStreamWriter(
+						cnx.getOutputStream());
+				out.write("AuthKey=" + URLEncoder.encode(authKey, "UTF-8"));
+				out.close();
+			}
 
 			// check the response code
 			if(cnx instanceof HttpURLConnection) {
@@ -187,6 +208,12 @@ public class SettingsServlet extends HttpServlet {
 
 			// open the stream to make sure that we have something
 			InputStream is = cnx.getInputStream();
+			Document doc = XMLUtils.parse(is);
+			Element elRepository = doc.getDocumentElement();
+			if("error".equals(elRepository.getLocalName())) {
+				throw new Exception(XMLUtils.getChildText(elRepository, "message"));
+			}
+			
 			is.close();
 
 			// it was successful
@@ -207,6 +234,7 @@ public class SettingsServlet extends HttpServlet {
 		HttpSession session = request.getSession();
 		
 		updateValue(session, request, "RepoURL");
+		updateValue(session, request, "AuthKey");
 		updateValue(session, request, "Proxy");
 		updateValue(session, request, "ProxyHost");
 		updateValue(session, request, "ProxyPort");
@@ -237,6 +265,13 @@ public class SettingsServlet extends HttpServlet {
 			repoURL = InstallServlet.DEFAULT_REPO;
 		}
 		setValueInSession(session, "RepoURL", repoURL);
+		// auth key
+		String authKey = XMLUtils.getChildText(elConfig, "AuthKey");
+		if(authKey == null) {
+			authKey = "";
+		}
+		setValueInSession(session, "AuthKey", authKey);
+
 		// proxy
 		String proxy = XMLUtils.getChildText(elConfig, "Proxy");
 		if(proxy == null) {

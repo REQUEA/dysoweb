@@ -4,13 +4,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.TagSupport;
 
-import org.w3c.dom.Element;
-
-import com.requea.dysoweb.panel.Feature;
+import com.requea.dysoweb.panel.Installable;
 import com.requea.dysoweb.panel.InstallServlet;
 
 
-public class FeatureTag extends TagSupport {
+public class InstallableTag extends TagSupport {
 
 	private static final long serialVersionUID = -6946596706261994434L;
 
@@ -28,31 +26,42 @@ public class FeatureTag extends TagSupport {
 	public int doStartTag() throws JspException {
         HttpServletRequest request = (HttpServletRequest)pageContext.getRequest();
 
-        Feature feature = (Feature)request.getAttribute(InstallServlet.FEATURE);
-        if(feature == null) {
+        Installable installable = (Installable)request.getAttribute(InstallServlet.INSTALLABLE);
+        if(installable == null) {
         	return SKIP_BODY;
         }
         
         if("title".equals(fProperty)) {
         	TagWriter tw = new TagWriter();
-        	tw.append(feature.getName());
+        	tw.append(installable.getName());
         	tw.writeTo(pageContext);
         } else if("description".equals(fProperty)) {
         	TagWriter tw = new TagWriter();
-        	String str = feature.getDescription();
-	        str = str.replaceAll("\\r\\n", "<br/>");
-	        str = str.replaceAll("\\n", "<br/>");
-        	tw.append(str);
+        	String str = installable.getDescription();
+        	if(str != null) {
+		        str = str.replaceAll("\\r\\n", "<br/>");
+		        str = str.replaceAll("\\n", "<br/>");
+	        	tw.append(str);
+        	}
         	tw.writeTo(pageContext);
-        } else if("longDesc".equals(fProperty)) {
+        } else if("documentation".equals(fProperty)) {
         	TagWriter tw = new TagWriter();
-        	String str = feature.getLongDesc();
-	        str = str.replaceAll("\\r\\n", "<br/>");
-	        str = str.replaceAll("\\n", "<br/>");
-        	tw.append(str);
+        	String str = installable.getLongDesc();
+        	if(str != null) {
+		        str = str.replaceAll("\\r\\n", "<br/>");
+		        str = str.replaceAll("\\n", "<br/>");
+	        	tw.append(str);
+        	}
+        	tw.writeTo(pageContext);
+        } else if("version".equals(fProperty)) {
+        	TagWriter tw = new TagWriter();
+        	String str = installable.getVersion();
+        	if(str != null) {
+	        	tw.append(str);
+        	}
         	tw.writeTo(pageContext);
 	    } else if("infoURL".equals(fProperty)) {
-	    	String url = feature.getInfoURL();
+	    	String url = installable.getInfoURL();
 	    	if(url == null || url.length() == 0)
 	    		return SKIP_BODY;
     	
@@ -72,11 +81,11 @@ public class FeatureTag extends TagSupport {
         	tw.append("</a>");
         	tw.writeTo(pageContext);
 	    } else if("launch".equals(fProperty)) {
-	    	String url = feature.getBaseURL();
+	    	String url = installable.getBaseURL();
         	TagWriter tw = new TagWriter();
 	    	if(url == null || url.length() == 0) {
 	    		tw.append("Application ");
-	    		tw.append(feature.getName());
+	    		tw.append(installable.getName());
 	    		tw.append(" installed");
 	    	} else {
 	        	tw.append("<a href=\"");
@@ -91,22 +100,22 @@ public class FeatureTag extends TagSupport {
 	        	tw.append(" target=\"_blank\"");
 	        	tw.append(">");
 	        	tw.append("Launch "); // TODO: translate
-	        	tw.append(feature.getName());
+	        	tw.append(installable.getName());
 	        	tw.append("</a>");
 	    	}
         	tw.writeTo(pageContext);
         } else if("install".equals(fProperty)) {
-        	String bundles = feature.getBundleList();
+        	String bundles = installable.getBundleList();
         	if(bundles == null || bundles.length() == 0) {
         		return SKIP_BODY;
         	}
         	TagWriter tw = new TagWriter();
         	tw.append("<a href=\"");
         	tw.append(request.getContextPath());
-        	tw.append("/dysoweb/panel/install?bundles=");
+        	tw.append("/dysoweb/panel/secure/install?bundles=");
         	tw.append(bundles);
         	tw.append("&feature=");
-        	tw.append(feature.getID());
+        	tw.append(installable.getID());
         	tw.append("\"");
         	if(fStyle != null) {
         		tw.append(" class=\"");
@@ -119,32 +128,30 @@ public class FeatureTag extends TagSupport {
         	tw.writeTo(pageContext);
         } else if("check".equals(fProperty)) {
         	TagWriter tw = new TagWriter();
-        	tw.append("<input name=\"feature");
-        	tw.append(feature.getID());
-        	tw.append("\" type=\"checkbox\" value=\"");
+        	tw.append("<input name=\"inst_");
+        	tw.append(installable.getID());
+        	tw.append("\"");
+        	if(installable.isRoot()) {
+        		tw.append(" checked=\"checked\"");
+        	}
+        	tw.append(" type=\"checkbox\" value=\"");
         	tw.append("install");
         	tw.append("\"/>");
         	tw.writeTo(pageContext);
         } else if("image".equals(fProperty)) {
         	TagWriter tw = new TagWriter();
-        	Element elImage = feature.getImage();
-        	if(elImage == null) 
+        	String strImage = installable.getImage();
+        	if(strImage == null) 
         		return SKIP_BODY;
         	tw.append("<img src=\"");
-        	tw.append(elImage.getAttribute("url"));
+        	if(strImage.startsWith("http")) {
+        		tw.append(strImage);
+        	} else {
+	        	tw.append(request.getContextPath());
+	        	tw.append("/dysoweb/panel/secure/install?op=image&image=");
+	        	tw.append(installable.getName()+"-"+installable.getVersion());
+        	}
         	tw.append("\"");
-        	String width = elImage.getAttribute("width");
-        	if(width != null && width.length() > 0) {
-        		tw.append(" width=\"");
-        		tw.append(width);
-        		tw.append("\"");
-        	}
-        	String height = elImage.getAttribute("height");
-        	if(height != null && height.length() > 0) {
-        		tw.append(" height=\"");
-        		tw.append(height);
-        		tw.append("\"");
-        	}
         	if(fStyle != null) {
         		tw.append(" class=\"");
         		tw.append(fStyle);

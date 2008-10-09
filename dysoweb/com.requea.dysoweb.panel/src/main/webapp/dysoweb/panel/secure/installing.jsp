@@ -66,14 +66,14 @@ function dysowebRefreshStatus() {
 								<p>Installation in progress. Please wait</p>
 								<div class="rqwait"><span>wait please</span></div>
 							</div>
-							<div style="display:none" id="launch"><panel:feature style="rplaunch" property="launch" /></div>
+							<div style="display:none" id="launch"><panel:installable style="rplaunch" property="launch" /></div>
 						</div>
 					</div>
 				</div>
 			</div>
-			<dw:insert path="/dysoweb/panel/footer.jsp"/>		
 		</div>
 	</div>
 </div>
+<dw:insert path="/dysoweb/panel/footer.jsp"/>		
 </body>
 </html>

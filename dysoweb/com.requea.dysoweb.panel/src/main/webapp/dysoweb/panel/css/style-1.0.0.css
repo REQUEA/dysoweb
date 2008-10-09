@@ -1,9 +1,31 @@
 body {
-	background:#fff;
+	background:#BBB;
 	font-family: "Lucida grande",Verdana,arial,sans-serif;
     margin:0px;
 	font-size: 70%;
 }	
+#il {
+	background: url('bgleft.gif') repeat-y;	
+}
+#it {
+	background: url('bgright.gif') repeat-y 100% 0px;	
+}
+#inner {
+	margin:0px 40px 0px 40px;
+	background:#fff;
+}
+#top {
+	height:40px;
+	margin:0px;
+	padding:0px 0px 0px 0px;
+	background:url('top.gif') repeat-x;
+}
+.rqtopimg {
+	background:url('logo.gif') no-repeat;
+	height:40px;
+	width:450px;
+	float:left;
+}
 a {
 	color:#00c;	
 }
@@ -11,13 +33,6 @@ a:hover {
 	color:#c00;	
 }
 
-#top {
-	height:20px;
-}
-#inner {
-	padding:0px;	
-	padding:0px 20px 0px 20px;	
-}
 
 .rqdefaultpage {
     padding:40px 15px 5px 20px;
@@ -77,7 +92,7 @@ a:hover {
 ******************************************/
 .mbar {
 	padding:0px 0px 0px 0px;
-	margin:5px 12px 0px 10px;
+	margin:0px 2px 0px 0px;
 }
 
 .mb {
@@ -152,15 +167,28 @@ a:hover {
 /*****************************************
 	FOOTER STYLES
 ******************************************/
-#ifooter {
-    margin-top:50px;
+#footer
+{
+	background: url('blfoot.gif') no-repeat;	
+    padding:0px;
+    height:40px;
+}
+#ifooter 
+{
+	background: url('brfoot.gif') no-repeat 100% 0px;	
+    margin:0px;
 }
 #cfooter 
 {
-	color:#777;
-    font-size: 85%;
-    padding:10px 10px 50px 10px;
+	background:url('bfoot.gif') repeat-x;
+	color:#eee;
+    padding:6px;
+	margin:0px 40px 0px 40px;
+	height:42px;
     text-align:center;
+}
+#cfooter a {
+	color:#eee;
 }
 #cfooter .f1 
 {
@@ -365,4 +393,13 @@ a.rplaunch:hover {
 	padding-top:12px;	
 }
 
+.rpfeatdesc {
+	padding:2px;
+}
+.rpfeatldesc {
+	padding:2px;
+}
+.rpfeaturl {
+	padding:2px;
+}
 
