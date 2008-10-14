@@ -18,14 +18,14 @@
     <parent>
         <artifactId>demo</artifactId>
         <groupId>com.requea.dysoweb</groupId>
-		<version>1.0.6-SNAPSHOT</version>
+		<version>1.0.6</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.requea.dysoweb</groupId>
     <artifactId>com.requea.dysoweb.demo3</artifactId>
     <packaging>bundle</packaging>
     <name>Requea Dysoweb Demo3 Google Search bar</name>
-	<version>1.0.6-SNAPSHOT</version>
+	<version>1.0.6</version>
     <url>http://www.requea.com</url>
     <dependencies>
         <dependency>
