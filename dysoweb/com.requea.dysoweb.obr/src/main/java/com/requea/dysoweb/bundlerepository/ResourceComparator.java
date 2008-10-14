@@ -29,7 +29,13 @@ class ResourceComparator implements Comparator
         Resource r1 = (Resource) o1;
         Resource r2 = (Resource) o2;
         String name1 = (String) r1.getPresentationName();
+        if(name1 == null) {
+        	name1 = r1.getSymbolicName();
+        }
         String name2 = (String) r2.getPresentationName();
+        if(name2 == null) {
+        	name2 = r2.getSymbolicName();
+        }
         return name1.compareToIgnoreCase(name2);
     }
 }

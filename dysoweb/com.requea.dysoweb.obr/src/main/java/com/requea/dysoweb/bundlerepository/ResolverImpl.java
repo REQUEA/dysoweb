@@ -465,11 +465,14 @@ public class ResolverImpl implements MonitoredResolver
         {
             deployMap.put(resources[i], resources[i]);
         }
+        /*
+         * PD: 2008/10/08: do not deploy optional ressources
         resources = getOptionalResources();
         for (int i = 0; (resources != null) && (i < resources.length); i++)
         {
             deployMap.put(resources[i], resources[i]);
         }
+        */
         Resource[] deployResources = (Resource[])
             deployMap.keySet().toArray(new Resource[deployMap.size()]);
 
