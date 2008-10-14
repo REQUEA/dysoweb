@@ -1,3 +1,7 @@
+1.0.6  VERSION
+- Simplification of deploymenent process (one operation for all selected resources to install). Fixes somes problems with total resource size download and install progress bar
+- NPE if presentation name is null for bundle (which it should not, but..)
+
 1.0.5 VERSION
 - Bug fix: NPE on Felix OBR if bundle has null symbolic name
 - javax.jcr api included
