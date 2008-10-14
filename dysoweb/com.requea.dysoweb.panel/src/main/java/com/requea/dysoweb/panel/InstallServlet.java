@@ -552,26 +552,14 @@ public class InstallServlet extends HttpServlet {
 		
 		public void run() {
 			
-			// calc the total download size
-			long lTotalSize = 0;
 			try {
-				lTotalSize = calcTotalDownloadSize(fContext, fRepo, fResources);
-			} catch (Exception e) {
-				// we will not get the total size
-				lTotalSize = 0;
-			}
-			
-			try {
-				fProgressMonitor.beginTask("Installing resource ", lTotalSize == 0 ? IProgressMonitor.UNKNOWN : (int)lTotalSize);
 				fStatus.setStatus(Status.STARTED);
-				for(int i=0; i<fResources.length; i++) {
-					try {
-						installResource(fContext, fRepo, fResources[i], fProgressMonitor);
-					} catch(Exception e) {
-						fStatus.setError(e);
-		        		// abort
-		        		return;
-					}
+				try {
+					installResources(fContext, fRepo, fResources);
+				} catch(Exception e) {
+					fStatus.setError(e);
+	        		// abort
+	        		return;
 				}
 				// Get package admin service and request a refresh
 		        ServiceReference ref = fContext.getServiceReference(
@@ -590,225 +578,157 @@ public class InstallServlet extends HttpServlet {
 				fProgressMonitor.done();
 			}
 		}
-	}
-	
-	private long calcTotalDownloadSize(BundleContext context, RepositoryAdmin repo, Installable[] installables) throws Exception {
-
 		
-		Resolver resolver = (Resolver)repo.resolver();
-		// add the bundles for all the resources
-		for(int i=0; i<installables.length; i++) {
-			Installable installable = installables[i];
-			if("bundle".equals(installable.getType()) || "product".equals(installable.getType())) {
-	            // Find the target's bundle resource.
-	            Resource[] resources = searchRepository(context, repo, installable.getName(), installable.getVersion());
-	            if (resources != null && resources.length > 0)
-	            {
-	            	for(int j=0; j<resources.length; j++)
-	            		resolver.add(resources[j]);
-	            }
-	            else
-	            {
-	                throw new Exception("Unknown reource - " + installable.getName()+" ("+installable.getVersion()+")");
-	            }
-			} else if("feature".equals(installable.getType())) {
-				String bundles = installable.getBundleList();
-				
+		
+		private void installResources(BundleContext context, RepositoryAdmin repo, Installable[] installables) throws Exception {
+
+			// create an XML document for the resource
+	        Resolver resolver = (Resolver)repo.resolver();
+	        for(int i=0; i<installables.length; i++) {
+	        	
+	        	Installable installable = installables[i];
+	        	
 				// retrieve the bundles id
-				StringTokenizer st = new StringTokenizer(bundles,",");
-		        while(st.hasMoreTokens()) {
-		        	String bundleId = st.nextToken();
-		            // Find the target's bundle resource.
-		            Resource resource = selectNewestVersion(
-		                searchRepository(context, repo, bundleId, null));
-		            if (resource != null)
-		            {
-		                resolver.add(resource);
-		            }
-		            else
-		            {
-		                throw new Exception("Unknown bundle - " + bundleId);
-		            }
-		        }
-			}
-		}
-		
-		// then resolve
-		resolver.resolve();
-		
-		// get the list of resources added
-		long lSize = 0;
-		Map deployMap = new HashMap();
-		Resource[] resources = resolver.getAddedResources();
-		if(resources != null) {
-			for(int i=0; i<resources.length; i++) {
-	            deployMap.put(resources[i], resources[i]);
-			}
-		}
-		resources = resolver.getRequiredResources();
-		if(resources != null) {
-			for(int i=0; i<resources.length; i++) {
-	            deployMap.put(resources[i], resources[i]);
-			}
-		}
-		resources = resolver.getOptionalResources();
-		if(resources != null) {
-			for(int i=0; i<resources.length; i++) {
-	            deployMap.put(resources[i], resources[i]);
-			}
-		}
-		Iterator iter = (Iterator)deployMap.values().iterator();
-		while(iter.hasNext()) {
-			Resource res = (Resource)iter.next();
-			Long size = (Long)res.getProperties().get("size");
-			if(size != null)
-				lSize += size.longValue();
-		}
-		return lSize;
-	}
-	
-	private void installResource(BundleContext context, RepositoryAdmin repo, Installable installable, IProgressMonitor parentMonitor) throws Exception {
-
-		// create an XML document for the resource
-		Element elResource = XMLUtils.newElement("resource");
-		elResource.setAttribute("id", installable.getID());
-		String version = installable.getVersion();
-		if(version != null) {
-			elResource.setAttribute("version", version);
-		}
-		// store the resource info
-		XMLUtils.addElement(elResource, "title", installable.getName());
-		Element elDesc = XMLUtils.addElement(elResource, "description");
-		XMLUtils.setCDATA(elDesc, installable.getDescription());
-		
-		elDesc = XMLUtils.addElement(elResource, "documentation");
-		XMLUtils.setCDATA(elDesc, installable.getLongDesc());
-		synchronized (format) {
-			elResource.setAttribute("date", format.format(new Date()));
-		}
-
-		// retrieve the bundles id
-        Resolver resolver = (Resolver)repo.resolver();
-		if("feature".equals(installable.getType())) {
-			String bundles = installable.getBundleList();
-			
-			// retrieve the bundles id
-			StringTokenizer st = new StringTokenizer(bundles,",");
-	        while(st.hasMoreTokens()) {
-	        	String bundleId = st.nextToken();
-	            // Find the target's bundle resource.
-	            Resource resource = selectNewestVersion(
-	                searchRepository(context, repo, bundleId, null));
-	            if (resource != null)
+				if("feature".equals(installable.getType())) {
+					String bundles = installable.getBundleList();
+					
+					// retrieve the bundles id
+					StringTokenizer st = new StringTokenizer(bundles,",");
+			        while(st.hasMoreTokens()) {
+			        	String bundleId = st.nextToken();
+			            // Find the target's bundle resource.
+			            Resource resource = selectNewestVersion(
+			                searchRepository(context, repo, bundleId, null));
+			            if (resource != null)
+			            {
+			                resolver.add(resource);
+			            }
+			            else
+			            {
+			                throw new Exception("Unknown bundle - " + bundleId);
+			            }
+			        }
+				} else {		
+			        // Find the target's bundle resource.
+			        Resource[] res = searchRepository(context, repo, installable.getName(), installable.getVersion());
+			        if (res != null && res.length > 0)
+			        {
+			        	for(int j=0; j<res.length; j++)
+			        		resolver.add(res[j]);
+			        }
+			        else
+			        {
+			            throw new Exception("Unknown resource - " + installable.getName()+" ("+installable.getVersion()+")");
+			        }
+				}
+	        }
+	        
+	        if ((resolver.getAddedResources() != null) &&
+	            (resolver.getAddedResources().length > 0))
+	        {
+	            if (resolver.resolve())
 	            {
-	                resolver.add(resource);
+	    			long lSize = 0;
+	    			Map deployMap = new HashMap();
+	            	Resource[] resources = resolver.getAddedResources();
+	        		if(resources != null && resources.length > 0) {
+	        			for(int i=0; i<resources.length; i++) {
+	        				deployMap.put(resources[i], resources[i]);
+	        			}
+	        		}
+	            	resources = resolver.getRequiredResources();
+	        		if(resources != null && resources.length > 0) {
+	        			for(int i=0; i<resources.length; i++) {
+	        				deployMap.put(resources[i], resources[i]);
+	        			}
+	        		}
+	        		resources = resolver.getOptionalResources();
+	        		if(resources != null && resources.length > 0) {
+	        			for(int i=0; i<resources.length; i++) {
+	        				deployMap.put(resources[i], resources[i]);
+	        			}
+	        		}
+	        		Iterator iter = deployMap.values().iterator();
+	        		while(iter.hasNext()) {
+	        			Resource resource = (Resource)iter.next();
+	    				Long size = (Long)resource.getProperties().get("size");
+	    				if(size != null) {
+	    					lSize += size.longValue();
+	    				}
+	        		}
+	        		try {
+						fProgressMonitor.beginTask("Installing selected resources ", lSize == 0 ? IProgressMonitor.UNKNOWN : (int)lSize);
+		                try
+		                {
+		            		if(resolver instanceof MonitoredResolver) {
+			            		SubProgressMonitor subMonitor = new SubProgressMonitor(fProgressMonitor, (int)lSize);
+		            			((MonitoredResolver)resolver).deploy(true, subMonitor);
+		            		} else {
+		            			resolver.deploy(true);
+		            		}
+		                }
+		                catch (IllegalStateException ex)
+		                {
+		                    throw ex;
+		                }
+	        		} finally {
+	        			fProgressMonitor.done();
+	        		}
 	            }
 	            else
 	            {
-	                throw new Exception("Unknown bundle - " + bundleId);
+	                Requirement[] reqs = resolver.getUnsatisfiedRequirements();
+	                if ((reqs != null) && (reqs.length > 0))
+	                {
+	                	StringBuffer sb = new StringBuffer();
+	            		sb.append("Unsatisfied requirement(s):\n");
+	                    for (int reqIdx = 0; reqIdx < reqs.length; reqIdx++)
+	                    {
+		            		sb.append("   " + reqs[reqIdx].getFilter()+"\n");
+	                        Resource[] resources = resolver.getResources(reqs[reqIdx]);
+	                        for (int resIdx = 0; resIdx < resources.length; resIdx++)
+	                        {
+	                        	sb.append("      " + resources[resIdx].getPresentationName()+"\n");
+	                        }
+	                    }
+	                    throw new Exception(sb.toString());
+	                }
+	                else
+	                {
+	                	// cannot retrieve a better error message
+	                	throw new Exception("Missing requirements");
+	                }
 	            }
 	        }
-		} else {		
-	        // Find the target's bundle resource.
-	        Resource[] res = searchRepository(context, repo, installable.getName(), installable.getVersion());
-	        if (res != null && res.length > 0)
-	        {
-	        	for(int j=0; j<res.length; j++)
-	        		resolver.add(res[j]);
-	        }
-	        else
-	        {
-	            throw new Exception("Unknown resource - " + installable.getName()+" ("+installable.getVersion()+")");
+	        // register installed applications
+	        for(int i=0; i<installables.length; i++) {
+	        	
+	        	Installable installable = installables[i];
+	        	
+				Element elResource = XMLUtils.newElement("resource");
+				elResource.setAttribute("id", installable.getID());
+				String version = installable.getVersion();
+				if(version != null) {
+					elResource.setAttribute("version", version);
+				}
+				// store the resource info
+				XMLUtils.addElement(elResource, "title", installable.getName());
+				Element elDesc = XMLUtils.addElement(elResource, "description");
+				XMLUtils.setCDATA(elDesc, installable.getDescription());
+				
+				elDesc = XMLUtils.addElement(elResource, "documentation");
+				XMLUtils.setCDATA(elDesc, installable.getLongDesc());
+				synchronized (format) {
+					elResource.setAttribute("date", format.format(new Date()));
+				}
+	            // register the new application if something was installed
+	        	registerInstalledApplication(installable, elResource);
 	        }
 		}
-        if ((resolver.getAddedResources() != null) &&
-            (resolver.getAddedResources().length > 0))
-        {
-            if (resolver.resolve())
-            {
-    			long lSize = 0;
-    			Map deployMap = new HashMap();
-            	Resource[] resources = resolver.getAddedResources();
-        		if(resources != null && resources.length > 0) {
-        			for(int i=0; i<resources.length; i++) {
-        				deployMap.put(resources[i], resources[i]);
-        			}
-        		}
-            	resources = resolver.getRequiredResources();
-        		if(resources != null && resources.length > 0) {
-        			for(int i=0; i<resources.length; i++) {
-        				deployMap.put(resources[i], resources[i]);
-        			}
-        		}
-        		resources = resolver.getOptionalResources();
-        		if(resources != null && resources.length > 0) {
-        			for(int i=0; i<resources.length; i++) {
-        				deployMap.put(resources[i], resources[i]);
-        			}
-        		}
-        		Iterator iter = deployMap.values().iterator();
-        		while(iter.hasNext()) {
-        			Resource resource = (Resource)iter.next();
-    				Long size = (Long)resource.getProperties().get("size");
-    				if(size != null) {
-    					lSize += size.longValue();
-    				}
-                	Element elBundle = XMLUtils.addElement(elResource, "resource");
-                	if(resource.getSymbolicName() != null) {
-    	                elBundle.setAttribute("symbolicName", resource.getSymbolicName());
-                	}
-	                elBundle.setAttribute("name", resource.getPresentationName());
-	                elBundle.setAttribute("version", resource.getVersion().toString());
-        		}
-        		IProgressMonitor monitor = new SubProgressMonitor(parentMonitor, (int)lSize);
-        		try {
-        			monitor.beginTask("Installing resource " + installable.getName(), (int)lSize);
-	                try
-	                {
-	            		if(resolver instanceof MonitoredResolver) {
-		            		SubProgressMonitor subMonitor = new SubProgressMonitor(monitor, (int)lSize);
-	            			((MonitoredResolver)resolver).deploy(true, subMonitor);
-	            		} else {
-	            			resolver.deploy(true);
-	            		}
-	                    // register the new application if something was installed
-                    	registerInstalledApplication(installable, elResource);
-	                }
-	                catch (IllegalStateException ex)
-	                {
-	                    throw ex;
-	                }
-        		} finally {
-        			monitor.done();
-        		}
-            }
-            else
-            {
-                Requirement[] reqs = resolver.getUnsatisfiedRequirements();
-                if ((reqs != null) && (reqs.length > 0))
-                {
-                	StringBuffer sb = new StringBuffer();
-            		sb.append("Unsatisfied requirement(s):\n");
-                    for (int reqIdx = 0; reqIdx < reqs.length; reqIdx++)
-                    {
-	            		sb.append("   " + reqs[reqIdx].getFilter()+"\n");
-                        Resource[] resources = resolver.getResources(reqs[reqIdx]);
-                        for (int resIdx = 0; resIdx < resources.length; resIdx++)
-                        {
-                        	sb.append("      " + resources[resIdx].getPresentationName()+"\n");
-                        }
-                    }
-                    throw new Exception(sb.toString());
-                }
-                else
-                {
-                	// cannot retrieve a better error message
-                	throw new Exception("Missing requirements");
-                }
-            }
-        }
+				
 	}
 	
+
     public Resource selectNewestVersion(Resource[] resources)
     {
         int idx = -1;
