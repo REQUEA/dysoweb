@@ -3,7 +3,7 @@
     <parent>
         <artifactId>dysoweb</artifactId>
 	    <groupId>com.requea.dysoweb</groupId>
-		<version>1.0.7-SNAPSHOT</version>
+		<version>1.0.7</version>
     </parent>
     <properties>
         <pkgArtifactId>commons-logging</pkgArtifactId>
@@ -11,7 +11,7 @@
     </properties>
     <groupId>com.requea.dysoweb</groupId>
     <artifactId>${pom.groupId}.${pkgArtifactId}</artifactId>
-    <version>1.0.7-SNAPSHOT</version>
+    <version>1.0.7</version>
     <packaging>bundle</packaging>
     <name>Requea Dysoweb Commons Logging Wrapper</name>
     <description>
