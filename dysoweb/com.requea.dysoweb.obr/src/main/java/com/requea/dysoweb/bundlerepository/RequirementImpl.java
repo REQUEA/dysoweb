@@ -1,4 +1,4 @@
-/* 
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,7 +18,6 @@
  */
 package com.requea.dysoweb.bundlerepository;
 
-import com.requea.dysoweb.bundlerepository.MapToDictionary;
 import org.osgi.framework.Filter;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.service.obr.Capability;
@@ -38,7 +37,7 @@ public class RequirementImpl implements Requirement
     {
     }
 
-    public String getName()
+    public synchronized String getName()
     {
         return m_name;
     }
@@ -48,22 +47,14 @@ public class RequirementImpl implements Requirement
         m_name = name;
     }
 
-    public String getFilter()
+    public synchronized String getFilter()
     {
         return m_filter.toString();
     }
 
-    public synchronized void setFilter(String filter)
+    public synchronized void setFilter(String filter) throws InvalidSyntaxException
     {
-        try
-        {
-            m_filter = RepositoryAdminImpl.m_context.createFilter(filter);
-        }
-        catch (InvalidSyntaxException ex)
-        {
-            m_filter = null;
-            System.err.println(ex);
-        }
+        m_filter = RepositoryAdminImpl.m_context.createFilter(filter);
     }
 
     public synchronized boolean isSatisfied(Capability capability)
@@ -72,7 +63,7 @@ public class RequirementImpl implements Requirement
         return m_filter.match(m_dict);
     }
 
-    public boolean isExtend()
+    public synchronized boolean isExtend()
     {
         return m_extend;
     }
@@ -82,7 +73,7 @@ public class RequirementImpl implements Requirement
         m_extend = Boolean.valueOf(s).booleanValue();
     }
 
-    public boolean isMultiple()
+    public synchronized boolean isMultiple()
     {
         return m_multiple;
     }
@@ -92,7 +83,7 @@ public class RequirementImpl implements Requirement
         m_multiple = Boolean.valueOf(s).booleanValue();
     }
 
-    public boolean isOptional()
+    public synchronized boolean isOptional()
     {
         return m_optional;
     }
@@ -102,7 +93,7 @@ public class RequirementImpl implements Requirement
         m_optional = Boolean.valueOf(s).booleanValue();
     }
 
-    public String getComment()
+    public synchronized String getComment()
     {
         return m_comment;
     }
@@ -127,7 +118,7 @@ public class RequirementImpl implements Requirement
         return false;
     }
 
-    public int hashCode()
+    public synchronized int hashCode()
     {
         return m_filter.toString().hashCode();
     }

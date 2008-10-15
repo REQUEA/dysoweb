@@ -27,6 +27,18 @@ import java.util.*;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
+import org.osgi.framework.ServiceReference;
+import org.osgi.framework.Version;
+import org.osgi.service.obr.Capability;
+import org.osgi.service.obr.Repository;
+import org.osgi.service.obr.RepositoryAdmin;
+import org.osgi.service.obr.Requirement;
+import org.osgi.service.obr.Resource;
+import org.osgi.service.packageadmin.PackageAdmin;
+
 import com.requea.dysoweb.bundlerepository.LocalRepositoryImpl;
 import com.requea.dysoweb.bundlerepository.Util;
 import com.requea.dysoweb.bundlerepository.LocalRepositoryImpl.LocalResourceImpl;
@@ -34,13 +46,12 @@ import com.requea.dysoweb.service.obr.IProgressMonitor;
 import com.requea.dysoweb.service.obr.MonitoredResolver;
 import com.requea.dysoweb.service.obr.SubProgressMonitor;
 
-import org.osgi.framework.*;
-import org.osgi.service.obr.*;
 
 public class ResolverImpl implements MonitoredResolver
 {
     private BundleContext m_context = null;
     private RepositoryAdmin m_admin = null;
+    private final Logger m_logger;
     private LocalRepositoryImpl m_local = null;
     private Set m_addedSet = new HashSet();
     private Set m_resolveSet = new HashSet();
@@ -54,16 +65,18 @@ public class ResolverImpl implements MonitoredResolver
 	private Proxy m_proxy;
 	
 
-    public ResolverImpl(BundleContext context, RepositoryAdmin admin, Proxy proxy, String proxyAuth, SSLSocketFactory sslSocketFactory)
+    public ResolverImpl(BundleContext context, RepositoryAdmin admin, Logger logger, Proxy proxy, String proxyAuth, SSLSocketFactory sslSocketFactory)
     {
         m_context = context;
         m_admin = admin;
+        m_logger = logger;
+        
         m_sslSocketFactory = sslSocketFactory;
         m_proxy = proxy;
         m_proxyAuth = proxyAuth;
     }
 
-	public synchronized void add(Resource resource)
+    public synchronized void add(Resource resource)
     {
         m_resolved = false;
         m_addedSet.add(resource);
@@ -135,7 +148,7 @@ public class ResolverImpl implements MonitoredResolver
         {
             m_local.dispose();
         }
-        m_local = new LocalRepositoryImpl(m_context);
+        m_local = new LocalRepositoryImpl(m_context, m_logger);
 
         // Reset instance values.
         m_resolveSet.clear();
@@ -289,7 +302,8 @@ public class ResolverImpl implements MonitoredResolver
             Capability[] caps = resource.getCapabilities();
             for (int capIdx = 0; (caps != null) && (capIdx < caps.length); capIdx++)
             {
-                if (req.isSatisfied(caps[capIdx]))
+                if (caps[capIdx].getName().equals(req.getName())
+                    && req.isSatisfied(caps[capIdx]))
                 {
                     // The requirement is already satisfied an existing
                     // resource, return the resource.
@@ -310,7 +324,8 @@ public class ResolverImpl implements MonitoredResolver
             Capability[] caps = resources[resIdx].getCapabilities();
             for (int capIdx = 0; (caps != null) && (capIdx < caps.length); capIdx++)
             {
-                if (req.isSatisfied(caps[capIdx]))
+                if (caps[capIdx].getName().equals(req.getName())
+                    && req.isSatisfied(caps[capIdx]))
                 {
                     return resources[resIdx];
                 }
@@ -334,7 +349,8 @@ public class ResolverImpl implements MonitoredResolver
             Capability[] caps = resources[resIdx].getCapabilities();
             for (int capIdx = 0; (caps != null) && (capIdx < caps.length); capIdx++)
             {
-                if (req.isSatisfied(caps[capIdx]))
+                if (caps[capIdx].getName().equals(req.getName())
+                    && req.isSatisfied(caps[capIdx]))
                 {
                     matchingCandidates.add(resources[resIdx]);
                 }
@@ -362,7 +378,8 @@ public class ResolverImpl implements MonitoredResolver
                 Capability[] caps = resources[resIdx].getCapabilities();
                 for (int capIdx = 0; (caps != null) && (capIdx < caps.length); capIdx++)
                 {
-                    if (req.isSatisfied(caps[capIdx]))
+                    if (caps[capIdx].getName().equals(req.getName())
+                        && req.isSatisfied(caps[capIdx]))
                     {
                         matchingCandidates.add(resources[resIdx]);
                     }
@@ -438,8 +455,7 @@ public class ResolverImpl implements MonitoredResolver
         // Must resolve if not already resolved.
         if (!m_resolved && !resolve())
         {
-            // TODO: OBR - Use logger if possible.
-            System.err.println("Resolver: Cannot resolve target resources.");
+            m_logger.log(Logger.LOG_ERROR, "Resolver: Cannot resolve target resources.");
             return;
         }
 
@@ -514,7 +530,9 @@ public class ResolverImpl implements MonitoredResolver
             	}
             }
         }
-
+        
+        RuntimeException lastError = null;
+        
         try {
 	        monitor.beginTask("Deploying bundles", size);
 	        
@@ -537,7 +555,17 @@ public class ResolverImpl implements MonitoredResolver
 	                isResourceUpdatable(localResource, deployResources[i], deployResources))
 	            {
 	                // Only update if it is a different version.
-	                if (!localResource.equals(deployResources[i]) || localResource.getVersion().getQualifier().endsWith("SNAPSHOT"))
+                	String symName = localResource.getSymbolicName();
+                	boolean bDysowebCore = false;
+                	if("com.requea.dysoweb.api".equals(symName) ||
+                			"com.requea.dysoweb.obr".equals(symName) ||
+                			"com.requea.dysoweb.panel".equals(symName) ||
+                			"com.requea.dysoweb.processor".equals(symName)) {
+                		bDysowebCore = true;
+                	}
+                		
+	                if (!bDysowebCore && 
+                		(!localResource.equals(deployResources[i]) || localResource.getVersion().getQualifier().endsWith("SNAPSHOT")))
 	                {
 	                    // Update the installed bundle.
 	                    try
@@ -564,9 +592,11 @@ public class ResolverImpl implements MonitoredResolver
 	                    	subMonitor.setTaskName("Installing " + deployResources[i].getSymbolicName() + " " + deployResources[i].getVersion().toString());
 	                    	// always stop the bundle if this is a local resource unless this is ourself (...)
 	                    	Bundle localBundle = localResource.getBundle();
-	                    	if(start) {
-	                    		localBundle.stop();
-	                    	}
+                            boolean doStartBundle = start;
+                            if (localResource.getBundle().getState() == Bundle.ACTIVE) {
+                                doStartBundle = true;
+                                localBundle.stop();
+                            }
 	                    	// then update the bundle
 	                    	localBundle.update(
 	                        		new ProgressMonitorInputStream(is, 
@@ -575,14 +605,18 @@ public class ResolverImpl implements MonitoredResolver
 	
 	                        // If necessary, save the updated bundle to be
 	                        // started later.
-	                        if (start)
+	                        if (doStartBundle)
 	                        {
 	                            startList.add(localBundle);
 	                        }
 	                    }
 	                    catch (Exception ex)
 	                    {
-	                        throw new RuntimeException("Resolver: Update error - " + Util.getBundleName(localResource.getBundle()));
+	    		            m_logger.log(
+    	        		        Logger.LOG_ERROR,
+	                            "Resolver: Update error - " + Util.getBundleName(localResource.getBundle()),
+            			        ex);
+	                        lastError = new RuntimeException("Resolver: Update error - " + Util.getBundleName(localResource.getBundle()));
 	                    }
 	                }
 	            }
@@ -638,26 +672,41 @@ public class ResolverImpl implements MonitoredResolver
 	                }
 	                catch (Exception ex)
 	                {
-	                    // TODO: OBR - Use logger if possible.
-	                    System.err.println("Resolver: Install error - "
-	                        + deployResources[i].getSymbolicName());
-	                    ex.printStackTrace(System.err);
-	                    return;
+	                    m_logger.log(
+    	                    Logger.LOG_ERROR,
+        	                "Resolver: Install error - " + deployResources[i].getSymbolicName(), 
+            	            ex);
+	                    lastError = new RuntimeException("Resolver: Install error - " + deployResources[i].getSymbolicName());
 	                }
 	            }
 	        }
-	
+			// Get package admin service and request a refresh
+	        ServiceReference ref = m_context.getServiceReference(
+	            org.osgi.service.packageadmin.PackageAdmin.class.getName());
+	        if (ref != null) {
+		        PackageAdmin pa = (PackageAdmin) m_context.getService(ref);
+		        if (pa != null) {
+		        	pa.refreshPackages(null);
+		        }
+	        }
+	        
+	        // and restart the bundles
 	        for (int i = 0; i < startList.size(); i++)
-	        {
-	            try
-	            {
-	                ((Bundle) startList.get(i)).start();
+    	    {
+        	    try
+            	{
+                	((Bundle) startList.get(i)).start();
 	            }
-	            catch (BundleException ex)
-	            {
-	                // TODO: OBR - Use logger if possible.
-	                System.err.println("Resolver: Start error - " + ex);
-	            }
+    	        catch (BundleException ex)
+        	    {
+            	    m_logger.log(
+                	    Logger.LOG_ERROR,
+                    	"Resolver: Start error - " + ((Bundle) startList.get(i)).getSymbolicName(),
+	                    ex);
+    	        }
+        	}
+	        if(lastError != null) {
+	        	throw new RuntimeException("Insallation complete with errors. Please consult the log :" + lastError.getMessage());
 	        }
         } finally {
         	monitor.done();

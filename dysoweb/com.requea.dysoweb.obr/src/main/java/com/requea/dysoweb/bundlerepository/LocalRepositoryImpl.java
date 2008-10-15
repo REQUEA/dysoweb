@@ -21,7 +21,6 @@ package com.requea.dysoweb.bundlerepository;
 import java.net.URL;
 import java.util.*;
 
-import com.requea.dysoweb.bundlerepository.LocalRepositoryImpl;
 import org.osgi.framework.*;
 import org.osgi.service.obr.Repository;
 import org.osgi.service.obr.Resource;
@@ -29,14 +28,16 @@ import org.osgi.service.obr.Resource;
 public class LocalRepositoryImpl implements Repository
 {
     private BundleContext m_context = null;
+    private final Logger m_logger;
     private long m_currentTimeStamp = 0;
     private long m_snapshotTimeStamp = 0;
     private List m_localResourceList = new ArrayList();
     private BundleListener m_bundleListener = null;
 
-    public LocalRepositoryImpl(BundleContext context)
+    public LocalRepositoryImpl(BundleContext context, Logger logger)
     {
         m_context = context;
+        m_logger = logger;
         initialize();
     }
 
@@ -99,7 +100,16 @@ public class LocalRepositoryImpl implements Repository
         // convert the bundle headers to the appropriate resource metadata.
         for (int i = 0; (bundles != null) && (i < bundles.length); i++)
         {
-            m_localResourceList.add(new LocalResourceImpl(bundles[i]));
+            try
+            {
+                m_localResourceList.add(new LocalResourceImpl(bundles[i], m_logger));
+            }
+            catch (InvalidSyntaxException ex)
+            {
+                // This should never happen since we are generating filters,
+                // but ignore the resource if it does occur.
+                m_logger.log(Logger.LOG_WARNING, ex.getMessage(), ex);
+            }
         }
     }
 
@@ -107,12 +117,13 @@ public class LocalRepositoryImpl implements Repository
     {
         private Bundle m_bundle = null;
 
-        LocalResourceImpl(Bundle bundle)
+        LocalResourceImpl(Bundle bundle, Logger logger) throws InvalidSyntaxException
         {
-            this(null, bundle);
+            this(null, bundle, logger);
         }
 
-        LocalResourceImpl(ResourceImpl resource, Bundle bundle)
+        LocalResourceImpl(ResourceImpl resource, Bundle bundle, Logger logger)
+            throws InvalidSyntaxException
         {
             super(resource);
             m_bundle = bundle;
@@ -124,7 +135,7 @@ public class LocalRepositoryImpl implements Repository
             return m_bundle;
         }
 
-        private void initialize()
+        private void initialize() throws InvalidSyntaxException
         {
             Dictionary dict = m_bundle.getHeaders();
 
@@ -233,6 +244,7 @@ public class LocalRepositoryImpl implements Repository
         }
 
         private void convertImportPackageToRequirement(Dictionary dict)
+            throws InvalidSyntaxException
         {
             String target = (String) dict.get(Constants.IMPORT_PACKAGE);
             if (target != null)
@@ -272,13 +284,14 @@ public class LocalRepositoryImpl implements Repository
                             + imports[impIdx].getName() + ")"
                             + low + ")");
                     }
-                    
+
                     addRequire(req);
                 }
             }
         }
 
         private void convertImportServiceToRequirement(Dictionary dict)
+            throws InvalidSyntaxException
         {
             String target = (String) dict.get(Constants.IMPORT_SERVICE);
             if (target != null)

@@ -23,32 +23,36 @@ import java.io.InputStream;
 
 import javax.xml.parsers.*;
 
-import com.requea.dysoweb.bundlerepository.metadataparser.MetadataHandler;
 import org.xml.sax.*;
+
+import com.requea.dysoweb.bundlerepository.Logger;
 
 /**
  * handles the metadata in XML format
  */
-public class XmlMetadataHandler extends MetadataHandler {
+public class XmlMetadataHandler extends MetadataHandler
+{
+    public XmlMetadataHandler(Logger logger)
+    {
+        super(logger);
+    }
 
-	public XmlMetadataHandler() {
-	}
-	
-	/**
-	* Called to parse the InputStream and set bundle list and package hash map
-	*/
-	public void parse(InputStream istream) throws ParserConfigurationException, IOException, SAXException {
-     // Parse the Meta-Data
+    /**
+     * Called to parse the InputStream and set bundle list and package hash map
+     */
+    public void parse(InputStream istream) throws ParserConfigurationException, IOException, SAXException
+    {
+        // Parse the Meta-Data
 
-	 	ContentHandler contenthandler = (ContentHandler) handler;
+        ContentHandler contenthandler = (ContentHandler) m_handler;
 
-		InputSource is = new InputSource(istream);
+        InputSource is = new InputSource(istream);
 
         SAXParserFactory spf = SAXParserFactory.newInstance();
         spf.setValidating(false);
 
         SAXParser saxParser = spf.newSAXParser();
-		
+
         XMLReader xmlReader = null;
         xmlReader = saxParser.getXMLReader();
         xmlReader.setContentHandler(contenthandler);

@@ -22,9 +22,23 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.net.ssl.SSLSocketFactory;
+
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.Filter;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.service.obr.Repository;
+import org.osgi.service.obr.RepositoryAdmin;
+import org.osgi.service.obr.Resolver;
+import org.osgi.service.obr.Resource;
 
 import com.requea.dysoweb.bundlerepository.MapToDictionary;
 import com.requea.dysoweb.bundlerepository.RepositoryImpl;
@@ -38,6 +52,7 @@ import org.osgi.service.obr.*;
 public class RepositoryAdminImpl implements ClientAuthRepositoryAdmin
 {
     static BundleContext m_context = null;
+    private final Logger m_logger;
     private List m_urlList = new ArrayList();
     private Map m_repoMap = new HashMap();
     private boolean m_initialized = false;
@@ -49,50 +64,14 @@ public class RepositoryAdminImpl implements ClientAuthRepositoryAdmin
 	private String m_proxyAuth;
 	private URL m_repoURL;
 
-    private static final String DEFAULT_REPOSITORY_URL =
-        "http://oscar-osgi.sf.net/obr2/repository.xml";
+    private static final String DEFAULT_REPOSITORY_URL = "http://oscar-osgi.sourceforge.net/obr2/repository.xml";
     public static final String REPOSITORY_URL_PROP = "obr.repository.url";
     public static final String EXTERN_REPOSITORY_TAG = "extern-repositories";
 
-    public RepositoryAdminImpl(BundleContext context)
+    public RepositoryAdminImpl(BundleContext context, Logger logger)
     {
         m_context = context;
-
-        // Get repository URLs.
-        String urlStr = m_context.getProperty(REPOSITORY_URL_PROP);
-        if (urlStr != null)
-        {
-            StringTokenizer st = new StringTokenizer(urlStr);
-            if (st.countTokens() > 0)
-            {
-                while (st.hasMoreTokens())
-                {
-                    try
-                    {
-                        m_urlList.add(new URL(st.nextToken()));
-                    }
-                    catch (MalformedURLException ex)
-                    {
-                        System.err.println("RepositoryAdminImpl: " + ex);
-                    }
-                }
-            }
-        }
-
-        // Use the default URL if none were specified.
-        /*
-        if (m_urlList.size() == 0)
-        {
-            try
-            {
-                m_urlList.add(new URL(DEFAULT_REPOSITORY_URL));
-            }
-            catch (MalformedURLException ex)
-            {
-                System.err.println("RepositoryAdminImpl: " + ex);
-            }
-        }
-        */
+        m_logger = logger;
     }
 
     
@@ -100,8 +79,13 @@ public class RepositoryAdminImpl implements ClientAuthRepositoryAdmin
 		m_sslFactory = factory;
 	}
 
+    public Repository addRepository(URL url) throws Exception
+    {
+        return addRepository(url, Integer.MAX_VALUE);
+    }
 
-	public synchronized Repository addRepository(URL url) throws Exception
+
+	public synchronized Repository addRepository(URL url, int hopCount) throws Exception
     {
         if (!m_urlList.contains(url))
         {
@@ -111,7 +95,7 @@ public class RepositoryAdminImpl implements ClientAuthRepositoryAdmin
         // If the repository URL is a duplicate, then we will just
         // replace the existing repository object with a new one,
         // which is effectively the same as refreshing the repository.
-        Repository repo = new RepositoryImpl(url, m_proxy, m_proxyAuth, m_sslFactory);
+        Repository repo = new RepositoryImpl(this, url, hopCount, m_logger, m_proxy, m_proxyAuth, m_sslFactory);
         m_repoMap.put(url, repo);
         return repo;
     }
@@ -144,7 +128,7 @@ public class RepositoryAdminImpl implements ClientAuthRepositoryAdmin
             initialize();
         }
 
-        return new ResolverImpl(m_context, this, m_proxy, m_proxyAuth, m_sslFactory);
+        return new ResolverImpl(m_context, this, m_logger, m_proxy, m_proxyAuth, m_sslFactory);
     }
 
     public synchronized Resource[] discoverResources(String filterExpr)
@@ -154,14 +138,18 @@ public class RepositoryAdminImpl implements ClientAuthRepositoryAdmin
             initialize();
         }
 
-        Filter filter =  null;
+        Filter filter = null;
         try
         {
             filter = m_context.createFilter(filterExpr);
         }
         catch (InvalidSyntaxException ex)
         {
-            System.err.println(ex);
+            m_logger.log(
+                Logger.LOG_WARNING,
+                "Error while discovering resources for " + filterExpr,
+                ex);
+            return new Resource[0];
         }
 
         Resource[] resources = null;
@@ -190,6 +178,52 @@ public class RepositoryAdminImpl implements ClientAuthRepositoryAdmin
     private void initialize()
     {
         m_initialized = true;
+
+        // Initialize the repository URL list if it is currently empty.
+        if (m_urlList.size() == 0)
+        {
+            // First check the repository URL config property.
+            String urlStr = m_context.getProperty(REPOSITORY_URL_PROP);
+            if (urlStr != null)
+            {
+                StringTokenizer st = new StringTokenizer(urlStr);
+                if (st.countTokens() > 0)
+                {
+                    while (st.hasMoreTokens())
+                    {
+                        final String token = st.nextToken();
+                        try
+                        {
+                            m_urlList.add(new URL(token));
+                        }
+                        catch (MalformedURLException ex)
+                        {
+                            m_logger.log(
+                                Logger.LOG_WARNING,
+                                "Repository url " + token + " cannot be used. Skipped.",
+                                ex);
+                        }
+                    }
+                }
+            }
+
+            // If no repository URLs are specified, then use the default one.
+            if (m_urlList.size() == 0)
+            {
+                try
+                {
+                    m_urlList.add(new URL(DEFAULT_REPOSITORY_URL));
+                }
+                catch (MalformedURLException ex)
+                {
+                    m_logger.log(
+                        Logger.LOG_WARNING,
+                        "Default repository url " + DEFAULT_REPOSITORY_URL + " cannot be used. Skipped.",
+                        ex);
+                }
+            }
+        }
+
         m_repoMap.clear();
 
         for (int i = 0; i < m_urlList.size(); i++)
@@ -197,7 +231,7 @@ public class RepositoryAdminImpl implements ClientAuthRepositoryAdmin
             URL url = (URL) m_urlList.get(i);
             try
             {
-                Repository repo = new RepositoryImpl(url, m_proxy, m_proxyAuth, m_sslFactory);
+                Repository repo = new RepositoryImpl(this, url, m_logger, m_proxy, m_proxyAuth, m_sslFactory);
                 if (repo != null)
                 {
                     m_repoMap.put(url, repo);
@@ -205,10 +239,11 @@ public class RepositoryAdminImpl implements ClientAuthRepositoryAdmin
             }
             catch (Exception ex)
             {
-                System.err.println(
-                    "RepositoryAdminImpl: Exception creating repository - " + ex);
-                System.err.println(
-                    "RepositoryAdminImpl: Ignoring repository " + url);
+                m_logger.log(
+                    Logger.LOG_WARNING,
+                    "RepositoryAdminImpl: Exception creating repository " + url.toExternalForm()
+                        + ". Repository is skipped.",
+                    ex);
             }
         }
     }

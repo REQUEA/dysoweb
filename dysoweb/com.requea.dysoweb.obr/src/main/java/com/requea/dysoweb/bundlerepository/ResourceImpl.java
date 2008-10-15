@@ -22,8 +22,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 
-import com.requea.dysoweb.bundlerepository.CategoryImpl;
-import com.requea.dysoweb.bundlerepository.ResourceImpl;
 import org.osgi.framework.Version;
 import org.osgi.service.obr.*;
 
@@ -244,6 +242,10 @@ public class ResourceImpl implements Resource
                 if (m_sourceURI != null)
                 {
                     m_map.put(SOURCE_URL, new URL(base, m_sourceURI));
+                }
+                if (m_javadocURI != null)
+                {
+                    m_map.put("javadoc", new URL(base, m_javadocURI));
                 }
                 m_converted = true;
             }

@@ -20,8 +20,6 @@ package com.requea.dysoweb.bundlerepository;
 
 import java.util.*;
 
-import com.requea.dysoweb.bundlerepository.IteratorToEnumeration;
-
 
 /**
  * This is a simple class that implements a <tt>Dictionary</tt>

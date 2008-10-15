@@ -18,7 +18,6 @@
  */
 package com.requea.dysoweb.bundlerepository;
 
-import com.requea.dysoweb.bundlerepository.VersionRange;
 import org.osgi.framework.Version;
 
 public class VersionRange
@@ -120,5 +119,4 @@ public class VersionRange
         }
         return m_toString;
     }
-    
 }

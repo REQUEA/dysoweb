@@ -20,7 +20,6 @@ package com.requea.dysoweb.bundlerepository;
 
 import java.util.*;
 
-import com.requea.dysoweb.bundlerepository.PropertyImpl;
 import org.osgi.service.obr.Capability;
 
 public class CapabilityImpl implements Capability

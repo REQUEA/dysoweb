@@ -18,121 +18,133 @@
  */
 package com.requea.dysoweb.bundlerepository.metadataparser;
 
+import com.requea.dysoweb.bundlerepository.Logger;
+
 import java.io.InputStream;
 import java.lang.reflect.Method;
 
-import com.requea.dysoweb.bundlerepository.metadataparser.XmlCommonHandler;
+public abstract class MetadataHandler
+{
+    protected XmlCommonHandler m_handler;
 
-public abstract class MetadataHandler {
+    /**
+     * constructor 
+     *
+     */
+    public MetadataHandler(Logger logger)
+    {
+        m_handler = new XmlCommonHandler(logger);
+    }
 
-	protected XmlCommonHandler handler;
+    /**
+     * Called to parse the InputStream and set bundle list and package hash map
+     */
+    public abstract void parse(InputStream is) throws Exception;
 
-	/**
-	 * constructor 
-	 *
-	 */
-	public MetadataHandler() {
-		handler = new XmlCommonHandler();
-	}
+    /**
+     * return the metadata after the parsing
+     * @return a Object. Its class is the returned type of instanceFactory newInstance method for the root element of the XML document.
+     */
+    public final Object getMetadata()
+    {
+        return m_handler.getRoot();
+    }
 
-	/**
-	* Called to parse the InputStream and set bundle list and package hash map
-	*/
-	public abstract void parse(InputStream is) throws Exception;
+    /**
+     * Add a type for a element
+     * @param qname the name of the element to process
+     * @param instanceFactory the factory of objects representing an element. Must have a newInstance method. could be a class.
+     * @throws Exception
+     */
+    public final void addType(String qname, Object instanceFactory) throws Exception
+    {
+        m_handler.addType(qname, instanceFactory, null, null);
+    }
 
-	/**
-	 * return the metadata after the parsing
-	 * @return a Object. Its class is the returned type of instanceFactory newInstance method for the root element of the XML document.
-	 */
-	public final Object getMetadata() {
-		return handler.getRoot();
-	}
-	/**
-	 * Add a type for a element
-	 * @param qname the name of the element to process
-	 * @param instanceFactory the factory of objects representing an element. Must have a newInstance method. could be a class.
-	 * @throws Exception
-	 */
-	public final void addType(String qname, Object instanceFactory) throws Exception {
-		handler.addType(qname, instanceFactory, null, null);
-	}
+    /**
+     * Add a type for a element
+     * @param qname the name of the element to process
+     * @param instanceFactory the factory of objects representing an element. Must have a newInstance method. could be a class.
+     * @param castClass the class used to introspect the adder/setter and parameters in parent adder/setter. if null the castClass is by default the class returned by the newInstance method of the instanceFactory.
+     * @throws Exception
+     */
+    public final void addType(String qname, Object instanceFactory, Class castClass) throws Exception
+    {
+        m_handler.addType(qname, instanceFactory, castClass, null);
+    }
 
-	/**
-	 * Add a type for a element
-	 * @param qname the name of the element to process
-	 * @param instanceFactory the factory of objects representing an element. Must have a newInstance method. could be a class.
-	 * @param castClass the class used to introspect the adder/setter and parameters in parent adder/setter. if null the castClass is by default the class returned by the newInstance method of the instanceFactory.
-	 * @throws Exception
-	 */
-	public final void addType(String qname, Object instanceFactory, Class castClass) throws Exception {
-		handler.addType(qname, instanceFactory, castClass, null);
-	}
+    /**
+     * Add a type for a element
+     * @param qname the name of the element to process
+     * @param instanceFactory the factory of objects representing an element. Must have a newInstance method. could be a class.
+     * @param castClass the class used to introspect the adder/setter and parameters in parent adder/setter. if null the castClass is by default the class returned by the newInstance method of the instanceFactory.
+     * @param defaultAddMethod the method used to add the sub-elements and attributes if no adder/setter is founded. could be omitted.
+     * @throws Exception
+     */
+    public final void addType(String qname, Object instanceFactory, Class castClass, Method defaultAddMethod) throws Exception
+    {
+        m_handler.addType(qname, instanceFactory, castClass, defaultAddMethod);
+    }
 
-	/**
-	 * Add a type for a element
-	 * @param qname the name of the element to process
-	 * @param instanceFactory the factory of objects representing an element. Must have a newInstance method. could be a class.
-	 * @param castClass the class used to introspect the adder/setter and parameters in parent adder/setter. if null the castClass is by default the class returned by the newInstance method of the instanceFactory.
-	 * @param defaultAddMethod the method used to add the sub-elements and attributes if no adder/setter is founded. could be omitted.
-	 * @throws Exception
-	 */
-	public final void addType(String qname, Object instanceFactory, Class castClass, Method defaultAddMethod) throws Exception {
-		handler.addType(qname, instanceFactory, castClass, defaultAddMethod);
-	}
-	
-	/**
-	 * Add a type for the default element
-	 * @param instanceFactory the factory of objects representing an element. Must have a newInstance method. could be a class.
-	 * @throws Exception
-	 */
-	public final void setDefaultType(Object instanceFactory) throws Exception {
-		handler.setDefaultType(instanceFactory,null,null);
-	}
+    /**
+     * Add a type for the default element
+     * @param instanceFactory the factory of objects representing an element. Must have a newInstance method. could be a class.
+     * @throws Exception
+     */
+    public final void setDefaultType(Object instanceFactory) throws Exception
+    {
+        m_handler.setDefaultType(instanceFactory, null, null);
+    }
 
-	/**
-	 * Add a type for the default element
-	 * @param instanceFactory the factory of objects representing an element. Must have a newInstance method. could be a class.
-	 * @param castClass the class used to introspect the adder/setter and parameters in parent adder/setter. if null the castClass is by default the class returned by the newInstance method of the instanceFactory.
-	 * @throws Exception
-	 */
-	public final void setDefaultType(Object instanceFactory, Class castClass) throws Exception {
-		handler.setDefaultType(instanceFactory, castClass,null);
-	}
+    /**
+     * Add a type for the default element
+     * @param instanceFactory the factory of objects representing an element. Must have a newInstance method. could be a class.
+     * @param castClass the class used to introspect the adder/setter and parameters in parent adder/setter. if null the castClass is by default the class returned by the newInstance method of the instanceFactory.
+     * @throws Exception
+     */
+    public final void setDefaultType(Object instanceFactory, Class castClass) throws Exception
+    {
+        m_handler.setDefaultType(instanceFactory, castClass, null);
+    }
 
-	/**
-	 * Add a type for the default element
-	 * @param instanceFactory the factory of objects representing an element. Must have a newInstance method. could be a class.
-	 * @param castClass the class used to introspect the adder/setter and parameters in parent adder/setter. if null the castClass is by default the class returned by the newInstance method of the instanceFactory.
-	 * @param defaultAddMethod the method used to add the sub-elements and attributes if no adder/setter is founded. could be omitted.
-	 * @throws Exception
-	 */
-	public final void setDefaultType(Object instanceFactory, Class castClass, Method defaultAddMethod) throws Exception {
-		handler.setDefaultType(instanceFactory,castClass,defaultAddMethod);
-	}
+    /**
+     * Add a type for the default element
+     * @param instanceFactory the factory of objects representing an element. Must have a newInstance method. could be a class.
+     * @param castClass the class used to introspect the adder/setter and parameters in parent adder/setter. if null the castClass is by default the class returned by the newInstance method of the instanceFactory.
+     * @param defaultAddMethod the method used to add the sub-elements and attributes if no adder/setter is founded. could be omitted.
+     * @throws Exception
+     */
+    public final void setDefaultType(Object instanceFactory, Class castClass, Method defaultAddMethod) throws Exception
+    {
+        m_handler.setDefaultType(instanceFactory, castClass, defaultAddMethod);
+    }
 
-	/**
-	 * Add a type to process the processing instruction
-	 * @param piname
-	 * @param clazz
-	 */
-	public final void addPI(String piname, Class clazz) {
-		handler.addPI(piname, clazz);
-	}
+    /**
+     * Add a type to process the processing instruction
+     * @param piname
+     * @param clazz
+     */
+    public final void addPI(String piname, Class clazz)
+    {
+        m_handler.addPI(piname, clazz);
+    }
 
-	/**
-	 * set the missing PI exception flag. If during parsing, the flag is true and the processing instruction is unknown, then the parser throws a exception  
-	 * @param flag
-	 */
-	public final void setMissingPIExceptionFlag(boolean flag) {
-		handler.setMissingPIExceptionFlag(flag);
-	}
+    /**
+     * set the missing PI exception flag. If during parsing, the flag is true and the processing instruction is unknown, then the parser throws a exception  
+     * @param flag
+     */
+    public final void setMissingPIExceptionFlag(boolean flag)
+    {
+        m_handler.setMissingPIExceptionFlag(flag);
+    }
 
-	/**
-	 * 
-	 * @param trace
-	 * @since 0.9.1
-	 */
-	public final void setTrace(boolean trace) {
-		handler.setTrace(trace);
-	}
+    /**
+     * 
+     * @param trace
+     * @since 0.9.1
+     */
+    public final void setTrace(boolean trace)
+    {
+        m_handler.setTrace(trace);
+    }
 }

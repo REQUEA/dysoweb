@@ -16,33 +16,37 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.requea.dysoweb.bundlerepository.metadataparser;
+package com.requea.dysoweb.bundlerepository;
 
-import java.io.*;
-
-
-import com.requea.dysoweb.bundlerepository.Logger;
-import com.requea.dysoweb.bundlerepository.metadataparser.kxmlsax.KXml2SAXParser;
-
-/**
- * handles the metadata in XML format
- * (use kXML (http://kxml.enhydra.org/) a open-source very light weight XML parser
- */
-public class KXml2MetadataHandler extends MetadataHandler
+public class Referral
 {
-    public KXml2MetadataHandler(Logger logger)
+    private int m_depth = 1;
+    private String m_url;
+
+    public int getDepth()
     {
-        super(logger);
+        return m_depth;
     }
 
-    /**
-     * Called to parse the InputStream and set bundle list and package hash map
-     */
-    public void parse(InputStream is) throws Exception
+    public String getUrl()
     {
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
-        KXml2SAXParser parser;
-        parser = new KXml2SAXParser(br);
-        parser.parseXML(m_handler);
+        return m_url;
+    }
+
+    public void setUrl(String url)
+    {
+        m_url = url;
+    }
+
+    public void setDepth(String depth)
+    {
+        try
+        {
+            m_depth = Integer.parseInt(depth);
+        }
+        catch (NumberFormatException nfe)
+        {
+            // don't care, and don't change current value
+        }
     }
 }

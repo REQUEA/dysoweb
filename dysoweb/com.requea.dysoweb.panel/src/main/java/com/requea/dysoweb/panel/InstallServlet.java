@@ -52,13 +52,11 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
 import org.osgi.service.obr.RepositoryAdmin;
 import org.osgi.service.obr.Requirement;
 import org.osgi.service.obr.Resolver;
 import org.osgi.service.obr.Resource;
-import org.osgi.service.packageadmin.PackageAdmin;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -376,11 +374,11 @@ public class InstallServlet extends HttpServlet {
 		}
 
 		// render the response as an ajax packet
-		String xml;
+		String xml = "";
 		try {
 			xml = XMLUtils.DocumentToString(el.getOwnerDocument());
-		} catch (XMLException e) {
-			throw new ServletException(e);
+		} catch(Exception e) {
+			// ignore this one
 		}
         response.setContentType("text/xml");
         String encoding = null;
@@ -561,16 +559,6 @@ public class InstallServlet extends HttpServlet {
 	        		// abort
 	        		return;
 				}
-				// Get package admin service and request a refresh
-		        ServiceReference ref = fContext.getServiceReference(
-		            org.osgi.service.packageadmin.PackageAdmin.class.getName());
-		        if (ref != null) {
-			        PackageAdmin pa = (PackageAdmin) fContext.getService(ref);
-			        if (pa != null) {
-			        	pa.refreshPackages(null);
-			        }
-		        }
-
 				fStatus.setStatus(Status.DONE);
 			} catch(Exception e) {
 				fStatus.setError(e);

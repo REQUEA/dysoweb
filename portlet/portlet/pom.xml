@@ -110,13 +110,6 @@
                                     <outputDirectory>${project.build.directory}/dysoweb/WEB-INF/bundle</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
-                                    <groupId>org.apache.felix</groupId>
-                                    <artifactId>org.apache.felix.shell.tui</artifactId>
-                                    <type>jar</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>${project.build.directory}/dysoweb/WEB-INF/bundle</outputDirectory>
-                                </artifactItem>
-                                <artifactItem>
                                     <groupId>com.requea.dysoweb</groupId>
                                     <artifactId>com.requea.dysoweb.api</artifactId>
                                     <type>jar</type>
