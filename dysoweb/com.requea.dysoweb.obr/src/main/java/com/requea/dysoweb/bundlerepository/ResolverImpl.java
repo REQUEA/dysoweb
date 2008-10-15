@@ -562,7 +562,13 @@ public class ResolverImpl implements MonitoredResolver
 	                    	long lSize = getResourceSize(deployResources[i]);
 	                    	IProgressMonitor subMonitor = new SubProgressMonitor(monitor,(int)lSize);
 	                    	subMonitor.setTaskName("Installing " + deployResources[i].getSymbolicName() + " " + deployResources[i].getVersion().toString());
-	                        localResource.getBundle().update(
+	                    	// always stop the bundle if this is a local resource unless this is ourself (...)
+	                    	Bundle localBundle = localResource.getBundle();
+	                    	if(start) {
+	                    		localBundle.stop();
+	                    	}
+	                    	// then update the bundle
+	                    	localBundle.update(
 	                        		new ProgressMonitorInputStream(is, 
 	                        				subMonitor,
 	                        				lSize));
@@ -571,15 +577,12 @@ public class ResolverImpl implements MonitoredResolver
 	                        // started later.
 	                        if (start)
 	                        {
-	                            startList.add(localResource.getBundle());
+	                            startList.add(localBundle);
 	                        }
 	                    }
 	                    catch (Exception ex)
 	                    {
-	                        // TODO: OBR - Use logger if possible.
-	                        System.err.println("Resolver: Update error - " + Util.getBundleName(localResource.getBundle()));
-	                        ex.printStackTrace(System.err);
-	                        return;
+	                        throw new RuntimeException("Resolver: Update error - " + Util.getBundleName(localResource.getBundle()));
 	                    }
 	                }
 	            }

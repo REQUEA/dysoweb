@@ -473,7 +473,7 @@ public class InstallServlet extends HttpServlet {
 		} catch (Exception e) {
 			// show the error
 			request.setAttribute(ErrorTag.ERROR, "Unable to install resources: " + e.getMessage());
-			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure/secure/install.jsp");
+			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure/install.jsp");
 			rd.forward(request, response);
 		}
 	}
@@ -482,7 +482,7 @@ public class InstallServlet extends HttpServlet {
 			Installable feature) {
 
 		List depends = feature.getDependsOn();
-		for(int i=0; i<depends.size(); i++) {
+		for(int i=0; depends != null && i<depends.size(); i++) {
 			String sysId = (String)depends.get(i);
 			
 			// find the feature
@@ -642,12 +642,14 @@ public class InstallServlet extends HttpServlet {
 	        				deployMap.put(resources[i], resources[i]);
 	        			}
 	        		}
+	        		/* do not deploy optional resources
 	        		resources = resolver.getOptionalResources();
 	        		if(resources != null && resources.length > 0) {
 	        			for(int i=0; i<resources.length; i++) {
 	        				deployMap.put(resources[i], resources[i]);
 	        			}
 	        		}
+	        		*/
 	        		Iterator iter = deployMap.values().iterator();
 	        		while(iter.hasNext()) {
 	        			Resource resource = (Resource)iter.next();
