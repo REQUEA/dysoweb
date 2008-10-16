@@ -605,7 +605,7 @@ public class ResolverImpl implements MonitoredResolver
 	
 	                        // If necessary, save the updated bundle to be
 	                        // started later.
-	                        if (doStartBundle)
+	                    	if (doStartBundle)
 	                        {
 	                            startList.add(localBundle);
 	                        }
@@ -680,15 +680,6 @@ public class ResolverImpl implements MonitoredResolver
 	                }
 	            }
 	        }
-			// Get package admin service and request a refresh
-	        ServiceReference ref = m_context.getServiceReference(
-	            org.osgi.service.packageadmin.PackageAdmin.class.getName());
-	        if (ref != null) {
-		        PackageAdmin pa = (PackageAdmin) m_context.getService(ref);
-		        if (pa != null) {
-		        	pa.refreshPackages(null);
-		        }
-	        }
 	        
 	        // and restart the bundles
 	        for (int i = 0; i < startList.size(); i++)
@@ -701,10 +692,23 @@ public class ResolverImpl implements MonitoredResolver
         	    {
             	    m_logger.log(
                 	    Logger.LOG_ERROR,
-                    	"Resolver: Start error - " + ((Bundle) startList.get(i)).getSymbolicName(),
+                    	"Resolver: Start error - " + getBundleName((Bundle) startList.get(i)),
 	                    ex);
     	        }
         	}
+
+	        // then do a big refresh
+	        // Get package admin service and request a refresh
+	        ServiceReference ref = m_context.getServiceReference(
+	            org.osgi.service.packageadmin.PackageAdmin.class.getName());
+	        if (ref != null) {
+	        	Bundle[] bundles = (Bundle[])startList.toArray(new Bundle[startList.size()]);
+		        PackageAdmin pa = (PackageAdmin) m_context.getService(ref);
+		        if (pa != null) {
+		        	pa.refreshPackages(bundles);
+		        }
+	        }
+	        
 	        if(lastError != null) {
 	        	throw new RuntimeException("Insallation complete with errors. Please consult the log :" + lastError.getMessage());
 	        }
@@ -714,7 +718,14 @@ public class ResolverImpl implements MonitoredResolver
     }
 
 
-    public synchronized void deploy(boolean start)
+    private String getBundleName(Bundle bundle) {
+    	if(bundle.getSymbolicName() != null)
+    		return bundle.getSymbolicName();
+    	else 
+    		return Long.toString(bundle.getBundleId());
+	}
+
+	public synchronized void deploy(boolean start)
     {
     	deploy(start, new NullProgressMonitor());
     }
