@@ -1,3 +1,8 @@
+1.0.8 VERSION
+- update to felix 1.4.1
+- Fixed a bug where a complex dependency problem may make the OBR deployment fail (infinite loop)
+- Improved the status progression bar
+
 1.0.7 VERSION
 - update to felix 1.2.1 (OSGi spec 4.1)
 - update to OBR 1.2.0

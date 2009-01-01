@@ -47,8 +47,9 @@ public class SecurityFilter implements Filter {
 			// ok
 			chain.doFilter(request, response);
 			return;
-		} else {
+		} else if(!"status".equals(op)) {
 			HttpServletRequest req = (HttpServletRequest)request;
+			
 			String ru = req.getRequestURI();
 			request.setAttribute("com.requea.dysoweb.panel.ru", ru);
 			

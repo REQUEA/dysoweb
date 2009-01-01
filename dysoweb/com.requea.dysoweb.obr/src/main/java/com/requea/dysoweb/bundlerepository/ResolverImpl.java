@@ -459,7 +459,9 @@ public class ResolverImpl implements MonitoredResolver
             return;
         }
 
-        // Check to make sure that our local state cache is up-to-date
+        int bundleLength = m_context.getBundles().length;
+
+    	// Check to make sure that our local state cache is up-to-date
         // and error if it is not. This is not completely safe, because
         // the state can still change during the operation, but we will
         // be optimistic. This could also be made smarter so that it checks
@@ -481,14 +483,7 @@ public class ResolverImpl implements MonitoredResolver
         {
             deployMap.put(resources[i], resources[i]);
         }
-        /*
-         * PD: 2008/10/08: do not deploy optional ressources
-        resources = getOptionalResources();
-        for (int i = 0; (resources != null) && (i < resources.length); i++)
-        {
-            deployMap.put(resources[i], resources[i]);
-        }
-        */
+
         Resource[] deployResources = (Resource[])
             deployMap.keySet().toArray(new Resource[deployMap.size()]);
 
@@ -500,6 +495,7 @@ public class ResolverImpl implements MonitoredResolver
         // installed resource to update or the installation of a new version
         // of the resource to be deployed.
         int size = 0;
+        
         for (int i = 0; i < deployResources.length; i++)
         {
             // For the resource being deployed, see if there is an older
@@ -511,19 +507,34 @@ public class ResolverImpl implements MonitoredResolver
             // then verify that updating the local resource will not
             // break any of the requirements of any of the other
             // resources being deployed.
-            if ((localResource != null) &&
+            if ((localResource != null) && !isDysowebCore(localResource) &&
                 isResourceUpdatable(localResource, deployResources[i], deployResources))
             {
                 // Only update if it is a different version or a SNAPSHOT version
                 if (!localResource.equals(deployResources[i]) || localResource.getVersion().getQualifier().endsWith("SNAPSHOT"))
                 {
+                	boolean doStartBundle = start;
+                	Bundle localBundle = localResource.getBundle();
+                    if(localBundle.getState() == Bundle.ACTIVE) {
+                        doStartBundle = true;
+                        try {
+							localBundle.stop(Bundle.STOP_TRANSIENT);
+						} catch (BundleException e) {
+							// ignore this one
+						}
+                    }
+                	if(doStartBundle) {
+                		startList.add(localBundle);
+                	}
+                	
                 	int lSize = (int) ((Long)deployResources[i].getProperties().get("size")).longValue();
             		size += lSize;
                 }
             }
-            else
+            else if(localResource == null || !localResource.equals(deployResources[i])) 
             {
-                // Install the bundle.
+                // Only update if it is a different version
+                // Install the bundle (without updating existent: does not exist or dysoweb core)
             	Long lSize = (Long)deployResources[i].getProperties().get("size");
             	if(lSize != null) {
             		size += lSize.intValue();
@@ -533,8 +544,13 @@ public class ResolverImpl implements MonitoredResolver
         
         RuntimeException lastError = null;
         
+        monitor.beginTask("Deploying resources", 10);
+        
         try {
-	        monitor.beginTask("Deploying bundles", size);
+        	// consider downloading bundles is 90% of time
+        	IProgressMonitor groupMonitor = new SubProgressMonitor(monitor, 9);
+        	groupMonitor.setTaskName("Deploying bundles");
+        	groupMonitor.beginTask("", size);
 	        
 	        
 	        // Deploy each resource, which will involve either finding a locally
@@ -551,21 +567,11 @@ public class ResolverImpl implements MonitoredResolver
 	            // then verify that updating the local resource will not
 	            // break any of the requirements of any of the other
 	            // resources being deployed.
-	            if ((localResource != null) &&
+	            if ((localResource != null) && !isDysowebCore(localResource) &&
 	                isResourceUpdatable(localResource, deployResources[i], deployResources))
 	            {
 	                // Only update if it is a different version.
-                	String symName = localResource.getSymbolicName();
-                	boolean bDysowebCore = false;
-                	if("com.requea.dysoweb.api".equals(symName) ||
-                			"com.requea.dysoweb.obr".equals(symName) ||
-                			"com.requea.dysoweb.panel".equals(symName) ||
-                			"com.requea.dysoweb.processor".equals(symName)) {
-                		bDysowebCore = true;
-                	}
-                		
-	                if (!bDysowebCore && 
-                		(!localResource.equals(deployResources[i]) || localResource.getVersion().getQualifier().endsWith("SNAPSHOT")))
+	                if (!localResource.equals(deployResources[i]) || localResource.getVersion().getQualifier().endsWith("SNAPSHOT"))
 	                {
 	                    // Update the installed bundle.
 	                    try
@@ -588,24 +594,19 @@ public class ResolverImpl implements MonitoredResolver
 	                    	}
 	                    	InputStream is = con.getInputStream();
 	                    	long lSize = getResourceSize(deployResources[i]);
-	                    	IProgressMonitor subMonitor = new SubProgressMonitor(monitor,(int)lSize);
+	                    	IProgressMonitor subMonitor = new SubProgressMonitor(groupMonitor,(int)lSize);
 	                    	subMonitor.setTaskName("Installing " + deployResources[i].getSymbolicName() + " " + deployResources[i].getVersion().toString());
 	                    	// always stop the bundle if this is a local resource unless this is ourself (...)
 	                    	Bundle localBundle = localResource.getBundle();
                             boolean doStartBundle = start;
-                            if (localResource.getBundle().getState() == Bundle.ACTIVE) {
-                                doStartBundle = true;
-                                localBundle.stop();
-                            }
 	                    	// then update the bundle
 	                    	localBundle.update(
 	                        		new ProgressMonitorInputStream(is, 
 	                        				subMonitor,
 	                        				lSize));
-	
 	                        // If necessary, save the updated bundle to be
 	                        // started later.
-	                    	if (doStartBundle)
+	                    	if (doStartBundle && !startList.contains(localBundle))
 	                        {
 	                            startList.add(localBundle);
 	                        }
@@ -620,7 +621,7 @@ public class ResolverImpl implements MonitoredResolver
 	                    }
 	                }
 	            }
-	            else
+	            else if(localResource == null || !localResource.equals(deployResources[i])) 
 	            {
 	                // Install the bundle.
 	                try
@@ -654,7 +655,7 @@ public class ResolverImpl implements MonitoredResolver
 	                    	InputStream is = RepositoryImpl.openStream(repoURL, con, res.getURI());
 	                    	
 	                    	long lSize = getResourceSize(deployResources[i]);
-	                    	IProgressMonitor subMonitor = new SubProgressMonitor(monitor, (int)lSize);
+	                    	IProgressMonitor subMonitor = new SubProgressMonitor(groupMonitor, (int)lSize);
 	                    	subMonitor.setTaskName("Installing " + deployResources[i].getSymbolicName() + " " + deployResources[i].getVersion().toString());
 	                        Bundle bundle = m_context.installBundle(
 	                            "obr://"
@@ -681,12 +682,42 @@ public class ResolverImpl implements MonitoredResolver
 	            }
 	        }
 	        
+	        // then do a big refresh
+	        // Get package admin service and request a refresh
+	        ServiceReference srPackageAdmin = m_context.getServiceReference(
+	            org.osgi.service.packageadmin.PackageAdmin.class.getName());
+	        if (srPackageAdmin != null) {
+		        PackageAdmin pa = (PackageAdmin) m_context.getService(srPackageAdmin);
+		        if (pa != null) {
+		        	pa.refreshPackages(null);
+		        }
+	        }
+	        
+	        try {
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+			}
+	        
 	        // and restart the bundles
+	        // starting bundles is 10%
+        	groupMonitor = new SubProgressMonitor(monitor, 1);
+        	groupMonitor.setTaskName("Starting bundles");
+        	groupMonitor.beginTask("", startList.size());
+	        
 	        for (int i = 0; i < startList.size(); i++)
     	    {
         	    try
             	{
-                	((Bundle) startList.get(i)).start();
+        	    	Bundle bundle = (Bundle) startList.get(i); 
+        	    	String name = bundle.getSymbolicName();
+        	    	if(name == null) {
+        	    		name = Long.toString(bundle.getBundleId());
+        	    	}
+                	IProgressMonitor subMonitor = new SubProgressMonitor(groupMonitor, 1);
+                	subMonitor.setTaskName("Starting bundle " + name);
+                	subMonitor.beginTask("", 1);
+                	bundle.start();
+                	subMonitor.worked(1);
 	            }
     	        catch (BundleException ex)
         	    {
@@ -697,17 +728,16 @@ public class ResolverImpl implements MonitoredResolver
     	        }
         	}
 
-	        // then do a big refresh
-	        // Get package admin service and request a refresh
-	        ServiceReference ref = m_context.getServiceReference(
-	            org.osgi.service.packageadmin.PackageAdmin.class.getName());
-	        if (ref != null) {
-	        	Bundle[] bundles = (Bundle[])startList.toArray(new Bundle[startList.size()]);
-		        PackageAdmin pa = (PackageAdmin) m_context.getService(ref);
-		        if (pa != null) {
-		        	pa.refreshPackages(bundles);
+	        // then another refresh
+	        srPackageAdmin = m_context.getServiceReference(
+		            org.osgi.service.packageadmin.PackageAdmin.class.getName());
+		        if (srPackageAdmin != null) {
+			        PackageAdmin pa = (PackageAdmin) m_context.getService(srPackageAdmin);
+			        if (pa != null) {
+			        	pa.refreshPackages(null);
+			        }
 		        }
-	        }
+	        
 	        
 	        if(lastError != null) {
 	        	throw new RuntimeException("Insallation complete with errors. Please consult the log :" + lastError.getMessage());
@@ -718,7 +748,19 @@ public class ResolverImpl implements MonitoredResolver
     }
 
 
-    private String getBundleName(Bundle bundle) {
+    private boolean isDysowebCore(LocalResourceImpl localResource) {
+    	String symName = localResource.getSymbolicName();
+    	if("com.requea.dysoweb.api".equals(symName) ||
+    			"com.requea.dysoweb.obr".equals(symName) ||
+    			"com.requea.dysoweb.panel".equals(symName) ||
+    			"com.requea.dysoweb.processor".equals(symName)) {
+    		return true;
+    	} else {
+    		return false;
+    	}
+	}
+
+	private String getBundleName(Bundle bundle) {
     	if(bundle.getSymbolicName() != null)
     		return bundle.getSymbolicName();
     	else 

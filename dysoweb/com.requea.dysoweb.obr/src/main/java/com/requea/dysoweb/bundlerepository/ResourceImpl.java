@@ -121,6 +121,18 @@ public class ResourceImpl implements Resource
         return (Version) m_map.get(VERSION);
     }
     
+    public String toString() {
+    	String name = getSymbolicName();
+    	if(name == null) {
+    		name = getPresentationName();
+    	}
+    	if(name == null) {
+    		return super.toString();
+    	}
+    	Version ver = getVersion();
+    	return ver == null ? name : name + "-" + ver.toString();
+    }
+    
     public String getURI() {
     	return m_resourceURI;
     }

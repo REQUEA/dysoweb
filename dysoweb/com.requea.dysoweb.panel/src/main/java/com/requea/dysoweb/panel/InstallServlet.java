@@ -969,21 +969,28 @@ public class InstallServlet extends HttpServlet {
         return repo.discoverResources(sb.toString());
     }
     
-	private void handleInstallPanelRequest(HttpServletRequest req,
-			HttpServletResponse resp, Element elConfig) throws Exception {
+	private void handleInstallPanelRequest(HttpServletRequest request,
+			HttpServletResponse response, Element elConfig) throws Exception {
 
-		Installable[] installables = getInstallables(req, resp, elConfig);
-		Installable resource = findResource(installables, req.getParameter("resource"));
+		Status status = (Status)request.getSession().getAttribute(INSTALL_STATUS);
+		if(status != null && status.getStatus() != Status.ERROR && status.getStatus() != Status.DONE) {
+			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure/installing.jsp");
+			rd.forward(request, response);
+			return;
+		}
+		
+		Installable[] installables = getInstallables(request, response, elConfig);
+		Installable resource = findResource(installables, request.getParameter("resource"));
 		// lookup for the resource
 		if(resource != null) {
-			req.setAttribute(INSTALLABLE, resource);
+			request.setAttribute(INSTALLABLE, resource);
 			// show resource detail
-			RequestDispatcher rd = req.getRequestDispatcher("/dysoweb/panel/secure/installfeat.jsp");
-			rd.forward(req, resp);
+			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure/installfeat.jsp");
+			rd.forward(request, response);
 		} else {
 			// show list of resources
-			RequestDispatcher rd = req.getRequestDispatcher("/dysoweb/panel/secure/install.jsp");
-			rd.forward(req, resp);
+			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure/install.jsp");
+			rd.forward(request, response);
 		}		
 		return;
 	}

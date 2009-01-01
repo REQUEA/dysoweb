@@ -28,6 +28,7 @@ import org.apache.felix.framework.util.FelixConstants;
 import org.apache.felix.framework.util.StringMap;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceEvent;
@@ -65,7 +66,11 @@ public class DysowebServlet extends HttpServlet {
 
 	public static synchronized void stopFelix() {
 		if(fPlatform != null) {
-			fPlatform.stopAndWait();
+			try {
+				fPlatform.stop();
+			} catch (BundleException e) {
+				// ignore
+			}
 			fPlatform = null;
 		}
 	}
@@ -156,7 +161,6 @@ public class DysowebServlet extends HttpServlet {
 
 		// add extra properties
 		configMap.put(FelixConstants.SERVICE_URLHANDLERS_PROP, "false");
-		configMap.put(FelixConstants.EMBEDDED_EXECUTION_PROP, "true");
 		
 		// parse the autostart property, and add URL handlers
 		Iterator iter = configMap.keySet().iterator();
@@ -193,10 +197,10 @@ public class DysowebServlet extends HttpServlet {
 		try {
 			InitialContext ic = new InitialContext();
 			Context nc = (Context) ic.lookup("java:comp/env");
-			fCache = new File((String) (nc.lookup("dysoweb.home")),"bundles");
+			fCache = new File((String) (nc.lookup("dysoweb.home")));
 		} catch (NamingException nex) {
 			// unable to lookup the requea configuration file
-			fCache = new File(getScratchDir(ctx),"bundles");
+			fCache = getScratchDir(ctx);
 
 			System.out.println("-----------------------------");
 			System.out.println("INFO: The dysoweb bundle cache directory will be set to " + fCache.getAbsolutePath());
@@ -207,8 +211,9 @@ public class DysowebServlet extends HttpServlet {
 		}
 		fCache.mkdirs();
 		// setup the local cache path
-		configMap.put(BundleCache.CACHE_PROFILE_DIR_PROP, fCache.getAbsolutePath());
-		
+		configMap.put(BundleCache.CACHE_ROOTDIR_PROP, fCache.getAbsolutePath());
+		configMap.put(Constants.FRAMEWORK_STORAGE, "bundles");
+
 		Thread th = Thread.currentThread();
 		ClassLoader cl = th.getContextClassLoader();
 		try {
@@ -216,11 +221,14 @@ public class DysowebServlet extends HttpServlet {
 			
             List list = new ArrayList();
             list.add(new AutoActivator(configMap));
+            
+            configMap.put("felix.systembundle.activators", list);
+
             // Create a case-insensitive property map.
             Map cisMap = new StringMap(configMap, false);
 			
 			// Now create an instance of the framework.
-			Felix felix = new Felix(cisMap, list);
+			Felix felix = new Felix(cisMap);
 			felix.start();
 			fPlatform = felix;
 			
