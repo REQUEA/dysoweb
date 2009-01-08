@@ -1,3 +1,7 @@
+1.0.9 VERSION
+- security fix: registration platform problem and XSS possibility
+- Small CSS adjustments
+
 1.0.8 VERSION
 - update to felix 1.4.1
 - Fixed a bug where a complex dependency problem may make the OBR deployment fail (infinite loop)

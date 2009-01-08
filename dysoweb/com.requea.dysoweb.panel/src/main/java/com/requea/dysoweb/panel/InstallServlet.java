@@ -241,6 +241,7 @@ public class InstallServlet extends HttpServlet {
 				session.removeAttribute(InstallServlet.INSTALLABLES);
 				// from this point on, we are authenticated
 				session.setAttribute(SecurityFilter.AUTH, Boolean.TRUE);
+				session.setAttribute(SecurityFilter.SECURED, Boolean.TRUE);
 				session.setAttribute("com.requea.dysoweb.shell.auth", Boolean.TRUE);
 			} catch (Exception e) {
 				request.setAttribute(ErrorTag.ERROR,

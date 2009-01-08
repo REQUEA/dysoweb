@@ -13,6 +13,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -99,9 +100,10 @@ public class SecurityServlet extends HttpServlet {
 				return;
 			}
 			// ok, authenticated
-			request.getSession()
-					.setAttribute(SecurityFilter.AUTH, Boolean.TRUE);
-			request.getSession().setAttribute("com.requea.dysoweb.shell.auth", Boolean.TRUE);
+			HttpSession session = request.getSession();
+			session.setAttribute(SecurityFilter.AUTH, Boolean.TRUE);
+			session.setAttribute(SecurityFilter.SECURED, Boolean.TRUE);
+			session.setAttribute("com.requea.dysoweb.shell.auth", Boolean.TRUE);
 			
 			// auth was ok, redirect
 			if (ru != null && ru.length() > 0 && !"null".equals(ru)) {

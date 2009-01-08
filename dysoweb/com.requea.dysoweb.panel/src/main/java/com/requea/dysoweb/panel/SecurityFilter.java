@@ -26,6 +26,7 @@ import com.requea.dysoweb.util.xml.XMLUtils;
 public class SecurityFilter implements Filter {
 
 	public static final String AUTH = "com.requea.dysoweb.panel.auth";
+	public static final String SECURED = "com.requea.dysoweb.panel.secured";
 	private File fConfigDir;
 	
 	public void init(FilterConfig config) throws ServletException {
@@ -43,8 +44,36 @@ public class SecurityFilter implements Filter {
 		HttpSession session = ((HttpServletRequest)request).getSession();
 		String op = request.getParameter("op");
 		Object obj = session.getAttribute(AUTH);
-		if("register".equals(op) || Boolean.TRUE.equals(obj)) {
-			// ok
+		if(Boolean.TRUE.equals(obj)) {
+			// ok: already authenticated
+			chain.doFilter(request, response);
+			return;
+		}
+		
+		// check if already authenticated
+		File f = new File(fConfigDir,"server.xml");
+		boolean bSecured = false;
+		if(f.exists()) {
+			try {
+				Document doc = XMLUtils.parse(new FileInputStream(f));
+				Element el = doc.getDocumentElement();
+				String pass = XMLUtils.getChildText(el, "Password");
+				if(pass != null && pass.length() > 0) {
+					bSecured = true;
+				}
+			} catch(Exception e) {
+				// assume platform is secured, but corrupted
+				System.err.println("Platform server.xml is corrupted");
+				e.printStackTrace();
+				bSecured = true;
+			}
+		}
+		if(bSecured) {
+			session.setAttribute(SECURED, Boolean.TRUE);
+		}
+		
+		if(!bSecured && "register".equals(op)) {
+			// ok to process: platform not secured
 			chain.doFilter(request, response);
 			return;
 		} else if(!"status".equals(op)) {
@@ -53,22 +82,6 @@ public class SecurityFilter implements Filter {
 			String ru = req.getRequestURI();
 			request.setAttribute("com.requea.dysoweb.panel.ru", ru);
 			
-			// not authenticated yet
-			File f = new File(fConfigDir,"server.xml");
-			boolean bSecured = false;
-			if(f.exists()) {
-				try {
-					Document doc = XMLUtils.parse(new FileInputStream(f));
-					Element el = doc.getDocumentElement();
-					String pass = XMLUtils.getChildText(el, "Password");
-					if(pass != null && pass.length() > 0) {
-						bSecured = true;
-					}
-				} catch(Exception e) {
-					bSecured = false;
-				}
-				
-			}
 			if(bSecured) {
 				// already registered: just need auth
 				RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/auth.jsp");

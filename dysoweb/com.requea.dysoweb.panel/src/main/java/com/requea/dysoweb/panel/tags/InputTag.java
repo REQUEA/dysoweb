@@ -5,6 +5,9 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
+import com.requea.dysoweb.panel.utils.Util;
+
+
 public class InputTag extends BodyTagSupport {
 
 	private static final long serialVersionUID = 2639623088980168887L;
@@ -132,7 +135,7 @@ public class InputTag extends BodyTagSupport {
 	        // retrieve the value from the request param
 	        if(fType == null || "password".equals(fType)) {
 		    	tw.append(" value=\"");
-		    	tw.append(value);
+				tw.append(Util.escapeHTML(value));
 		    	tw.append("\"");
 	        } else if("checkbox".equals(fType)) {
 	        	if(fName != null) {

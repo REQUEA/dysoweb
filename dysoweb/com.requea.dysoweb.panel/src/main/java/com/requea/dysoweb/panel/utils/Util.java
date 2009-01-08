@@ -125,4 +125,8 @@ public class Util
             out.write(0x0a);
         }
     }
+    
+    public static String escapeHTML(String str) {
+    	return Entities.HTML40.escape(str);
+    }
 }
