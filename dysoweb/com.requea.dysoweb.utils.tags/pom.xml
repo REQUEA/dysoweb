@@ -18,14 +18,14 @@
     <parent>
         <artifactId>dysoweb</artifactId>
         <groupId>com.requea.dysoweb</groupId>
-		<version>1.0.9-SNAPSHOT</version>
+		<version>1.0.9</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.requea.dysoweb</groupId>
     <artifactId>com.requea.dysoweb.utils.tags</artifactId>
     <packaging>bundle</packaging>
     <name>Requea Dysoweb Utilities Webapp</name>
-    <version>1.0.9-SNAPSHOT</version>
+    <version>1.0.9</version>
     <url>http://www.requea.com</url>
     <dependencies>
         <dependency>
