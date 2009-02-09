@@ -336,16 +336,18 @@ public class InstallServlet extends HttpServlet {
 	private void handleStatusRequest(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		// retrieve the monitor
 		HttpSession session = request.getSession();
-		AjaxProgressMonitor monitor = (AjaxProgressMonitor)session.getAttribute(INSTALL_MONITOR);
-		Status status = (Status)session.getAttribute(INSTALL_STATUS);
+		Object objMonitor = session.getAttribute(INSTALL_MONITOR);
+		Object objStatus = session.getAttribute(INSTALL_STATUS);
 		
-		if(monitor == null || status == null) {
+		if(!(objMonitor instanceof AjaxProgressMonitor) || !(objStatus instanceof Status)) {
 			return;
 		}
 		// retrieve the monitor result
 		Element el = XMLUtils.newElement("div");
 
 		// set the status
+		Status status = (Status)objStatus;
+		AjaxProgressMonitor monitor = (AjaxProgressMonitor)objMonitor;
 		if(status.getStatus() == Status.ERROR) {
 			el.setAttribute("status", "error");
 			// set the error message

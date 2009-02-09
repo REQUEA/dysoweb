@@ -109,6 +109,7 @@ public class RequestProcessor implements IWebProcessor {
 	private RequestMapper fRequestMapper;
 	private Map fEntries = new ConcurrentHashMap();
 
+	private List fWelcomeFiles = new ArrayList();
 
 	private List fContextListeners;
 	private List fSessionListeners;
@@ -147,6 +148,7 @@ public class RequestProcessor implements IWebProcessor {
 		fJspWrappers.clear();
 		fServletContextWrappers.clear();
 		fFiltersByName.clear();
+		fWelcomeFiles.clear();
 		
 		// activate the bundles that have already been registered
 		List lst = new ArrayList();
@@ -383,7 +385,17 @@ public class RequestProcessor implements IWebProcessor {
 					String uri = XMLUtils.getChildText(el, "taglib-uri");
 					String location = XMLUtils.getChildText(el, "taglib-location");
 					fTaglibs.put(uri, location);
+				} else if("welcome-file-list".equals(tagName)) {
+					Element elFile = XMLUtils.getChild(el, "welcome-file");
+					while(elFile != null) {
+						String file = XMLUtils.getTextValue(elFile);
+						if(file != null) {
+							fWelcomeFiles.add(file);
+						}
+						elFile = XMLUtils.getNextSibling(elFile);
+					}
 				}
+				
 				// get the next element
 				el = XMLUtils.getNext(el);
 			}
@@ -577,10 +589,9 @@ public class RequestProcessor implements IWebProcessor {
         	uri = "/";
         }
         if("/".equals(uri)) {
-        	// is there a JSP page to forward to?
-        	EntryInfo ei = getEntryInfo(uri+"index.jsp");
-        	if(ei != null) {
-        		RequestDispatcher rd = request.getRequestDispatcher(uri+"index.jsp");
+        	// is there a welcome file to forward to?
+        	if(fWelcomeFiles.size() > 0) {
+        		RequestDispatcher rd = request.getRequestDispatcher(uri+(String)fWelcomeFiles.get(0));
         		rd.forward(request, response);
         		return;
         	} else {
@@ -1655,7 +1666,7 @@ public class RequestProcessor implements IWebProcessor {
 			// for BEA WLS, that is another story 
 			try {
 				// add at least the core jar file to compile taglibs
-				URL coreJar = fServletContext.getResource("/WEB-INF/lib/dysoweb-core-1.0.7.jar");
+				URL coreJar = fServletContext.getResource("/WEB-INF/lib/dysoweb-core-1.0.10.jar");
 				parentURL = new URL[] { coreJar };
 			} catch (MalformedURLException e) {
 				// use a default URL

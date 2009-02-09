@@ -1,3 +1,6 @@
+1.0.10 VERSION
+- first implementation of welcome files
+
 1.0.9 VERSION
 - security fix: registration platform problem and XSS possibility
 - Small CSS adjustments
