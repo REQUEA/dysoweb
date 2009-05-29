@@ -58,12 +58,18 @@ public class DysowebListener implements ServletContextListener, ServletContextAt
 	}
 
 	public void sessionCreated(HttpSessionEvent event) {
+		
+		DysowebServlet.registerSession(event.getSession());
+		
 		IWebProcessor processor = DysowebServlet.getActiveProcessor();
 		if(processor != null)
 			processor.processSessionEvent("sessionCreated", event);
 	}
 
 	public void sessionDestroyed(HttpSessionEvent event) {
+
+		DysowebServlet.unregisterSession(event.getSession());
+		
 		IWebProcessor processor = DysowebServlet.getActiveProcessor();
 		if(processor != null)
 			processor.processSessionEvent("sessionDestroyed", event);

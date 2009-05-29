@@ -2,89 +2,87 @@
 <!DOCTYPE web-app
     PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN"
     "http://java.sun.com/dtd/web-app_2_2.dtd">
-<!-- 
-// ========================================================================
-// Copyright 2007 Requea.
-
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at 
-// http://www.apache.org/licenses/LICENSE-2.0
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-// ========================================================================
--->
+    <!--
+        //
+        ========================================================================
+        // Copyright 2007 Requea. // Licensed under the Apache License,
+        Version 2.0 (the "License"); // you may not use this file except
+        in compliance with the License. // You may obtain a copy of the
+        License at // http://www.apache.org/licenses/LICENSE-2.0 //
+        Unless required by applicable law or agreed to in writing,
+        software // distributed under the License is distributed on an
+        "AS IS" BASIS, // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+        either express or implied. // See the License for the specific
+        language governing permissions and // limitations under the
+        License. //
+        ========================================================================
+    -->
 <web-app>
     <display-name>Dysoweb Sample WebApp</display-name>
 
-	<listener>
-		<listener-class>com.requea.dysoweb.DysowebListener</listener-class>
-	</listener>
+    <listener>
+        <listener-class>com.requea.dysoweb.DysowebListener</listener-class>
+    </listener>
 
-<!--  filter implementation
-	<filter>
-		<filter-name>dysoweb</filter-name>
-		<filter-class>com.requea.dysoweb.DysowebFilter</filter-class>
-	</filter>
-  
-	<filter-mapping>
-		<filter-name>dysoweb</filter-name>
+    <!--  filter implementation -->
+    <filter>
+        <filter-name>dysoweb</filter-name>
+        <filter-class>com.requea.dysoweb.DysowebFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>dysoweb</filter-name>
         <url-pattern>/*</url-pattern>
-		<dispatcher>REQUEST</dispatcher> 
-	    <dispatcher>FORWARD</dispatcher>
-	    <dispatcher>INCLUDE</dispatcher>
-	</filter-mapping>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
+        <dispatcher>INCLUDE</dispatcher>
+    </filter-mapping>
 
-	<filter-mapping>
-		<filter-name>dysoweb</filter-name>
+    <filter-mapping>
+        <filter-name>dysoweb</filter-name>
         <url-pattern>*.jsp</url-pattern>
-		<dispatcher>REQUEST</dispatcher> 
-	    <dispatcher>FORWARD</dispatcher>
-	    <dispatcher>INCLUDE</dispatcher>
-  	</filter-mapping>
- end of filter implementation -->
- 
- 
- <!--  servlet implementation -->
- 	<servlet>
- 		<servlet-name>dysoweb</servlet-name>
- 		<servlet-class>com.requea.dysoweb.DysowebServlet</servlet-class>
- 		<load-on-startup>1</load-on-startup>
- 	</servlet>
- 
- 	<servlet-mapping>
- 		<servlet-name>dysoweb</servlet-name>
-        <url-pattern>/</url-pattern>
- 	</servlet-mapping>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
+        <dispatcher>INCLUDE</dispatcher>
+    </filter-mapping>
+    <!--  end of filter implementation -->
 
- 	<servlet-mapping>
- 		<servlet-name>dysoweb</servlet-name>
-        <url-pattern>*.jsp</url-pattern>
- 	</servlet-mapping>
- 
-	 <env-entry>
-		<env-entry-name>dysoweb.home</env-entry-name>
-		<env-entry-value>./dysoweb.home</env-entry-value>
-		<env-entry-type>java.lang.String</env-entry-type>
-	</env-entry>
-	 <env-entry>
-		<env-entry-name>proxyHost</env-entry-name>
-		<env-entry-value></env-entry-value>
-		<env-entry-type>java.lang.String</env-entry-type>
-	</env-entry>
-	 <env-entry>
-		<env-entry-name>proxyPort</env-entry-name>
-		<env-entry-value>-1</env-entry-value>
-		<env-entry-type>java.lang.Integer</env-entry-type>
-	</env-entry>
-	 <env-entry>
-		<env-entry-name>proxyAuth</env-entry-name>
-		<env-entry-value></env-entry-value>
-		<env-entry-type>java.lang.String</env-entry-type>
-	</env-entry>
-	
+
+    <!--
+        servlet implementation <servlet>
+        <servlet-name>dysoweb</servlet-name>
+        <servlet-class>com.requea.dysoweb.DysowebServlet</servlet-class>
+        <load-on-startup>1</load-on-startup> </servlet>
+
+        <servlet-mapping> <servlet-name>dysoweb</servlet-name>
+        <url-pattern>/</url-pattern> </servlet-mapping>
+
+        <servlet-mapping> <servlet-name>dysoweb</servlet-name>
+        <url-pattern>*.jsp</url-pattern> </servlet-mapping>
+    -->
+
+
     <!--  end of servlet implementation -->
+
+    <env-entry>
+        <env-entry-name>dysoweb.home</env-entry-name>
+        <env-entry-value>./dysoweb.home</env-entry-value>
+        <env-entry-type>java.lang.String</env-entry-type>
+    </env-entry>
+    <env-entry>
+        <env-entry-name>proxyHost</env-entry-name>
+        <env-entry-value></env-entry-value>
+        <env-entry-type>java.lang.String</env-entry-type>
+    </env-entry>
+    <env-entry>
+        <env-entry-name>proxyPort</env-entry-name>
+        <env-entry-value>-1</env-entry-value>
+        <env-entry-type>java.lang.Integer</env-entry-type>
+    </env-entry>
+    <env-entry>
+        <env-entry-name>proxyAuth</env-entry-name>
+        <env-entry-value></env-entry-value>
+        <env-entry-type>java.lang.String</env-entry-type>
+    </env-entry>
+
 </web-app>

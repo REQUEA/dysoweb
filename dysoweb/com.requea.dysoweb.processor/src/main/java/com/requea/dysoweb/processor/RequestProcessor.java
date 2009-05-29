@@ -51,7 +51,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionBindingEvent;
@@ -199,7 +198,7 @@ public class RequestProcessor implements IWebProcessor {
 		}
 	}
 	
-	public void loadWebDescriptor(BundleInfo bundleInfo, URL url) throws WebAppException {
+	public void loadWebDescriptor(BundleInfo bundleInfo, URL url) {
 		
 		try {
 			InputStream is = url.openStream();
@@ -227,7 +226,7 @@ public class RequestProcessor implements IWebProcessor {
 								found = true;
 							} else {
 								// same item, different bundles!
-								throw new WebAppException("Cannot initialize twice the param " + paramName + " from bundle " + bundleId + " and bundle " + def.getBundleId());
+								fLog.error(new WebAppException("Cannot initialize twice the param " + paramName + " from bundle " + bundleId + " and bundle " + def.getBundleId()));
 							}
 						}
 					}
@@ -249,17 +248,21 @@ public class RequestProcessor implements IWebProcessor {
 								found = true;
 							} else {
 								// same item, different bundles!
-								throw new WebAppException("Cannot initialize twice the listener " + className + " from bundle " + bundleId + " and bundle " + def.getBundleId());
+								fLog.error(new WebAppException("Cannot initialize twice the listener " + className + " from bundle " + bundleId + " and bundle " + def.getBundleId()));
 							}
 						}
 					}
 					// if not found in list, adds it the the list
 					if(!found) {
-						IListenerDefinition def = createListenerDefinition(bundleInfo.getBundle(), className);
-						if(def.getLoader() != null) {
-							checkBundleInfoLoader(bundleInfo, def.getLoader());
+						try {
+							IListenerDefinition def = createListenerDefinition(bundleInfo.getBundle(), className);
+							if(def.getLoader() != null) {
+								checkBundleInfoLoader(bundleInfo, def.getLoader());
+							}
+							fActiveDefinitions.add(def);
+						} catch(WebAppException e) {
+							fLog.error("Unable to load listener "+className, e);
 						}
-						fActiveDefinitions.add(def);
 					}
 				} else if("filter".equals(tagName)) {
 					// this is a servlet filter definition
@@ -275,17 +278,21 @@ public class RequestProcessor implements IWebProcessor {
 								found = true;
 							} else {
 								// same item, different bundles!
-								throw new WebAppException("Cannot initialize twice the filter " + name + " from bundle " + bundleId + " and bundle " + def.getBundleId());
+								fLog.error(new WebAppException("Cannot initialize twice the filter " + name + " from bundle " + bundleId + " and bundle " + def.getBundleId()));
 							}
 						}
 					}
 					// if not found in list, adds it the the list
 					if(!found) {
-						IFilterDefinition def = createFilterDefinition(bundleInfo.getBundle(), name, el);
-						if(def.getLoader() != null) {
-							checkBundleInfoLoader(bundleInfo, def.getLoader());
+						try {
+							IFilterDefinition def = createFilterDefinition(bundleInfo.getBundle(), name, el);
+							if(def.getLoader() != null) {
+								checkBundleInfoLoader(bundleInfo, def.getLoader());
+							}
+							fActiveDefinitions.add(def);
+						} catch(WebAppException e) {
+							fLog.error("Unable to load filter "+name, e);
 						}
-						fActiveDefinitions.add(def);
 					}
 				} else if("filter-mapping".equals(tagName)) {
 					// this is a filter mapping definition
@@ -306,7 +313,7 @@ public class RequestProcessor implements IWebProcessor {
 									found = true;
 								} else {
 									// same item, different bundles!
-									throw new WebAppException("Cannot initialize twice the filter-mapping " + filter + ":" + servlet + " from bundle " + bundleId + " and bundle " + fm.getBundleId());
+									fLog.error(new WebAppException("Cannot initialize twice the filter-mapping " + filter + ":" + servlet + " from bundle " + bundleId + " and bundle " + fm.getBundleId()));
 								}
 							}
 							if(fm.getURLPattern() != null && 
@@ -318,7 +325,7 @@ public class RequestProcessor implements IWebProcessor {
 									found = true;
 								} else {
 									// same item, different bundles!
-									throw new WebAppException("Cannot initialize twice the filter-mapping " + filter + ":" + servlet + " from bundle " + bundleId + " and bundle " + fm.getBundleId());
+									fLog.error(new WebAppException("Cannot initialize twice the filter-mapping " + filter + ":" + servlet + " from bundle " + bundleId + " and bundle " + fm.getBundleId()));
 								}
 							}
 						}
@@ -342,17 +349,21 @@ public class RequestProcessor implements IWebProcessor {
 								found = true;
 							} else {
 								// same item, different bundles!
-								throw new WebAppException("Cannot initialize twice the servlet " + name + " from bundle " + bundleId + " and bundle " + def.getBundleId());
+								fLog.error(new WebAppException("Cannot initialize twice the servlet " + name + " from bundle " + bundleId + " and bundle " + def.getBundleId()));
 							}
 						}
 					}
 					// if not found in list, adds it the the list
 					if(!found) {
-						IServletDefinition def = createServletDefinition(bundleInfo.getBundle(), name, el);
-						if(def.getLoader() != null) {
-							checkBundleInfoLoader(bundleInfo, def.getLoader());
+						try {
+							IServletDefinition def = createServletDefinition(bundleInfo.getBundle(), name, el);
+							if(def.getLoader() != null) {
+								checkBundleInfoLoader(bundleInfo, def.getLoader());
+							}
+							fActiveDefinitions.add(def);
+						} catch(WebAppException e) {
+							fLog.error("Unable to load servlet "+name, e);
 						}
-						fActiveDefinitions.add(def);
 					}
 				} else if("servlet-mapping".equals(tagName)) {
 					// this is a servlet mapping definition
@@ -371,7 +382,7 @@ public class RequestProcessor implements IWebProcessor {
 								found = true;
 							} else {
 								// same item, different bundles!
-								throw new WebAppException("Cannot initialize twice the servlet-mapping " + pattern + "->" + servlet + " from bundle " + bundleId + " and bundle " + def.getBundleId());
+								fLog.error(new WebAppException("Cannot initialize twice the servlet-mapping " + pattern + "->" + servlet + " from bundle " + bundleId + " and bundle " + def.getBundleId()));
 							}
 						}
 					}
@@ -400,7 +411,7 @@ public class RequestProcessor implements IWebProcessor {
 				el = XMLUtils.getNext(el);
 			}
 		} catch(Exception e) {
-			throw new WebAppException(e);
+			fLog.error("Error during web descriptior load", e);
 		}
 	}
 	
@@ -440,54 +451,6 @@ public class RequestProcessor implements IWebProcessor {
 
 	}
 
-	private class RequestWrapper extends HttpServletRequestWrapper {
-
-
-		private String fPrefix;
-		private String fContextPath;
-
-		public RequestWrapper(HttpServletRequest request, String prefix) {
-			super(request);
-			fContextPath = request.getContextPath();
-			fPrefix = prefix;
-		}
-		
-		public String getContextPath() {
-			return fContextPath + fPrefix;
-		}
-
-
-		public StringBuffer getRequestURL() {
-			StringBuffer sb = super.getRequestURL();
-			int length = fPrefix.length();
-			if(sb.length() >= length && sb.substring(0, length-1).equals(fPrefix)) {
-				StringBuffer sb2 = new StringBuffer(sb.length());
-				sb2.append(fContextPath);
-				sb2.append(sb.substring(length));
-				return sb2;
-			} else { 
-				return sb;
-			}
-		}
-
-		public String getServletPath() {
-			String str = super.getServletPath();
-			if(str.startsWith(fPrefix)) {
-				return str.substring(fPrefix.length());
-			} else {
-				return str;
-			}
-		}
-		public String getRealPath(String path) {
-			return super.getRealPath(fPrefix+path);
-		}
-
-		public RequestDispatcher getRequestDispatcher(String path) {
-			return super.getRequestDispatcher(fPrefix+path);
-		}
-		
-	}
-	
 	/*
 	 * Process the incoming Servlet request from the parent container
 	 * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
@@ -515,10 +478,6 @@ public class RequestProcessor implements IWebProcessor {
 		    		uri = uri.substring(fPrefix.length());
 		    		request.setAttribute(Constants.INC_SERVLET_PATH, uri);
 	        	}
-	        	// wrap if not already done
-	        	if(!(request instanceof RequestWrapper)) {
-		        	request = new RequestWrapper((HttpServletRequest)request, fPrefix);
-	        	}
 	        }
         } else {
             /*
@@ -531,10 +490,9 @@ public class RequestProcessor implements IWebProcessor {
             if (pathInfo != null) {
                 uri += pathInfo;
             }
-            // remove the prefix and wrap if not already done
-            if(fPrefix != null && !(request instanceof RequestWrapper) && uri.startsWith(fPrefix)) {
+            // remove the prefix 
+            if(fPrefix != null && uri.startsWith(fPrefix)) {
         		uri = uri.substring(fPrefix.length());
-            	request = new RequestWrapper((HttpServletRequest)request, fPrefix);
             }
         }
         
@@ -746,7 +704,7 @@ public class RequestProcessor implements IWebProcessor {
 						}
 						os.close();
 						is.close();
-						fLocalURL = file.toURL();
+						fLocalURL = file.toURI().toURL();
 						return fLocalURL;
 					} catch(IOException e) {
 						throw new RuntimeException(e);
@@ -791,7 +749,7 @@ public class RequestProcessor implements IWebProcessor {
 							File f = new File(info.getDevDir(), "webapp"+name);
 							if(f.exists()) {
 								// return an entry info based on the direct src file
-								EntryInfo ei = new EntryInfo(bundle.getBundleId(), f.toURL(), 0, name);
+								EntryInfo ei = new EntryInfo(bundle.getBundleId(), f.toURI().toURL(), 0, name);
 								fEntries.put(name, ei);
 								return ei;
 							}
@@ -871,7 +829,7 @@ public class RequestProcessor implements IWebProcessor {
 						if(fBundleInfo.isDev()) {
 							File f = new File(fBundleInfo.getDevDir(), name);
 							if(f.exists()) {
-								return f.toURL();
+								return f.toURI().toURL();
 							}
 						}
 						// get the local URL
@@ -915,7 +873,7 @@ public class RequestProcessor implements IWebProcessor {
 									os.close();
 									is.close();
 								}
-								URL localURL = file.toURL();
+								URL localURL = file.toURI().toURL();
 								fURLCache.put(name, localURL);
 								return localURL;
 							}
@@ -1666,7 +1624,7 @@ public class RequestProcessor implements IWebProcessor {
 			// for BEA WLS, that is another story 
 			try {
 				// add at least the core jar file to compile taglibs
-				URL coreJar = fServletContext.getResource("/WEB-INF/lib/dysoweb-core-1.0.10.jar");
+				URL coreJar = fServletContext.getResource("/WEB-INF/lib/dysoweb-core-1.0.11.jar");
 				parentURL = new URL[] { coreJar };
 			} catch (MalformedURLException e) {
 				// use a default URL
@@ -1677,7 +1635,7 @@ public class RequestProcessor implements IWebProcessor {
 		File f = getScratchDir();
 		URL[] proxyPath;
 		try {
-			proxyPath = new URL[] { f.toURL() };
+			proxyPath = new URL[] { f.toURI().toURL() };
 		} catch (MalformedURLException e) {
 			// cannot happen
 			proxyPath = null;
@@ -1778,7 +1736,5 @@ public class RequestProcessor implements IWebProcessor {
 	public ServletWrapper getServletWrapper(String name) {
 		return (ServletWrapper)fServletWrappers.get(name);	
 	}
-	
-	
-
 }
+

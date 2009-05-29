@@ -13,7 +13,8 @@ import com.requea.dysoweb.util.xml.XMLUtils;
 
 public class Installable implements Serializable {
 
-	private static final long serialVersionUID = 150939454759622369L;
+	private static final long serialVersionUID = 1L;
+	
 	private String fID;
 	private String fType;
 	private String fImage;
@@ -29,7 +30,10 @@ public class Installable implements Serializable {
 	private boolean fRoot;
 	private ArrayList fDependsOn;
 	
-	public static class Category {
+	public static class Category implements Serializable {
+		
+		private static final long serialVersionUID = 1L;
+		
 		public String fId;
 		public String fLabel;
 	}

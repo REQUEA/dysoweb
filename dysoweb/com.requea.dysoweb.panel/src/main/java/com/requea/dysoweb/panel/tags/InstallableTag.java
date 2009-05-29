@@ -6,6 +6,7 @@ import javax.servlet.jsp.tagext.TagSupport;
 
 import com.requea.dysoweb.panel.Installable;
 import com.requea.dysoweb.panel.InstallServlet;
+import com.requea.dysoweb.panel.utils.Util;
 
 
 public class InstallableTag extends TagSupport {
@@ -39,6 +40,7 @@ public class InstallableTag extends TagSupport {
         	TagWriter tw = new TagWriter();
         	String str = installable.getDescription();
         	if(str != null) {
+        		str = Util.escapeHTML(str);
 		        str = str.replaceAll("\\r\\n", "<br/>");
 		        str = str.replaceAll("\\n", "<br/>");
 	        	tw.append(str);
@@ -48,6 +50,7 @@ public class InstallableTag extends TagSupport {
         	TagWriter tw = new TagWriter();
         	String str = installable.getLongDesc();
         	if(str != null) {
+        		str = Util.escapeHTML(str);
 		        str = str.replaceAll("\\r\\n", "<br/>");
 		        str = str.replaceAll("\\n", "<br/>");
 	        	tw.append(str);

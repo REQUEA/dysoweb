@@ -6,11 +6,13 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -21,6 +23,8 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.apache.felix.framework.Felix;
 import org.apache.felix.framework.cache.BundleCache;
@@ -53,20 +57,25 @@ public class DysowebServlet extends HttpServlet {
 		
 		ServletContext ctx = config.getServletContext();
 		// initialize web environement 
-		String prefix = config.getInitParameter("RequestPrefix");
+		fPrefix = config.getInitParameter("RequestPrefix");
 		// starts the osgi platform
-		startFelix(ctx, prefix);
+		startFelix(ctx, fPrefix);
 	}
 
+	public static Felix getPlatform() {
+		return fPlatform;
+	}
+	
 	public void destroy() {
-		super.destroy();
+		
 		stopFelix();
+		super.destroy();
 	}
-
 
 	public static synchronized void stopFelix() {
 		if(fPlatform != null) {
 			try {
+				preSerializeSessions();
 				fPlatform.stop();
 			} catch (BundleException e) {
 				// ignore
@@ -80,6 +89,7 @@ public class DysowebServlet extends HttpServlet {
 
 		if (fActiveProcessor != null) {
 			// chain with the Request processor from the OSGI platform
+			request = new RequestWrapper((HttpServletRequest)request, fPrefix);
 			fActiveProcessor.process(request, response, null);
 		} else {
 			super.service(request, response);
@@ -122,8 +132,6 @@ public class DysowebServlet extends HttpServlet {
 		    ; // failing to set this property isn't fatal
 		}
 		
-		fPrefix = prefix;
-		
 		// the bundles are placed undef the WEB-INF directory
 		Map configMap = new StringMap(false);
 
@@ -153,14 +161,11 @@ public class DysowebServlet extends HttpServlet {
 					lst.add(pkg);
 				}
 			}
-			// list all packages
-			for(int i=0; i<lst.size(); i++) {
-				System.out.println(lst.get(i).toString());
-			}
 		}
 
 		// add extra properties
-		configMap.put(FelixConstants.SERVICE_URLHANDLERS_PROP, "false");
+//		configMap.put(FelixConstants.SERVICE_URLHANDLERS_PROP, "false");
+		configMap.put(FelixConstants.SERVICE_URLHANDLERS_PROP, "true");
 		
 		// parse the autostart property, and add URL handlers
 		Iterator iter = configMap.keySet().iterator();
@@ -387,5 +392,37 @@ public class DysowebServlet extends HttpServlet {
 			return fActiveProcessor;
 		}
 	}
+
+	private static Map fSessions = new ConcurrentHashMap();
+
+	public static void registerSession(HttpSession session) {
+		fSessions.put(session.getId(), session);
+	}
 	
+	public static void unregisterSession(HttpSession session) {
+		fSessions.remove(session.getId());
+	}
+	
+	private static void preSerializeSessions() {
+		Iterator iter = fSessions.values().iterator();
+		while(iter.hasNext()) {
+			HttpSession session = (HttpSession) iter.next();
+			
+			// grab the attributes
+			Enumeration e  = session.getAttributeNames();
+			while(e.hasMoreElements()) {
+				String name = (String) e.nextElement();
+				Object obj = session.getAttribute(name);
+				if(obj instanceof DysowebSessionSerializer) {
+					try {
+						((DysowebSessionSerializer)obj).preSerialize();
+					} catch (SecurityException ex) {
+						// ignore
+					} catch (IOException ex) {
+						// ignore
+					}
+				}
+			}
+		}
+	}
 }

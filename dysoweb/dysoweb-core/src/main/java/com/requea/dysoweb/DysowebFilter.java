@@ -21,15 +21,18 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 
 import com.requea.webenv.IWebProcessor;
 
 public class DysowebFilter implements Filter {
 
+	private String fPrefix;
+	
 	public void init(FilterConfig config) throws ServletException {
 		// starts the osgi platform
-		String prefix = config.getInitParameter("RequestPrefix");
-		DysowebServlet.startFelix(config.getServletContext(), prefix);
+		fPrefix = config.getInitParameter("RequestPrefix");
+		DysowebServlet.startFelix(config.getServletContext(), fPrefix);
 	}
 	
 
@@ -42,6 +45,8 @@ public class DysowebFilter implements Filter {
 
 		IWebProcessor processor = DysowebServlet.getActiveProcessor();
 		if (processor != null) {
+			
+			request = new RequestWrapper((HttpServletRequest)request, fPrefix);
 			// chain with the Request processor from the OSGI platform
 			processor.process(request, response, chain);
 		} else {
