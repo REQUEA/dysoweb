@@ -1,3 +1,7 @@
+1.0.12 VERSION
+- fix problems with conplex serialization / deserialization env
+- Apache Felix 1.8.0 upgrade
+
 1.0.11 VERSION
 - serialization problems in some osgi contexts
 - url handler: take advantage of Felix fixes
