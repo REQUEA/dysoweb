@@ -59,9 +59,6 @@ import javax.servlet.http.HttpSessionListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.felix.framework.searchpolicy.ContentClassLoader;
-import org.apache.felix.moduleloader.IContentLoader;
-import org.apache.felix.moduleloader.IURLPolicy;
 import org.apache.jasper.Constants;
 import org.apache.jasper.servlet.JspServlet;
 import org.osgi.framework.Bundle;
@@ -256,9 +253,6 @@ public class RequestProcessor implements IWebProcessor {
 					if(!found) {
 						try {
 							IListenerDefinition def = createListenerDefinition(bundleInfo.getBundle(), className);
-							if(def.getLoader() != null) {
-								checkBundleInfoLoader(bundleInfo, def.getLoader());
-							}
 							fActiveDefinitions.add(def);
 						} catch(WebAppException e) {
 							fLog.error("Unable to load listener "+className, e);
@@ -286,9 +280,6 @@ public class RequestProcessor implements IWebProcessor {
 					if(!found) {
 						try {
 							IFilterDefinition def = createFilterDefinition(bundleInfo.getBundle(), name, el);
-							if(def.getLoader() != null) {
-								checkBundleInfoLoader(bundleInfo, def.getLoader());
-							}
 							fActiveDefinitions.add(def);
 						} catch(WebAppException e) {
 							fLog.error("Unable to load filter "+name, e);
@@ -357,9 +348,6 @@ public class RequestProcessor implements IWebProcessor {
 					if(!found) {
 						try {
 							IServletDefinition def = createServletDefinition(bundleInfo.getBundle(), name, el);
-							if(def.getLoader() != null) {
-								checkBundleInfoLoader(bundleInfo, def.getLoader());
-							}
 							fActiveDefinitions.add(def);
 						} catch(WebAppException e) {
 							fLog.error("Unable to load servlet "+name, e);
@@ -417,20 +405,6 @@ public class RequestProcessor implements IWebProcessor {
 	
 	
 	
-	private void checkBundleInfoLoader(BundleInfo bundleInfo, ClassLoader cl) {
-		if(cl != null && bundleInfo.getContentLoader() == null) {
-			// update the search policy
-			if(cl instanceof ContentClassLoader) {
-		        IContentLoader contentLoader =
-		            ((ContentClassLoader) cl).getContentLoader();
-		        
-		        // override the URL content policy handler 
-		        contentLoader.setURLPolicy(new DysowebURLPolicy(bundleInfo, contentLoader.getURLPolicy()));
-			}
-			bundleInfo.setContentLoader(cl);
-		}
-	}
-
 	class Config implements ServletConfig {
 
 		public String getServletName() {
@@ -802,92 +776,7 @@ public class RequestProcessor implements IWebProcessor {
 		}
 	}
 
-	private class DysowebURLPolicy implements IURLPolicy {
 
-		private IURLPolicy fParent;
-		private Map fURLCache;
-		private BundleInfo fBundleInfo;
-		
-		DysowebURLPolicy(BundleInfo bundleInfo, IURLPolicy parent) {
-			fParent = parent;
-			fBundleInfo = bundleInfo;
-			fURLCache = new ConcurrentHashMap();
-		}
-		
-		public URL createURL(int id, String name) {
-			int idx = name.indexOf('/');
-			if(idx>0) {
-				try {
-					// get it from the cache?
-					Object obj = fURLCache.get(name);
-					if(obj == NULL) {
-						return null;
-					} else if(obj != null) {
-						return (URL)obj;
-					} else {
-						// check if we are in dev mode
-						if(fBundleInfo.isDev()) {
-							File f = new File(fBundleInfo.getDevDir(), name);
-							if(f.exists()) {
-								return f.toURI().toURL();
-							}
-						}
-						// get the local URL
-						URL osgiURL = fParent.createURL(id, name);
-						if(osgiURL == null) {
-							fURLCache.put(name, NULL);
-							return null;
-						} else if(!"bundle".equals(osgiURL.getProtocol())) {
-							return osgiURL;
-						} else if(name.startsWith("0/")) {
-							return osgiURL;
-						} else {
-							synchronized (this) {
-								// another thread has filled in the cache?
-								obj = fURLCache.get(name);
-								if(obj == NULL) {
-									return null;
-								} else if(obj != null) {
-									return (URL)obj;
-								}
-								
-								// do a local caching when possible
-								// locally cache the file
-								File file;
-								if(name.startsWith("/"))
-									file = new File(getScratchDir(), "/resources/"+fBundleInfo.getBundle().getBundleId()+name);
-								else 
-									file = new File(getScratchDir(), "/resources/"+fBundleInfo.getBundle().getBundleId()+"/"+name);
-
-								if(!file.exists() || file.lastModified() < fBundleInfo.getLastModified()) {
-									// get the parent file
-									file.getParentFile().mkdirs();
-									URLConnection uc = osgiURL.openConnection();
-									InputStream is = uc.getInputStream();
-									FileOutputStream os = new FileOutputStream(file);
-									byte[] buf = new byte[4096];
-									int read;
-									while ((read = is.read(buf)) > 0) {
-										os.write(buf, 0, read);
-									}
-									os.close();
-									is.close();
-								}
-								URL localURL = file.toURI().toURL();
-								fURLCache.put(name, localURL);
-								return localURL;
-							}
-						}
-					}
-				} catch(IOException e) {
-					throw new RuntimeException(e);
-				}
-			} else {
-				return fParent.createURL(id,name);
-			}
-		}
-	}
-	
 	public synchronized void deploy(Bundle bundle) throws WebAppException {
 		
 		if(bundle == null) {
@@ -1624,7 +1513,7 @@ public class RequestProcessor implements IWebProcessor {
 			// for BEA WLS, that is another story 
 			try {
 				// add at least the core jar file to compile taglibs
-				URL coreJar = fServletContext.getResource("/WEB-INF/lib/dysoweb-core-1.0.11.jar");
+				URL coreJar = fServletContext.getResource("/WEB-INF/lib/dysoweb-core-1.0.12.jar");
 				parentURL = new URL[] { coreJar };
 			} catch (MalformedURLException e) {
 				// use a default URL

@@ -14,13 +14,16 @@ import java.io.OutputStream;
 import java.io.Serializable;
 
 import org.apache.felix.framework.Felix;
-import org.apache.felix.framework.searchpolicy.ContentClassLoader;
+import org.apache.felix.framework.searchpolicy.ModuleImpl;
+import org.apache.felix.moduleloader.IModule;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
 public class DysowebSessionSerializer implements Externalizable {
 
 	private static final int SERIALIZABLE = 1;
+
+	private static final int NOTSERIALIZABLE = 2;
 
 	private static final int NULL = 0;
 	
@@ -87,7 +90,11 @@ public class DysowebSessionSerializer implements Externalizable {
 				out.writeInt(SERIALIZABLE);
 				// serialize the data
 				out.writeObject(fData);
+			} catch(IOException e) {
+				out.writeInt(NOTSERIALIZABLE);
+				throw e;
 			} catch(Exception e) {
+				out.writeInt(NOTSERIALIZABLE);
 				throw new IOException(e.getMessage());
 			}
 		} else {
@@ -109,26 +116,22 @@ public class DysowebSessionSerializer implements Externalizable {
 		}
 
 		protected void annotateClass(Class cls) throws IOException {
-			super.annotateClass(cls);
-			
+
 			ClassLoader cl = cls.getClassLoader();
-			if(cl instanceof ContentClassLoader) {
+			if(cl instanceof ModuleImpl.ModuleClassLoader) {
 				// class loaded by bundle
-				writeUTF("bundle");
-				ContentClassLoader ccl = (ContentClassLoader)cl;
-				String bundleId = ccl.toString();
-				int idx = bundleId.indexOf('.');
-				if(idx > 0) {
-					bundleId = bundleId.substring(0,idx);
-				}
-				// retrieve the bundle symbolic name
 				Felix platform = DysowebServlet.getPlatform();
-				BundleContext context = platform.getBundleContext();
-				Bundle b = context.getBundle(Long.parseLong(bundleId));
-				// get the symbolic name
-				String symName = b == null ? null : b.getSymbolicName();
-				if(symName != null) {
-					writeUTF(symName);
+				if(platform != null) {
+					IModule module = ((ModuleImpl.ModuleClassLoader)cl).getModule();
+					Bundle b = module.getBundle();
+					// get the symbolic name
+					String symName = b == null ? null : b.getSymbolicName();
+					if(symName != null) {
+						writeUTF("bundle");
+						writeUTF(symName);
+					} else {
+						writeUTF("unknown");
+					}
 				} else {
 					writeUTF("unknown");
 				}

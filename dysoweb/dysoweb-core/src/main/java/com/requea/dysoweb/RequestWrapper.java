@@ -11,8 +11,7 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionContext;
 
-import org.apache.felix.framework.searchpolicy.ContentClassLoader;
-
+import org.apache.felix.framework.searchpolicy.ModuleImpl;
 
 public class RequestWrapper extends HttpServletRequestWrapper {
 
@@ -175,14 +174,8 @@ public class RequestWrapper extends HttpServletRequestWrapper {
 				// simple types
 				fSession.setAttribute(attr, value);
 			} else if(value instanceof Serializable) {
-				ClassLoader cl = value.getClass().getClassLoader();
-				if(cl instanceof ContentClassLoader) {
-					DysowebSessionSerializer ser = new DysowebSessionSerializer((Serializable)value);
-					fSession.setAttribute(attr, ser);
-				} else {
-					// regular object
-					fSession.setAttribute(attr, value);
-				}
+				DysowebSessionSerializer ser = new DysowebSessionSerializer((Serializable)value);
+				fSession.setAttribute(attr, ser);
 			} else {
 				// this object should be serializable, but so what!
 				fSession.setAttribute(attr, value);
