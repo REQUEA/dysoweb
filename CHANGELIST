@@ -1,3 +1,7 @@
+1.0.13 VERSION
+- URL encoding of some URL for cookieless environements
+- Test Oracle Application Server 10gR3 (Weblogic) under JDK 6.0 & JRockit
+
 1.0.12 VERSION
 - fix problems with conplex serialization / deserialization env
 - Apache Felix 1.8.0 upgrade
