@@ -15,6 +15,7 @@
 package com.requea.dysoweb.utils.tags;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.TagSupport;
 
@@ -82,17 +83,20 @@ public class BundleTag extends TagSupport {
 				return SKIP_BODY;
 			}
 			tw.append("<a href=\"");
-			tw.append(request.getContextPath());
-			tw.append("/");
+			StringBuffer sb = new StringBuffer();
+			sb.append(request.getContextPath());
+			sb.append("/");
 			if(fCommand == null) {
-				tw.append("dwbndl");
+				sb.append("dwbndl");
 			} else {
-				tw.append(fCommand);
+				sb.append(fCommand);
 			}
-			tw.append("?bndl=");
-			tw.append(Long.toString(bundle.getBundleId()));
-			tw.append("&op=");
-			tw.append(op);
+			sb.append("?bndl=");
+			sb.append(Long.toString(bundle.getBundleId()));
+			sb.append("&op=");
+			sb.append(op);
+			HttpServletResponse response = (HttpServletResponse)pageContext.getResponse();
+			tw.append(response.encodeURL(sb.toString()));
 			tw.append("\"");
 			if(fClass != null) {
 				tw.append(" class=\"");

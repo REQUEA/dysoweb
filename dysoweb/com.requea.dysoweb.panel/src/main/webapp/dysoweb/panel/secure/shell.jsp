@@ -15,7 +15,7 @@
 	<script type="text/javascript">
 function dysowebExecuteCommand() {
 	// send the ajax request command
-	new Ajax.Updater('dysowebResults', '<%=request.getContextPath()%>/dysoweb/shell/exec', {
+	new Ajax.Updater('dysowebResults', '<%=response.encodeURL(request.getContextPath()+"/dysoweb/shell/exec")%>', {
 	  parameters: $('dysowebForm').serialize(true)
 	  });	
 	// empty the command

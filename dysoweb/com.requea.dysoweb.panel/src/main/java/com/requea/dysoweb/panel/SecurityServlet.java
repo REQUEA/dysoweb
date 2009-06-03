@@ -107,10 +107,10 @@ public class SecurityServlet extends HttpServlet {
 			
 			// auth was ok, redirect
 			if (ru != null && ru.length() > 0 && !"null".equals(ru)) {
-				response.sendRedirect(ru);
+				response.sendRedirect(response.encodeURL(ru));
 			} else {
-				response.sendRedirect(request.getContextPath()
-						+ "/dysoweb/panel/panel.jsp");
+				response.sendRedirect(response.encodeURL(request.getContextPath()
+						+ "/dysoweb/panel/panel.jsp"));
 			}
 		}
 	}

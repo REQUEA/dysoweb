@@ -15,6 +15,7 @@
 package com.requea.dysoweb.utils.tags;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.TagSupport;
 
@@ -51,6 +52,8 @@ public class MenuTag extends TagSupport {
 		}
 		
 		HttpServletRequest request = (HttpServletRequest)pageContext.getRequest();
+		HttpServletResponse response = (HttpServletResponse)pageContext.getResponse();
+		
 		String uri = request.getRequestURI();
 		String path = request.getContextPath()+fPath;
 		if(uri.startsWith(path)) {
@@ -71,7 +74,7 @@ public class MenuTag extends TagSupport {
 		} else {
 			// not the current one
 			tw.append("<a href=\"");
-			tw.append(path);
+			tw.append(response.encodeURL(path));
 			tw.append("\"");
 			if(fStyle != null) {
 				tw.append(" class=\"");

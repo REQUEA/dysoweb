@@ -27,7 +27,7 @@
 							<panel:error />
 							<table width="100%" cellpadding="0" cellspacing="0" class="rpfeatlist"><tr valign="top">
 							<td>
-								<form method="post" name="frminstall" action="<%=request.getContextPath()%>/dysoweb/panel/secure/install">
+								<form method="post" name="frminstall" action="<%=response.encodeURL(request.getContextPath()+"/dysoweb/panel/secure/install") %>">
 								<input type="hidden" name="op" value="install"/>
 								<div class="rpfeatinst"><input type="submit" value="Install Selected"></input></div>
 								<h2><span>Dysoweb Products</span></h2>
@@ -71,7 +71,7 @@
 								</form>
 							</td>
 							<td width="200">
-								<a href="<%=request.getContextPath() %>/dysoweb/panel/secure/install?refresh=true">Refresh list</a>
+								<a href="<%=response.encodeURL(request.getContextPath()+"/dysoweb/panel/secure/install?refresh=true") %>">Refresh list</a>
 								<ul class="rpcat">Categories:
 								<li><a href="<%=request.getContextPath()%>/dysoweb/panel/secure/install" class="rpcatlnk">All categories</a></li>
 								<panel:categories>
