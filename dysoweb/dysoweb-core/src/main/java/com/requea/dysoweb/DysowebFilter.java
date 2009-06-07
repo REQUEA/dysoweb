@@ -45,8 +45,9 @@ public class DysowebFilter implements Filter {
 
 		IWebProcessor processor = DysowebServlet.getActiveProcessor();
 		if (processor != null) {
-			
-			request = new RequestWrapper((HttpServletRequest)request, fPrefix);
+			// wrap the request if not alread done
+			if(!(request instanceof RequestWrapper))
+				request = new RequestWrapper((HttpServletRequest)request, fPrefix);
 			// chain with the Request processor from the OSGI platform
 			processor.process(request, response, chain);
 		} else {

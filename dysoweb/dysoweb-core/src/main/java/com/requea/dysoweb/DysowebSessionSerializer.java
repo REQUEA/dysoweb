@@ -154,7 +154,11 @@ public class DysowebSessionSerializer implements Externalizable {
 				String symName = readUTF();
 				if(symName == null || "unknown".equals(symName) || symName.length() == 0) {
 					// bundle class
-					return super.resolveClass(desc);
+					try {
+						return super.resolveClass(desc);
+					} catch(ClassNotFoundException e) {
+						throw e;
+					}
 				} else {
 					// retrieve the bundle
 					Felix platform = DysowebServlet.getPlatform();
@@ -169,10 +173,18 @@ public class DysowebSessionSerializer implements Externalizable {
 					}
 					if(b != null) {
 						// request the bundle class loader to handle the class
-						return b.loadClass(desc.getName());
+						try {
+							return b.loadClass(desc.getName());
+						} catch(ClassNotFoundException e) {
+							throw e;
+						}
 					} else {
 						// default resolve
-						return super.resolveClass(desc);
+						try {
+							return super.resolveClass(desc);
+						} catch(ClassNotFoundException e) {
+							throw e;
+						}
 					}
 				}
 			} else {

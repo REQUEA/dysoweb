@@ -89,7 +89,8 @@ public class DysowebServlet extends HttpServlet {
 
 		if (fActiveProcessor != null) {
 			// chain with the Request processor from the OSGI platform
-			request = new RequestWrapper((HttpServletRequest)request, fPrefix);
+			if(!(request instanceof RequestWrapper))
+				request = new RequestWrapper((HttpServletRequest)request, fPrefix);
 			fActiveProcessor.process(request, response, null);
 		} else {
 			super.service(request, response);
