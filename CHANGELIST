@@ -1,3 +1,6 @@
+1.0.14 VERSION
+- Multiple wrapping of requests in some case of request forwarding causing problems with session set/put attribute
+
 1.0.13 VERSION
 - URL encoding of some URL for cookieless environements
 - Test Oracle Application Server 10gR3 (Weblogic) under JDK 6.0 & JRockit
