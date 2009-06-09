@@ -15,7 +15,7 @@
 	<script type="text/javascript">
 function dysowebRefreshStatus() {
 	// send the ajax request command
-	new Ajax.Updater('dysowebResults', '<%=response.encodeURL(request.getContextPath()+"/dysoweb/panel/secure/install?op=status"%>)', {
+	new Ajax.Updater('dysowebResults', '<%=response.encodeURL(request.getContextPath()+"/dysoweb/panel/secure/install?op=status")%>', {
 		onComplete:function(transport, param) { 
 			var doc = transport.responseXML;
 			if(doc) {
