@@ -1,3 +1,6 @@
+1.0.15 VERSION
+- Fixed a problem during installation of bundles (jsp pages)
+
 1.0.14 VERSION
 - Multiple wrapping of requests in some case of request forwarding causing problems with session set/put attribute
 
