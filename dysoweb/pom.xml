@@ -3,13 +3,13 @@
 	<groupId>com.requea.dysoweb</groupId>
 	<artifactId>dysoweb</artifactId>
 	<packaging>pom</packaging>
-	<version>1.0.15-SNAPSHOT</version>
+	<version>1.0.15</version>
 	<name>Requea Dysoweb</name>
 	<url>http://www.requea.com</url>
 	<parent>
 		<artifactId>main</artifactId>
 		<groupId>com.requea.dysoweb</groupId>
-		<version>1.0.15-SNAPSHOT</version>
+		<version>1.0.15</version>
 	</parent>
 	<modules>
 		<module>webapp</module>
