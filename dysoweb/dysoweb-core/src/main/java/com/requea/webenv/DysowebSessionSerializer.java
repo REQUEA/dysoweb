@@ -1,4 +1,4 @@
-package com.requea.dysoweb;
+package com.requea.webenv;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -18,6 +18,9 @@ import org.apache.felix.framework.searchpolicy.ModuleImpl;
 import org.apache.felix.moduleloader.IModule;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+
+import com.requea.dysoweb.DysowebServlet;
+
 
 public class DysowebSessionSerializer implements Externalizable {
 

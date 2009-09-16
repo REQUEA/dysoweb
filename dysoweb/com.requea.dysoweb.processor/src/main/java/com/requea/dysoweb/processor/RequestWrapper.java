@@ -1,71 +1,32 @@
-package com.requea.dysoweb;
+package com.requea.dysoweb.processor;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Enumeration;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionContext;
 
+import com.requea.webenv.DysowebSessionSerializer;
+
+
 
 public class RequestWrapper extends HttpServletRequestWrapper {
 
 
-	private String fPrefix;
-	private String fContextPath;
+	private ServletContext fServletContext;
 
-	public RequestWrapper(HttpServletRequest request, String prefix) {
+
+	public RequestWrapper(ServletContext servletContext, HttpServletRequest request) {
 		super(request);
-		fContextPath = request.getContextPath();
-		fPrefix = prefix;
+		fServletContext = servletContext;
 	}
 	
 	public String getContextPath() {
-		return fPrefix == null ? fContextPath : fContextPath + fPrefix;
-	}
-
-
-	public StringBuffer getRequestURL() {
-		StringBuffer sb = super.getRequestURL();
-		if(fPrefix != null) {
-			int length = fPrefix.length();
-			if(sb.length() >= length && sb.substring(0, length-1).equals(fPrefix)) {
-				StringBuffer sb2 = new StringBuffer(sb.length());
-				sb2.append(fContextPath);
-				sb2.append(sb.substring(length));
-				return sb2;
-			} else { 
-				return sb;
-			}
-		} else {
-			return sb;
-		}
-	}
-
-	public String getServletPath() {
-		String str = super.getServletPath();
-		if(str != null && fPrefix != null && str.startsWith(fPrefix)) {
-			return str.substring(fPrefix.length());
-		} else {
-			return str;
-		}
-	}
-	public String getRealPath(String path) {
-		if(fPrefix != null)
-			return super.getRealPath(fPrefix+path);
-		else
-			return super.getRealPath(path);
-	}
-
-	public RequestDispatcher getRequestDispatcher(String path) {
-		if(fPrefix != null)
-			return super.getRequestDispatcher(fPrefix+path);
-		else
-			return super.getRequestDispatcher(path);
+		return super.getContextPath();
 	}
 
 	public HttpSession getSession() {
@@ -135,7 +96,7 @@ public class RequestWrapper extends HttpServletRequestWrapper {
 		}
 
 		public ServletContext getServletContext() {
-			return fSession.getServletContext();
+			return fServletContext;
 		}
 
 		public HttpSessionContext getSessionContext() {

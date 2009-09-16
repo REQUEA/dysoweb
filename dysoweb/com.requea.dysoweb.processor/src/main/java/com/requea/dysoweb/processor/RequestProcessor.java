@@ -117,8 +117,6 @@ public class RequestProcessor implements IWebProcessor {
 	private Map  fServletContextWrappers = new ConcurrentHashMap();
 	private Map  fFiltersByName = new ConcurrentHashMap();
 
-	private String fPrefix;
-	
     private static Log fLog = LogFactory.getLog(RequestProcessor.class);
 	
 	
@@ -129,8 +127,6 @@ public class RequestProcessor implements IWebProcessor {
 	public synchronized void activate(ServletContext context, String prefix) throws ServletException {
 		
 		fServletContext = context;
-		
-		fPrefix = prefix;
 		
 		// create the default servlet and initialize it
 		fDefaultServlet = new DefaultServlet(this);
@@ -446,13 +442,6 @@ public class RequestProcessor implements IWebProcessor {
 			if (pathInfo != null) {
 				uri += pathInfo;
 			}
-			// request included (with a request dispatcher)
-	        if(fPrefix != null) {
-	        	if(uri.startsWith(fPrefix)) {
-		    		uri = uri.substring(fPrefix.length());
-		    		request.setAttribute(Constants.INC_SERVLET_PATH, uri);
-	        	}
-	        }
         } else {
             /*
              * Requested JSP has not been the target of a 
@@ -463,10 +452,6 @@ public class RequestProcessor implements IWebProcessor {
             String pathInfo = hsr.getPathInfo();
             if (pathInfo != null) {
                 uri += pathInfo;
-            }
-            // remove the prefix 
-            if(fPrefix != null && uri.startsWith(fPrefix)) {
-        		uri = uri.substring(fPrefix.length());
             }
         }
         
@@ -488,24 +473,26 @@ public class RequestProcessor implements IWebProcessor {
 				ServletChain ac = ((ServletWrapper)wrapper).getChain();
 				
 				// build another chain with the filters
+				HttpServletRequest wrappedRequest = new RequestWrapper(wrapper.getServletContext(), (HttpServletRequest)request);
 				if(filters != null && filters.length > 0) {
 					FilterListChain fc = new FilterListChain(filters, ac);
-					fc.doFilter(request, response);
+					fc.doFilter(wrappedRequest, response);
 				} else {
-					ac.doFilter(request, response);
+					ac.doFilter(wrappedRequest, response);
 				}
 				return;
 			} else {
 				// check if the request will be served by some static content
 				EntryInfo ei = getEntryInfo(uri);
 				if(ei != null) {
+					HttpServletRequest wrappedRequest = new RequestWrapper(fDefaultServlet.getServletContext(), (HttpServletRequest)request);
 					// build another chain with the filters
 					if(filters != null && filters.length > 0) {
 						DefaultServletChain fc = new DefaultServletChain(fDefaultServlet, filters);
-						fc.doFilter(request, response);
+						fc.doFilter(wrappedRequest, response);
 					} else {
 						// bundle static content
-						fDefaultServlet.service(request, response);
+						fDefaultServlet.service(wrappedRequest, response);
 					}
 					return;
 				}

@@ -23,7 +23,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.felix.framework.Felix;
@@ -40,6 +39,7 @@ import org.osgi.framework.ServiceListener;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
 
+import com.requea.webenv.DysowebSessionSerializer;
 import com.requea.webenv.IWebProcessor;
 
 public class DysowebServlet extends HttpServlet {
@@ -50,16 +50,13 @@ public class DysowebServlet extends HttpServlet {
 	private static Bundle fActiveProcessorBundle;
 	private static IWebProcessor fActiveProcessor;
 	private static Version fActiveProcessorVersion;
-	private static String fPrefix;
 
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		
 		ServletContext ctx = config.getServletContext();
-		// initialize web environement 
-		fPrefix = config.getInitParameter("RequestPrefix");
 		// starts the osgi platform
-		startFelix(ctx, fPrefix);
+		startFelix(ctx);
 	}
 
 	public static Felix getPlatform() {
@@ -89,8 +86,6 @@ public class DysowebServlet extends HttpServlet {
 
 		if (fActiveProcessor != null) {
 			// chain with the Request processor from the OSGI platform
-			if(!(request instanceof RequestWrapper))
-				request = new RequestWrapper((HttpServletRequest)request, fPrefix);
 			fActiveProcessor.process(request, response, null);
 		} else {
 			super.service(request, response);
@@ -118,7 +113,7 @@ public class DysowebServlet extends HttpServlet {
 	/*
 	 * Starts the OSGI platform based on an embedded felix
 	 */
-	public static synchronized void startFelix(ServletContext ctx, String prefix)
+	public static synchronized void startFelix(ServletContext ctx)
 			throws ServletException {
 
 		// check if already started
@@ -334,7 +329,7 @@ public class DysowebServlet extends HttpServlet {
 			}
 			// activarte the new one
 			try {
-				processor.activate(servletContext, fPrefix);
+				processor.activate(servletContext, null);
 				// activation was successful
 				fActiveProcessor = processor;
 				fActiveProcessorBundle = bundle;
@@ -347,7 +342,7 @@ public class DysowebServlet extends HttpServlet {
 				// try to reactivate the old one if there is one
 				if(fActiveProcessor != null) {
 					try {
-						fActiveProcessor.activate(servletContext, fPrefix);
+						fActiveProcessor.activate(servletContext, null);
 					} catch (Throwable e1) {
 						// at this point, there is nothing that we can do
 						fActiveProcessor = null;

@@ -58,6 +58,10 @@ public class ServletWrapper {
 		return fBundleId;
 	}
 	
+	public ServletContext getServletContext() {
+		return fServletContext;
+	}
+	
 	public synchronized void addFilter(IFilterDefinition flt) {
 		IFilterDefinition[] defs = new IFilterDefinition[fFilterDefinitions.length+1];
 		for(int i=0; i<defs.length-1; i++) {
