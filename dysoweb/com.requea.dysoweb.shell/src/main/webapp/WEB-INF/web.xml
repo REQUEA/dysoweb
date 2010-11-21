@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <web-app>
     <display-name>Dysoweb Shell</display-name>
+    
+    <filter>
+        <filter-name>dysowebShellSecurityFilter</filter-name>
+        <filter-class>com.requea.dysoweb.shell.impl.SecurityFilter</filter-class>
+    </filter>
+    
+    <filter-mapping>
+        <filter-name>dysowebShellSecurityFilter</filter-name>
+        <servlet-name>shellServlet</servlet-name>
+    </filter-mapping>
+
     <servlet>
         <servlet-name>shellServlet</servlet-name>
         <servlet-class>com.requea.dysoweb.shell.impl.ShellServlet</servlet-class>
