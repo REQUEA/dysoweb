@@ -26,7 +26,6 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
 import org.osgi.framework.Constants;
-import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.Version;
 
 import com.requea.dysoweb.processor.RequestProcessor;
@@ -34,7 +33,6 @@ import com.requea.webenv.IWebProcessor;
 
 public class Activator implements BundleActivator {
 
-	private ServiceRegistration fProcessorRef;
 	private RequestProcessor fRequestProcessor;
 
     private static Log fLog = LogFactory.getLog(RequestProcessor.class);
@@ -47,7 +45,7 @@ public class Activator implements BundleActivator {
 		// create the request processor to handle all incoming ServletRequest
 		// from the container webapp
 		fRequestProcessor = new RequestProcessor();
-		fProcessorRef = context.registerService(IWebProcessor.class.getName(), fRequestProcessor, null);
+		context.registerService(IWebProcessor.class.getName(), fRequestProcessor, null);
 
 		
 		context.addBundleListener(new BundleListener() {
@@ -133,11 +131,6 @@ public class Activator implements BundleActivator {
 	public void stop(BundleContext context) throws Exception {
 		// stop processing incoming requests
 		fRequestProcessor = null;
-		
-		// unregister the context service
-		if(fProcessorRef != null) {
-			fProcessorRef.unregister();
-		}
 	}
 
 }
