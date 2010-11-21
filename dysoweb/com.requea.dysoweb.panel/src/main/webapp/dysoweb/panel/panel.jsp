@@ -10,6 +10,7 @@
     <link href="<%= request.getContextPath() %>/dysoweb/panel/css/style-1.0.9.css" rel="stylesheet" type="text/css" />
 	<dw:insert bundle="com.requea.dysoweb.demo2">
     <link href="<%= request.getContextPath() %>/dysoweb/demo/style2.css" rel="stylesheet" type="text/css" />
+    <meta http-equiv="refresh" content="0;url=<%= request.getContextPath() %>/secure/bundle.jsp">
 	</dw:insert>
 </head>
 <body>

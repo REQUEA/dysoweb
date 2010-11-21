@@ -11,6 +11,18 @@
 	<dw:insert bundle="com.requea.dysoweb.demo2">
     <link href="<%= request.getContextPath() %>/dysoweb/demo/style2.css" rel="stylesheet" type="text/css" />
 	</dw:insert>
+    <script type="text/javascript">
+function pb(elt) {
+    // retrieve the parent form
+    var form = elt;
+    while(form != null && form.tagName != 'FORM') {
+        // get the parent
+        form = form.parentNode;
+    }
+    form["op"].value = "postback";
+    form.submit();
+}
+    </script>
 </head>
 <body>
 <div id="it">
@@ -31,13 +43,22 @@
 							<input name="ru" type="hidden" value="<%=request.getAttribute("com.requea.dysoweb.panel.ru") %>" />
 							<input name="op" type="hidden" value="register" />
 							<table width="100%">
-								<tr><td class="lbl">Contact Name:</td><td class="val"><panel:input name="ContactName"/></td></tr>
-								<tr><td class="lbl">Contact EMail:</td><td class="val"><panel:input name="ContactEMail"/></td></tr>
-								<panel:remote><tr><td class="lbl"><span class="req">*</span>Remote Access Code:</td><td class="val"><panel:input name="RemoteCode" /><a href="http://dysoweb.requea.com/remotesecure" target="_blank">what's this?</a></td></tr></panel:remote>
-								<tr><td class="lbl"><span class="req">*</span>Password:</td><td class="val"><panel:input name="Password" type="password"/></td></tr>
+                                <tr><td class="lbl"><span class="req">*</span>Authorization Key:</td><td class="val"><panel:input name="AuthKey" size="30"/>&nbsp;<a href="https://www.requea.com/do/rqRepoKeyRequest:new" target="_blank">Request an authorization key</a></td></tr>
+								<tr><td class="lbl"><span class="req">*</span>Password for this platform:</td><td class="val"><panel:input name="Password" type="password"/></td></tr>
 								<tr><td class="lbl"><span class="req">*</span>Confirm Password:</td><td class="val"><panel:input name="Password2" type="password"/></td></tr>
-								<tr><td colspan="2" align="center"><input type="submit" name="submit" value="Secure this Dysoweb Platform"/></td></tr>
+								<tr><td colspan="2" align="center"><input type="submit" name="btnSubmit" value="Secure this Dysoweb Platform"/></td></tr>
 							</table>							
+                            <h2><span>Network Configuration</span></h2>
+                            <table width="100%">
+                                <tr><td class="lbl">Settings</td><td class="val"><panel:input name="Settings" style="radio" /></td></tr>                            
+                                <panel:input name="ManualSettings">                              
+                                <tr><td class="lbl">Repository URL:</td><td class="val"><panel:input name="RepoURL" size="60"/></td></tr>
+                                <tr><td class="lbl">Proxy Host:</td><td class="val"><panel:input name="ProxyHost"/></td></tr>
+                                <tr><td class="lbl">Proxy Port:</td><td class="val"><panel:input name="ProxyPort" size="4"/></td></tr>
+                                <tr><td class="lbl">Proxy Authorization:</td><td class="val"><panel:input name="ProxyAuth"/></td></tr>
+                                <tr><td class="lbl">Local Cache URL:</td><td class="val"><panel:input name="LocalCacheURL" size="60"/></td></tr>
+                                </panel:input>
+                            </table>                            
 							</form>  
 						</div>
 					</div>

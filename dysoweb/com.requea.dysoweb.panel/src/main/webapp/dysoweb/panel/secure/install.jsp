@@ -30,10 +30,22 @@
 								<form method="post" name="frminstall" action="<%=response.encodeURL(request.getContextPath()+"/dysoweb/panel/secure/install") %>">
 								<input type="hidden" name="op" value="install"/>
 								<div class="rpfeatinst"><input type="submit" value="Install Selected"></input></div>
+                                <h2><span>Project Bundles</span></h2>
+                                <table cellpadding="5">
+                                <panel:installables type="rootbundles">
+                                <tr valign="middle">
+                                    <td><panel:installable property="check"/></input></td>
+                                    <td width="1"><panel:installable style="rpimg" property="image"/></td>
+                                    <td align="left">
+                                        <div class="rpfeatdesc"><panel:installable property="title"/> (<panel:installable property="version"/>)</div>
+                                        <div class="rpfeatldesc"><panel:installable property="description"/></div>
+                                    </td></tr>
+                                </panel:installables>
+                                </table>
 								<h2><span>Dysoweb Products</span></h2>
 								<table cellpadding="5">
 								<panel:installables type="products">
-								<tr valign="center">
+								<tr valign="middle">
 									<td><panel:installable property="check"/></input></td>
 									<td width="1"><panel:installable style="rpimg" property="image"/></td>
 									<td align="left">
@@ -43,35 +55,12 @@
 									</td></tr>
 								</panel:installables>
 								</table>
-								<h2><span>Main Bundles</span></h2>
-								<table cellpadding="5">
-								<panel:installables type="rootbundles">
-								<tr valign="center">
-									<td><panel:installable property="check"/></input></td>
-									<td width="1"><panel:installable style="rpimg" property="image"/></td>
-									<td align="left">
-										<div class="rpfeatdesc"><panel:installable property="title"/> (<panel:installable property="version"/>)</div>
-										<div class="rpfeatldesc"><panel:installable property="description"/></div>
-									</td></tr>
-								</panel:installables>
-								</table>
-								<h2><span>Other Bundles (may be installed automatically with above selection)</span></h2>
-								<table cellpadding="5">
-								<panel:installables type="otherbundles">
-								<tr valign="center">
-									<td><panel:installable property="check"/></input></td>
-									<td width="1"><panel:installable style="rpimg" property="image"/></td>
-									<td align="left">
-										<div class="rpfeatdesc"><panel:installable property="title"/> (<panel:installable property="version"/>)</div>
-										<div class="rpfeatldesc"><panel:installable property="description"/></div>
-									</td></tr>
-								</panel:installables>
-								</table>
 								<div class="rpfeatinst"><input type="submit" value="Install Selected"></input></div>
 								</form>
 							</td>
 							<td width="200">
-								<a href="<%=response.encodeURL(request.getContextPath()+"/dysoweb/panel/secure/install?refresh=true") %>">Refresh list</a>
+                                <a href="<%=response.encodeURL(request.getContextPath()+"/dysoweb/panel/secure/install?refresh=true") %>">Refresh list</a><br/>
+                                <a href="<%=response.encodeURL(request.getContextPath()+"/dysoweb/panel/secure/install?settings=true") %>">Settings</a>
 								<ul class="rpcat">Categories:
 								<li><a href="<%=request.getContextPath()%>/dysoweb/panel/secure/install" class="rpcatlnk">All categories</a></li>
 								<panel:categories>

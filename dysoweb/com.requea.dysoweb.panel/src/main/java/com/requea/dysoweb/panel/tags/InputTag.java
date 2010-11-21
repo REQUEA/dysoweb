@@ -5,6 +5,7 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
+import com.requea.dysoweb.panel.InstallServlet;
 import com.requea.dysoweb.panel.utils.Util;
 
 
@@ -70,9 +71,13 @@ public class InputTag extends BodyTagSupport {
         		tw.append(info);
         		tw.append("</div>");
         	}
-        } else if("ProxySettings".equals(fName)) {
+        } else if("ManualSettings".equals(fName)) {
 	        try {
-				if(!"manual".equals(request.getParameter("Proxy"))) {
+	        	String val = request.getParameter("Settings");
+	        	if(val == null) {
+	        		val = getValueFromSession(request.getSession(), "Settings");
+	        	}
+				if(!"manual".equals(val)) {
 					return SKIP_BODY;
 				} else {
 					return EVAL_BODY_INCLUDE;
@@ -80,7 +85,7 @@ public class InputTag extends BodyTagSupport {
 			} catch (Exception e) {
 				return SKIP_BODY;
 			}
-        } else if("Proxy".equals(fName)) {
+        } else if("Settings".equals(fName)) {
 	        tw.append("<input name=\"");
         	tw.append(fName);
         	tw.append("\" onclick=\"pb(this)\"");
@@ -90,7 +95,7 @@ public class InputTag extends BodyTagSupport {
 	        	tw.append("\"");
 	        }
 	        tw.append(" type=\"radio\" value=\"auto\"");
-	        if("auto".equals(value)) {
+	        if("".equals(value) || "auto".equals(value)) {
 	        	tw.append(" checked=\"checked\"");
 	        }
 	        tw.append(">Automatic</input>");
@@ -108,8 +113,27 @@ public class InputTag extends BodyTagSupport {
 	        	tw.append(" checked=\"checked\"");
 	        }
 	        tw.append(">Manual</input>");
-	        
+        } else if("RepoURL".equals(fName) && Boolean.TRUE.equals(request.getAttribute(InstallServlet.REGISTERED))) {
+			tw.append(Util.escapeHTML(value));
+        } else if("AuthKey".equals(fName) && Boolean.TRUE.equals(request.getAttribute(InstallServlet.REGISTERED))) {
+            tw.append("<input size=\"30\"");
+            if(fName != null) {
+                tw.append(" name=\"");
+                tw.append(fName);
+                tw.append("\"");
+            }
+            if(fStyle != null) {
+                tw.append(" class=\"");
+                tw.append(fStyle);
+                tw.append("\"");
+            }
+            tw.append(" value=\"");
+			tw.append(Util.escapeHTML(value));
+			tw.append("\" />");
         } else {
+        	if("RepoURL".equals(fName) && (value == null || value.length() == 0)) {
+        		value = InstallServlet.DEFAULT_REPO;
+        	}
 	        tw.append("<input");
 	        if(fName != null) {
 	        	tw.append(" name=\"");
@@ -162,10 +186,17 @@ public class InputTag extends BodyTagSupport {
 	}
 
 	public int doEndTag() throws JspException {
-        TagWriter tw = new TagWriter();
-    	tw.append("</input>");
-        tw.writeTo(pageContext);
-        
+        HttpServletRequest request = (HttpServletRequest)pageContext.getRequest();
+		if(!"Version".equals(fName) && 
+				!"Settings".equals(fName) &&
+				!"Version".equals(fName) &&
+				(!"RepoURL".equals(fName) || !Boolean.TRUE.equals(request.getAttribute(InstallServlet.REGISTERED))) &&
+				!"AuthKeyVersion".equals(fName) &&
+				!"ManualSettings".equals(fName)) {
+	        TagWriter tw = new TagWriter();
+	    	tw.append("</input>");
+	        tw.writeTo(pageContext);
+		}        
 		return super.doEndTag();
 	}
 	

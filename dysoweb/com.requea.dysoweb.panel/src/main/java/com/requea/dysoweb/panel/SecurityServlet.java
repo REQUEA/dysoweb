@@ -1,7 +1,6 @@
 package com.requea.dysoweb.panel;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -15,7 +14,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.requea.dysoweb.panel.SecurityFilter;
@@ -59,7 +57,7 @@ public class SecurityServlet extends HttpServlet {
 			// get the config element
 			Element elConfig = null;
 			try {
-				elConfig = getServerConfig();
+				elConfig = InstallServlet.getServerConfig(fConfigDir);
 			} catch (Exception e) {
 				// show the error
 				request.setAttribute(ErrorTag.ERROR,
@@ -82,6 +80,7 @@ public class SecurityServlet extends HttpServlet {
 
 			// retrieve the password and compare
 			String pass = request.getParameter("Password");
+			// compare encrypted versions
 			try {
 				if(pass != null) {
 					pass = encrypt(pass);
@@ -99,6 +98,7 @@ public class SecurityServlet extends HttpServlet {
 				rd.forward(request, response);
 				return;
 			}
+			
 			// ok, authenticated
 			HttpSession session = request.getSession();
 			session.setAttribute(SecurityFilter.AUTH, Boolean.TRUE);
@@ -110,23 +110,11 @@ public class SecurityServlet extends HttpServlet {
 				response.sendRedirect(response.encodeURL(ru));
 			} else {
 				response.sendRedirect(response.encodeURL(request.getContextPath()
-						+ "/dysoweb/panel/panel.jsp"));
+						+ "/dysoweb/panel/bundle.jsp"));
 			}
 		}
 	}
 	
-
-	private Element getServerConfig() throws Exception {
-
-		File f = new File(fConfigDir, "server.xml");
-		if (!f.exists()) {
-			return null;
-		}
-
-		// parse the file
-		Document doc = XMLUtils.parse(new FileInputStream(f));
-		return doc.getDocumentElement();
-	}
 
 	public static class RegistrationException extends Exception {
 		private static final long serialVersionUID = -3340567087940905530L;
@@ -153,7 +141,7 @@ public class SecurityServlet extends HttpServlet {
 		}
 
 		byte raw[] = md.digest(); // step 4
-		String hash = Base64.encode(raw); // step 5
+		String hash = Base64.encodeBytes(raw); // step 5
 		return hash; // step 6
 	}
 

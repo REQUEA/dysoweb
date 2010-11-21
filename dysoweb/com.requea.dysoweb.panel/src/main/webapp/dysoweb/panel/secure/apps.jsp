@@ -35,7 +35,7 @@
 								<th>Version</th>
 							</tr></thead>
 							<panel:installedfeatures>
-							<tr valign="center">
+							<tr valign="middle">
 								<td><panel:installedfeature property="date"/></td>
 								<td><panel:installedfeature property="image"/></td>
 								<td><panel:installedfeature property="title"/><br/>

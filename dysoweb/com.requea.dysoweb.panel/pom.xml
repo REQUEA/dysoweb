@@ -96,9 +96,11 @@
 							javax.servlet.jsp.tagext,
 							com.requea.dysoweb.util.xml,
 							com.requea.dysoweb.utils.tags,
+                            !junit.*,
 							*
 						</Import-Package>
                         <Include-Resource>webapp=src/main/webapp</Include-Resource>
+                        <Bundle-ClassPath>.</Bundle-ClassPath>
 					</instructions>
 				</configuration>
 			</plugin>
