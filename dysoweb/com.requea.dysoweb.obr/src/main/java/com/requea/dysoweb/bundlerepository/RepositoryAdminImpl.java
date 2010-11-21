@@ -64,7 +64,6 @@ public class RepositoryAdminImpl implements ClientAuthRepositoryAdmin
 	private String m_proxyAuth;
 	private URL m_repoURL;
 
-    private static final String DEFAULT_REPOSITORY_URL = "http://oscar-osgi.sourceforge.net/obr2/repository.xml";
     public static final String REPOSITORY_URL_PROP = "obr.repository.url";
     public static final String EXTERN_REPOSITORY_TAG = "extern-repositories";
 
@@ -112,7 +111,11 @@ public class RepositoryAdminImpl implements ClientAuthRepositoryAdmin
         {
             initialize();
         }
-        return (Repository[]) m_repoMap.values().toArray(new Repository[m_repoMap.size()]);
+        List lst = new ArrayList();
+        for(int i=0; i<m_urlList.size(); i++) {
+        	lst.add(m_repoMap.get(m_urlList.get(i)));
+        }
+        return (Repository[]) lst.toArray(new Repository[lst.size()]);
     }
 
     public synchronized Resource getResource(String respositoryId)
@@ -204,22 +207,6 @@ public class RepositoryAdminImpl implements ClientAuthRepositoryAdmin
                                 ex);
                         }
                     }
-                }
-            }
-
-            // If no repository URLs are specified, then use the default one.
-            if (m_urlList.size() == 0)
-            {
-                try
-                {
-                    m_urlList.add(new URL(DEFAULT_REPOSITORY_URL));
-                }
-                catch (MalformedURLException ex)
-                {
-                    m_logger.log(
-                        Logger.LOG_WARNING,
-                        "Default repository url " + DEFAULT_REPOSITORY_URL + " cannot be used. Skipped.",
-                        ex);
                 }
             }
         }
