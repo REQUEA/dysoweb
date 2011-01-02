@@ -63,9 +63,6 @@
                                 <a href="<%=response.encodeURL(request.getContextPath()+"/dysoweb/panel/secure/install?settings=true") %>">Settings</a>
 								<ul class="rpcat">Categories:
 								<li><a href="<%=request.getContextPath()%>/dysoweb/panel/secure/install" class="rpcatlnk">All categories</a></li>
-								<panel:categories>
-								<li><panel:category style="rpcatlnk" property="link"/></li>
-								</panel:categories>
 								</ul>								
 							</td>
 							</tr></table>

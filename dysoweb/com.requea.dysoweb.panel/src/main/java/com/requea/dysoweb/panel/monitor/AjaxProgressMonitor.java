@@ -1,6 +1,7 @@
 package com.requea.dysoweb.panel.monitor;
 
-import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 import org.w3c.dom.Element;
 
@@ -15,8 +16,12 @@ public class AjaxProgressMonitor implements IProgressMonitor {
 	private int _workDoneSoFar = 0;
 	private boolean _cancelRequested = false;
 	private String fTaskName;
-	
-	private static DecimalFormat format = new DecimalFormat("0.0%");
+
+	private static NumberFormat format;
+	static {
+	    format = NumberFormat.getPercentInstance(Locale.ENGLISH);
+	    format.setMaximumFractionDigits(2);
+	}
 
 	/**
 	 * @see org.eclipse.core.runtime.IProgressMonitor#beginTask(String, int)
