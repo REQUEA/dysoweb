@@ -191,9 +191,9 @@
 	</repositories>
 
 	<scm>
-		<connection>scm:svn:svn+ssh://null@svn.forge.objectweb.org/svnroot/dysoweb/tags/main-1.0.9-SNAPSHOT</connection>
-		<developerConnection>scm:svn:svn+ssh://null@svn.forge.objectweb.org/svnroot/dysoweb/tags/main-1.0.9-SNAPSHOT</developerConnection>
-		<url>scm:svn:svn+ssh://null@svn.forge.objectweb.org/svnroot/dysoweb/tags/main-1.0.9-SNAPSHOT</url>
+		<connection>svn+ssh://${maven.username}@svn.forge.objectweb.org/svnroot/dysoweb/tags</connection>
+		<developerConnection>svn+ssh://${maven.username}@svn.forge.objectweb.org/svnroot/dysoweb/tags</developerConnection>
+		<url>svn+ssh://${maven.username}@svn.forge.objectweb.org/svnroot/dysoweb/tags</url>
 	</scm>
 	<build>
 		<plugins>

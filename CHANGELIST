@@ -1,3 +1,6 @@
+1.0.18 VERSION
+- Fixed a redirect problem with the panel.jsp page
+
 1.0.17 VERSION
 - Version compatible with the new Requea OBR. Use auth key instead of manual setup of instances / features
 - Fix install progress bar
