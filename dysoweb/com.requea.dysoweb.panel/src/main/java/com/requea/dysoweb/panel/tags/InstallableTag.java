@@ -86,26 +86,33 @@ public class InstallableTag extends TagSupport {
 	    } else if("launch".equals(fProperty)) {
 	    	String url = installable.getBaseURL();
         	TagWriter tw = new TagWriter();
+        	tw.append("<div>");
+    		tw.append("Application ");
+    		tw.append(installable.getName());
+    		tw.append(" installed");
+        	tw.append("</div>");
+
+        	tw.append("<div>");
+        	tw.append("<a href=\"");
+        	tw.append(request.getContextPath());
 	    	if(url == null || url.length() == 0) {
-	    		tw.append("Application ");
-	    		tw.append(installable.getName());
-	    		tw.append(" installed");
+	    		tw.append(url);
 	    	} else {
-	        	tw.append("<a href=\"");
-	        	tw.append(request.getContextPath());
-	        	tw.append(url);
-	        	tw.append("\"");
-	        	if(fStyle != null) {
-	        		tw.append(" class=\"");
-	        		tw.append(fStyle);
-	        		tw.append("\"");
-	        	}
-	        	tw.append(" target=\"_blank\"");
-	        	tw.append(">");
-	        	tw.append("Launch "); // TODO: translate
-	        	tw.append(installable.getName());
-	        	tw.append("</a>");
+	    		tw.append("/page");
 	    	}
+        	tw.append("\"");
+        	if(fStyle != null) {
+        		tw.append(" class=\"");
+        		tw.append(fStyle);
+        		tw.append("\"");
+        	}
+        	tw.append(" target=\"_blank\"");
+        	tw.append(">");
+        	tw.append("Launch "); // TODO: translate
+        	tw.append(installable.getName());
+        	tw.append("</a>");
+        	tw.append("<div>");
+
         	tw.writeTo(pageContext);
         } else if("install".equals(fProperty)) {
         	String bundles = installable.getBundleList();
