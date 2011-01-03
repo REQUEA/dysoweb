@@ -514,8 +514,8 @@ public class RequestProcessor implements IWebProcessor {
         		rd.forward(request, response);
         		return;
         	} else {
-        		// nothing to redirect to: we redirect to the panel
-	        	hresponse.sendRedirect(hrequest.getContextPath()+"/dysoweb/panel/panel.jsp");
+        		// nothing to redirect to: we redirect to the list of bundles
+	        	hresponse.sendRedirect(hrequest.getContextPath()+"/dysoweb/panel/secure/bundles.jsp");
 	        	return;
         	}
         } 
@@ -1500,7 +1500,7 @@ public class RequestProcessor implements IWebProcessor {
 			// for BEA WLS, that is another story 
 			try {
 				// add at least the core jar file to compile taglibs
-				URL coreJar = fServletContext.getResource("/WEB-INF/lib/dysoweb-core-1.0.16.jar");
+				URL coreJar = fServletContext.getResource("/WEB-INF/lib/dysoweb-core-1.0.18.jar");
 				parentURL = new URL[] { coreJar };
 			} catch (MalformedURLException e) {
 				// use a default URL
