@@ -507,7 +507,10 @@ public class ResolverImpl implements MonitoredResolver
             // then verify that updating the local resource will not
             // break any of the requirements of any of the other
             // resources being deployed.
-            if ((localResource != null) && !isDysowebCore(localResource) &&
+            // do not override bundles that have been installed as  reference:file
+            if ((localResource != null) && 
+            		!isDysowebCore(localResource) &&
+            		(localResource.getBundle() == null || !localResource.getBundle().getLocation().startsWith("reference:file")) && 
                 isResourceUpdatable(localResource, deployResources[i], deployResources))
             {
                 // Only update if it is a different version or a SNAPSHOT version
@@ -534,7 +537,7 @@ public class ResolverImpl implements MonitoredResolver
             else if(localResource == null || !localResource.equals(deployResources[i])) 
             {
                 // Only update if it is a different version
-                // Install the bundle (without updating existent: does not exist or dysoweb core)
+                // Install the bundle (without updating current resource: does not exist or dysoweb core or not installable)
             	Long lSize = (Long)deployResources[i].getProperties().get("size");
             	if(lSize != null) {
             		size += lSize.intValue();
