@@ -74,8 +74,8 @@ public class DysowebServlet extends HttpServlet {
 			try {
 				preSerializeSessions();
 				fPlatform.stop();
-				// wait 20 seconds to have everything ok
-				Thread.sleep(20000);
+				// wait 5 seconds to have everything ok
+				Thread.sleep(5000);
 			} catch (BundleException e) {
 				// ignore
 			} catch (InterruptedException e) {
