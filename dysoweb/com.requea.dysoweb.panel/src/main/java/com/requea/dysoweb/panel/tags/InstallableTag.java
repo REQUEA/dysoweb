@@ -96,9 +96,9 @@ public class InstallableTag extends TagSupport {
         	tw.append("<a href=\"");
         	tw.append(request.getContextPath());
 	    	if(url == null || url.length() == 0) {
-	    		tw.append(url);
-	    	} else {
 	    		tw.append("/page");
+	    	} else {
+	    		tw.append(url);
 	    	}
         	tw.append("\"");
         	if(fStyle != null) {

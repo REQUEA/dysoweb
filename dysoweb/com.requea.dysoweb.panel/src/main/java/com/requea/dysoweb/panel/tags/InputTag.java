@@ -116,7 +116,7 @@ public class InputTag extends BodyTagSupport {
         } else if("RepoURL".equals(fName) && Boolean.TRUE.equals(request.getAttribute(InstallServlet.REGISTERED))) {
 			tw.append(Util.escapeHTML(value));
         } else if("AuthKey".equals(fName) && Boolean.TRUE.equals(request.getAttribute(InstallServlet.REGISTERED))) {
-            tw.append("<input size=\"30\"");
+            tw.append("<input size=\"34\"");
             if(fName != null) {
                 tw.append(" name=\"");
                 tw.append(fName);
