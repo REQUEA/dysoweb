@@ -1,3 +1,7 @@
+1.0.19 VERSION
+- OBR does not install of a bundle that has been deployed as reference:file
+- let 20 seconds of cool down during the shutdown phase to let last thread to terminate before everything goes down
+
 1.0.18 VERSION
 - Fixed a redirect problem with the panel.jsp page
 
