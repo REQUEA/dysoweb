@@ -1,7 +1,4 @@
 <?xml version="1.0"?>
-<!DOCTYPE web-app
-    PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN"
-    "http://java.sun.com/dtd/web-app_2_2.dtd">
     <!--
         //
         ========================================================================
@@ -17,12 +14,13 @@
         License. //
         ========================================================================
     -->
-<web-app>
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee" 
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+   xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee 
+                       http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" 
+   version="2.4">
+    
     <display-name>Dysoweb Sample WebApp</display-name>
-
-    <listener>
-        <listener-class>com.requea.dysoweb.DysowebListener</listener-class>
-    </listener>
 
     <!--  filter implementation -->
     <filter>
@@ -47,6 +45,10 @@
     </filter-mapping>
     <!--  end of filter implementation -->
 
+    <listener>
+        <listener-class>com.requea.dysoweb.DysowebListener</listener-class>
+    </listener>
+
 
     <!--
         servlet implementation <servlet>
@@ -63,26 +65,4 @@
 
 
     <!--  end of servlet implementation -->
-
-    <env-entry>
-        <env-entry-name>dysoweb.home</env-entry-name>
-        <env-entry-value>./dysoweb.home</env-entry-value>
-        <env-entry-type>java.lang.String</env-entry-type>
-    </env-entry>
-    <env-entry>
-        <env-entry-name>proxyHost</env-entry-name>
-        <env-entry-value></env-entry-value>
-        <env-entry-type>java.lang.String</env-entry-type>
-    </env-entry>
-    <env-entry>
-        <env-entry-name>proxyPort</env-entry-name>
-        <env-entry-value>-1</env-entry-value>
-        <env-entry-type>java.lang.Integer</env-entry-type>
-    </env-entry>
-    <env-entry>
-        <env-entry-name>proxyAuth</env-entry-name>
-        <env-entry-value></env-entry-value>
-        <env-entry-type>java.lang.String</env-entry-type>
-    </env-entry>
-
 </web-app>
