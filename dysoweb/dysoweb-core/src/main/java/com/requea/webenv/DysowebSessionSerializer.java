@@ -14,8 +14,10 @@ import java.io.OutputStream;
 import java.io.Serializable;
 
 import org.apache.felix.framework.Felix;
-import org.apache.felix.framework.searchpolicy.ModuleImpl;
-import org.apache.felix.moduleloader.IModule;
+import org.apache.felix.framework.ModuleImpl;
+
+//import org.apache.felix.framework. .searchpolicy. .ModuleImpl;
+//import org.apache.felix.moduleloader.IModule;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
@@ -125,8 +127,7 @@ public class DysowebSessionSerializer implements Externalizable {
 				// class loaded by bundle
 				Felix platform = DysowebServlet.getPlatform();
 				if(platform != null) {
-					IModule module = ((ModuleImpl.ModuleClassLoader)cl).getModule();
-					Bundle b = module.getBundle();
+					Bundle b = ((ModuleImpl.ModuleClassLoader)cl).getBundle();
 					// get the symbolic name
 					String symName = b == null ? null : b.getSymbolicName();
 					if(symName != null) {
@@ -142,6 +143,8 @@ public class DysowebSessionSerializer implements Externalizable {
 				// system class
 				writeUTF("system");
 			}
+			// system class
+			writeUTF("system");
 		}
 
 	}

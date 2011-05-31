@@ -29,11 +29,6 @@
 			<groupId>com.requea.dysoweb</groupId>
 			<artifactId>dysoweb-core</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>javax.jcr</groupId>
-			<artifactId>jcr</artifactId>
-			<version>1.0</version>
-		</dependency>
 		
 		<!--  dependencies used only to order properly pom build -->
 		<dependency>

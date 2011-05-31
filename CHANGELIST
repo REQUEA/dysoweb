@@ -1,5 +1,6 @@
 1.0.20 VERSION
 - cleanup in the web.xml deployment descriptor for containers that validate the web.xml (2.4 servlet spec)
+- upgrade to Felix 3.2.2
 
 1.0.19 VERSION
 - OBR does not install of a bundle that has been deployed as reference:file
