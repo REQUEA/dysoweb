@@ -1500,7 +1500,7 @@ public class RequestProcessor implements IWebProcessor {
 			// for BEA WLS, that is another story 
 			try {
 				// add at least the core jar file to compile taglibs
-				URL coreJar = fServletContext.getResource("/WEB-INF/lib/dysoweb-core-1.0.19.jar");
+				URL coreJar = fServletContext.getResource("/WEB-INF/lib/dysoweb-core-1.0.21.jar");
 				parentURL = new URL[] { coreJar };
 			} catch (MalformedURLException e) {
 				// use a default URL
