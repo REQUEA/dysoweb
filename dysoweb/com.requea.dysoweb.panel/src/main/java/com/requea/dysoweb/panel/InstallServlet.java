@@ -33,12 +33,16 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -108,7 +112,7 @@ public class InstallServlet extends HttpServlet {
 
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
-		fConfigDir = SecurityFilter.getConfigDir(config.getServletContext());
+		fConfigDir = getConfigDir(config.getServletContext());
 		fConfigDir.mkdirs();
 	}
 	
@@ -1631,5 +1635,24 @@ public class InstallServlet extends HttpServlet {
 
 	}
 
+	public File getConfigDir(ServletContext servletContext) {
+		File dir = null;
+		Thread th = Thread.currentThread();
+		ClassLoader cl = th.getContextClassLoader();
+		try {
+			th.setContextClassLoader(this.getClass().getClassLoader());
+			InitialContext ic = new InitialContext();
+			Context nc = (Context) ic.lookup("java:comp/env");
+			dir = new File((String) (nc.lookup("dysoweb.home")),"config");
+		} catch (NamingException nex) {
+			// unable to lookup the requea configuration file
+			dir = new File(SecurityFilter.getScratchDir(servletContext),"config");
+		} finally {
+			th.setContextClassLoader(cl);
+		}
+		return dir;
+	}
+	
+	
 }
 

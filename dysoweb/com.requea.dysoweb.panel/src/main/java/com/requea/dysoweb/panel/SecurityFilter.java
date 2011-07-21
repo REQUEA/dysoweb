@@ -104,21 +104,26 @@ public class SecurityFilter implements Filter {
 		}
 	}
 
-	public static File getConfigDir(ServletContext servletContext) {
+	public File getConfigDir(ServletContext servletContext) {
 		File dir = null;
+		Thread th = Thread.currentThread();
+		ClassLoader cl = th.getContextClassLoader();
 		try {
+			th.setContextClassLoader(this.getClass().getClassLoader());
 			InitialContext ic = new InitialContext();
 			Context nc = (Context) ic.lookup("java:comp/env");
 			dir = new File((String) (nc.lookup("dysoweb.home")),"config");
 		} catch (NamingException nex) {
 			// unable to lookup the requea configuration file
 			dir = new File(getScratchDir(servletContext),"config");
+		} finally {
+			th.setContextClassLoader(cl);
 		}
 		return dir;
 	}
 	
 	private static final String TMP_DIR = "javax.servlet.context.tempdir";
-	private static String getScratchDir(ServletContext context) {
+	public static String getScratchDir(ServletContext context) {
 		// First try the Servlet 2.2 javax.servlet.context.tempdir property
 		File scratchDir = (File) context.getAttribute(TMP_DIR);
 		if (scratchDir == null) {

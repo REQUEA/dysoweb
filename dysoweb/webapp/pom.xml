@@ -17,15 +17,6 @@
 			<artifactId>org.apache.felix.framework</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.felix</groupId>
-			<artifactId>org.apache.felix.shell</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.osgi.service.obr</artifactId>
-            <scope>provided</scope>
-        </dependency>
-		<dependency>
 			<groupId>com.requea.dysoweb</groupId>
 			<artifactId>dysoweb-core</artifactId>
 		</dependency>
