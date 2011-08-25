@@ -108,11 +108,16 @@
 	            <artifactId>com.requea.dysoweb.log4j</artifactId>
 	            <version>${version}</version>
 	        </dependency>
-	        <dependency>
-	            <groupId>com.requea.dysoweb</groupId>
-	            <artifactId>com.requea.dysoweb.commons-logging</artifactId>
-	            <version>${version}</version>
-	        </dependency>
+            <dependency>
+                <groupId>com.requea.dysoweb</groupId>
+                <artifactId>com.requea.dysoweb.commons-logging</artifactId>
+                <version>${version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.requea.dysoweb</groupId>
+                <artifactId>com.requea.dysoweb.commons-httpclient</artifactId>
+                <version>${version}</version>
+            </dependency>
 
 
 	        <dependency>

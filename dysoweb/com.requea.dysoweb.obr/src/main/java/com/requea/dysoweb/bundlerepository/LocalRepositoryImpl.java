@@ -260,7 +260,7 @@ public class LocalRepositoryImpl implements Repository
                 {
                     RequirementImpl req = new RequirementImpl();
                     req.setMultiple("false");
-                    req.setOptional(Boolean.toString(imports[impIdx].isOptional()));
+                    req.setOptional(imports[impIdx].isOptional() ? "true" : "false");
                     req.setName("package");
                     req.addText("Import package " + imports[impIdx].toString());
                     

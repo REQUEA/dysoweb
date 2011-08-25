@@ -40,6 +40,11 @@ import java.util.zip.ZipInputStream;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.osgi.service.obr.Capability;
 import org.osgi.service.obr.Repository;
 import org.osgi.service.obr.Requirement;
@@ -63,20 +68,22 @@ public class RepositoryImpl implements Repository
 	private SSLSocketFactory m_sslSocketFactory;
 	private String m_proxyAuth;
 	private Proxy m_proxy;
+	private HttpClient m_httpClient;
+	private HttpHost m_targetHost;
 
-    public RepositoryImpl(RepositoryAdminImpl repoAdmin, URL url, Logger logger, Proxy proxy, String proxyAuth, SSLSocketFactory sslFactory) throws Exception
+    public RepositoryImpl(RepositoryAdminImpl repoAdmin, URL url, Logger logger, HttpClient httpClient, HttpHost targetHost) throws Exception
     {
-    	this(repoAdmin, url, Integer.MAX_VALUE, logger, proxy, proxyAuth, sslFactory);
+    	this(repoAdmin, url, Integer.MAX_VALUE, logger, httpClient, targetHost);
     }
 	
-    public RepositoryImpl(RepositoryAdminImpl repoAdmin, URL url, final int hopCount, Logger logger, Proxy proxy, String proxyAuth, SSLSocketFactory sslFactory) throws Exception
+    public RepositoryImpl(RepositoryAdminImpl repoAdmin, URL url, final int hopCount, Logger logger, HttpClient httpClient, HttpHost targetHost) throws Exception
     {
         m_repoAdmin = repoAdmin;
         m_url = url;
         m_logger = logger;
-        m_proxy = proxy;
-        m_proxyAuth = proxyAuth;
-        m_sslSocketFactory = sslFactory;
+        m_httpClient = httpClient;
+        m_targetHost = targetHost;
+        
         try
         {
             AccessController.doPrivileged(new PrivilegedExceptionAction()
@@ -90,7 +97,7 @@ public class RepositoryImpl implements Repository
         }
         catch (PrivilegedActionException ex)
         {
-            throw (Exception) ex.getCause();
+            throw ex.getException();
         }
     }
 
@@ -190,6 +197,8 @@ public class RepositoryImpl implements Repository
         return null;
     }
 
+    
+    
     private void parseRepositoryFile(int hopCount) throws Exception
     {
         InputStream is = null;
@@ -199,26 +208,13 @@ public class RepositoryImpl implements Repository
         {
             // Do it the manual way to have a chance to
             // set request properties as proxy auth (EW).
-            URLConnection conn = m_proxy == null ? m_url.openConnection() : m_url.openConnection(m_proxy); 
-
-            // Support for http proxy authentication
-            if ((m_proxyAuth != null) && (m_proxyAuth.length() > 0))
-            {
-                if ("http".equals(m_url.getProtocol()) ||
-                    "https".equals(m_url.getProtocol()))
-                {
-                    String base64 = Util.base64Encode(m_proxyAuth);
-                    conn.setRequestProperty(
-                        "Proxy-Authorization", "Basic " + base64);
-                }
-            }
-            // set the client certificate if any
-            if(m_sslSocketFactory != null && conn instanceof HttpsURLConnection) {
-            	((HttpsURLConnection)conn).setSSLSocketFactory(m_sslSocketFactory);
-            }
-            is = openStream(m_url, conn, "repository.xml");
-            if (is != null)
-            {
+			HttpGet httpget = new HttpGet(m_url.toString());
+			HttpResponse response = m_httpClient.execute(m_targetHost, httpget);
+			HttpEntity entity = response.getEntity();
+			if (entity != null) {
+            
+	            is = entity.getContent();
+        	
                 // Create the parser Kxml
                 XmlCommonHandler handler = new XmlCommonHandler(m_logger);
                 Object factory = new Object()
@@ -251,7 +247,7 @@ public class RepositoryImpl implements Repository
                 KXml2SAXParser parser;
                 parser = new KXml2SAXParser(br);
                 parser.parseXML(handler);
-
+                is.close();
                 // resolve referrals
                 hopCount--;
                 if (hopCount > 0 && m_referrals != null)
@@ -287,39 +283,6 @@ public class RepositoryImpl implements Repository
         }
     }
 
-	public static Proxy getProxy(String host, int port) {
-		return Proxy.NO_PROXY;
-	}
 	
-	public static InputStream openStream(URL repoURL, URLConnection cnx, String path) throws IOException {
-		if(repoURL.getPath().endsWith("zip")) {
-			if(repoURL.getProtocol().equals("file")) {
-				// use a zip file, since this is way faster
-				File f = new File(repoURL.getFile());
-				ZipFile zf = new ZipFile(f);
-				ZipEntry ze = zf.getEntry(path);
-				if(ze != null) {
-					return zf.getInputStream(ze);
-				} else {
-					return null;
-				}
-			} else {
-	            ZipInputStream zin = new ZipInputStream(cnx.getInputStream());
-	            ZipEntry entry = zin.getNextEntry();
-	            while (entry != null)
-	            {
-	                if (entry.getName().equalsIgnoreCase(path))
-	                {
-	                    return zin;
-	                }
-	                entry = zin.getNextEntry();
-	            }
-	            // nothing found
-	            return null;
-			}
-		} else {
-			return cnx.getInputStream();
-		}
-	}
 	
 }

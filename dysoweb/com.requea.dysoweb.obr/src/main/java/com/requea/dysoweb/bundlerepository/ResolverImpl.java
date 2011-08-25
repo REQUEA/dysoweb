@@ -27,6 +27,11 @@ import java.util.*;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -60,20 +65,17 @@ public class ResolverImpl implements MonitoredResolver
     private Map m_reasonMap = new HashMap();
     private Map m_unsatisfiedMap = new HashMap();
     private boolean m_resolved = false;
-    private SSLSocketFactory m_sslSocketFactory;
-	private String m_proxyAuth;
-	private Proxy m_proxy;
+	private HttpClient m_httpClient;
+	private HttpHost m_targetHost;
 	
 
-    public ResolverImpl(BundleContext context, RepositoryAdmin admin, Logger logger, Proxy proxy, String proxyAuth, SSLSocketFactory sslSocketFactory)
+    public ResolverImpl(BundleContext context, RepositoryAdmin admin, Logger logger, HttpClient httpClient, HttpHost targetHost)
     {
         m_context = context;
         m_admin = admin;
         m_logger = logger;
-        
-        m_sslSocketFactory = sslSocketFactory;
-        m_proxy = proxy;
-        m_proxyAuth = proxyAuth;
+        m_httpClient = httpClient;
+        m_targetHost = targetHost;
     }
 
     public synchronized void add(Resource resource)
@@ -509,6 +511,13 @@ public class ResolverImpl implements MonitoredResolver
             // resources being deployed.
             // do not override bundles that have been installed as  reference:file
             if ((localResource != null) && 
+            		!isDysowebCore(localResource) && localResource.getBundle().getLocation().startsWith("reference:file") && 
+                isResourceUpdatable(localResource, deployResources[i], deployResources)) {
+            	// trying to update a ressource already deployed as start reference
+            	throw new IllegalStateException("Bundle " + localResource.getSymbolicName() + " is already deployed as reference:file. Cannot install new bundle. Please check your configuration");
+            }
+            
+            if ((localResource != null) && 
             		!isDysowebCore(localResource) &&
             		(localResource.getBundle() == null || !localResource.getBundle().getLocation().startsWith("reference:file")) && 
                 isResourceUpdatable(localResource, deployResources[i], deployResources))
@@ -580,39 +589,33 @@ public class ResolverImpl implements MonitoredResolver
 	                    try
 	                    {
 	                    	URL url = deployResources[i].getURL();
-	                    	URLConnection con = m_proxy == null ? url.openConnection() : url.openConnection(m_proxy);
-	                        // Support for http proxy authentication
-	                        if ((m_proxyAuth != null) && (m_proxyAuth.length() > 0))
-	                        {
-	                            if ("http".equals(url.getProtocol()) ||
-	                                "https".equals(url.getProtocol()))
-	                            {
-	                                String base64 = Util.base64Encode(m_proxyAuth);
-	                                con.setRequestProperty(
-	                                    "Proxy-Authorization", "Basic " + base64);
-	                            }
-	                        }
-	                    	if(m_sslSocketFactory != null && con instanceof HttpsURLConnection) {
-	                    		((HttpsURLConnection)con).setSSLSocketFactory(m_sslSocketFactory);
-	                    	}
-	                    	InputStream is = con.getInputStream();
-	                    	long lSize = getResourceSize(deployResources[i]);
-	                    	IProgressMonitor subMonitor = new SubProgressMonitor(groupMonitor,(int)lSize);
-	                    	subMonitor.setTaskName("Installing " + deployResources[i].getSymbolicName() + " " + deployResources[i].getVersion().toString());
-	                    	// always stop the bundle if this is a local resource unless this is ourself (...)
-	                    	Bundle localBundle = localResource.getBundle();
-                            boolean doStartBundle = start;
-	                    	// then update the bundle
-	                    	localBundle.update(
-	                        		new ProgressMonitorInputStream(is, 
-	                        				subMonitor,
-	                        				lSize));
-	                        // If necessary, save the updated bundle to be
-	                        // started later.
-	                    	if (doStartBundle && !startList.contains(localBundle))
-	                        {
-	                            startList.add(localBundle);
-	                        }
+	                    	
+	            			HttpGet httpget = new HttpGet(url.toString());
+	            			HttpResponse response = m_httpClient.execute(m_targetHost, httpget);
+	            			HttpEntity entity = response.getEntity();
+	            			if (entity != null) {
+	                        
+	            	            InputStream is = entity.getContent();
+	                    	
+		                    	long lSize = getResourceSize(deployResources[i]);
+		                    	IProgressMonitor subMonitor = new SubProgressMonitor(groupMonitor,(int)lSize);
+		                    	subMonitor.setTaskName("Installing " + deployResources[i].getSymbolicName() + " " + deployResources[i].getVersion().toString());
+		                    	// always stop the bundle if this is a local resource unless this is ourself (...)
+		                    	Bundle localBundle = localResource.getBundle();
+	                            boolean doStartBundle = start;
+		                    	// then update the bundle
+		                    	localBundle.update(
+		                        		new ProgressMonitorInputStream(is, 
+		                        				subMonitor,
+		                        				lSize));
+		                        // If necessary, save the updated bundle to be
+		                        // started later.
+		                    	if (doStartBundle && !startList.contains(localBundle))
+		                        {
+		                            startList.add(localBundle);
+		                        }
+		                    	is.close();
+	            			}
 	                    }
 	                    catch (Exception ex)
 	                    {
@@ -640,38 +643,28 @@ public class ResolverImpl implements MonitoredResolver
 	                    URL url = repoURL.getPath().endsWith("zip") ? repoURL : res.getURL();
 	                    if (url != null)
 	                    {
-	                    	URLConnection con = m_proxy == null ? url.openConnection() : url.openConnection(m_proxy);
-	                        // Support for http proxy authentication
-	                        if ((m_proxyAuth != null) && (m_proxyAuth.length() > 0))
-	                        {
-	                            if ("http".equals(url.getProtocol()) ||
-	                                "https".equals(url.getProtocol()))
-	                            {
-	                                String base64 = Util.base64Encode(m_proxyAuth);
-	                                con.setRequestProperty(
-	                                    "Proxy-Authorization", "Basic " + base64);
-	                            }
-	                        }
-	                    	if(m_sslSocketFactory != null && con instanceof HttpsURLConnection) {
-	                    		((HttpsURLConnection)con).setSSLSocketFactory(m_sslSocketFactory);
-	                    	}
-	                    	InputStream is = RepositoryImpl.openStream(repoURL, con, res.getURI());
-	                    	
-	                    	long lSize = getResourceSize(deployResources[i]);
-	                    	IProgressMonitor subMonitor = new SubProgressMonitor(groupMonitor, (int)lSize);
-	                    	subMonitor.setTaskName("Installing " + deployResources[i].getSymbolicName() + " " + deployResources[i].getVersion().toString());
-	                        Bundle bundle = m_context.installBundle(
-	                            "obr://"
-	                            + deployResources[i].getSymbolicName()
-	                            + "/" + System.currentTimeMillis(),
-	                            new ProgressMonitorInputStream(is, subMonitor, lSize));
-	
-	                        // If necessary, save the installed bundle to be
-	                        // started later.
-	                        if (start)
-	                        {
-	                            startList.add(bundle);
-	                        }
+	            			HttpGet httpget = new HttpGet(url.toString());
+	            			HttpResponse response = m_httpClient.execute(m_targetHost, httpget);
+	            			HttpEntity entity = response.getEntity();
+	            			if (entity != null) {
+	                        
+	            	            InputStream is = entity.getContent();
+		                    	long lSize = getResourceSize(deployResources[i]);
+		                    	IProgressMonitor subMonitor = new SubProgressMonitor(groupMonitor, (int)lSize);
+		                    	subMonitor.setTaskName("Installing " + deployResources[i].getSymbolicName() + " " + deployResources[i].getVersion().toString());
+		                        Bundle bundle = m_context.installBundle(
+		                            "obr://"
+		                            + deployResources[i].getSymbolicName()
+		                            + "/" + System.currentTimeMillis(),
+		                            new ProgressMonitorInputStream(is, subMonitor, lSize));
+		
+		                        // If necessary, save the installed bundle to be
+		                        // started later.
+		                        if (start)
+		                        {
+		                            startList.add(bundle);
+		                        }
+	            			}
 	                    }
 	                }
 	                catch (Exception ex)

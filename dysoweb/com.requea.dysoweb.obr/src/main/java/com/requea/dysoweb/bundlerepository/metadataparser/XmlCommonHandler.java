@@ -774,7 +774,7 @@ public class XmlCommonHandler implements KXml2SAXHandler
         catch (Throwable e)
         {
             m_logger.log(Logger.LOG_ERROR, "Error parsing repository metadata", e);
-            throw new Exception(e);
+            throw new Exception(e.getMessage());
         }
 
         trace("END/ (" + m_lineNumber + "," + m_columnNumber + "):" + uri + ":" + qName);
