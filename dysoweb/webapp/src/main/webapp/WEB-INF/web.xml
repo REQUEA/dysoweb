@@ -49,19 +49,11 @@
         <listener-class>com.requea.dysoweb.DysowebListener</listener-class>
     </listener>
 
-
-    <!--
-        servlet implementation <servlet>
-        <servlet-name>dysoweb</servlet-name>
-        <servlet-class>com.requea.dysoweb.DysowebServlet</servlet-class>
-        <load-on-startup>1</load-on-startup> </servlet>
-
-        <servlet-mapping> <servlet-name>dysoweb</servlet-name>
-        <url-pattern>/</url-pattern> </servlet-mapping>
-
-        <servlet-mapping> <servlet-name>dysoweb</servlet-name>
-        <url-pattern>*.jsp</url-pattern> </servlet-mapping>
-    -->
+     <env-entry>
+        <env-entry-name>dysoweb.home</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>./dysoweb.home</env-entry-value>
+    </env-entry>
 
 
     <!--  end of servlet implementation -->

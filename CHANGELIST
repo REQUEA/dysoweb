@@ -1,3 +1,6 @@
+1.0.22 VERSION
+- support for NTLM auth proxies (using httpclient)
+
 1.0.21 VERSION
 - fix pb JNDI access of config directory in some web containers
 
