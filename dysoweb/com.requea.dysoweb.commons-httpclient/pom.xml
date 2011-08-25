@@ -3,11 +3,11 @@
     <parent>
         <artifactId>dysoweb</artifactId>
 	    <groupId>com.requea.dysoweb</groupId>
-		<version>1.0.22</version>
+		<version>1.0.23-SNAPSHOT</version>
     </parent>
     <groupId>com.requea.dysoweb</groupId>
     <artifactId>com.requea.dysoweb.commons-httpclient</artifactId>
-    <version>1.0.22</version>
+    <version>1.0.23-SNAPSHOT</version>
     <packaging>bundle</packaging>
     <name>Requea Dysoweb Commons HttpClient Wrapper</name>
     <dependencies>
