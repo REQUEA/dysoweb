@@ -104,6 +104,7 @@ import com.requea.dysoweb.panel.utils.Base64;
 import com.requea.dysoweb.panel.utils.ISO8601DateTimeFormat;
 import com.requea.dysoweb.panel.utils.Util;
 import com.requea.dysoweb.service.obr.ClientAuthRepositoryAdmin;
+import com.requea.dysoweb.service.obr.HttpClientExecutor;
 import com.requea.dysoweb.service.obr.MonitoredResolver;
 import com.requea.dysoweb.service.obr.IProgressMonitor;
 import com.requea.dysoweb.service.obr.SubProgressMonitor;
@@ -138,7 +139,6 @@ public class InstallServlet extends HttpServlet {
 	private HttpClient m_httpClient;
 	private HttpHost m_targetHost;
 	
-
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		fConfigDir = getConfigDir(config.getServletContext());
@@ -165,7 +165,20 @@ public class InstallServlet extends HttpServlet {
 		// ssl client certificate and proxy settings
 		if(repo instanceof ClientAuthRepositoryAdmin) {
 			ClientAuthRepositoryAdmin clr = (ClientAuthRepositoryAdmin)repo;
-			clr.setHttp(m_httpClient, m_targetHost);
+			clr.setHttp(new HttpClientExecutor() {
+				
+				public InputStream executeGet(String path) throws IOException {
+					HttpGet httpget = new HttpGet(path);
+					HttpResponse response = m_httpClient.execute(m_targetHost, httpget);
+					HttpEntity entity = response.getEntity();
+					if (entity != null) {
+			            InputStream is = entity.getContent();
+			            return is;
+					} else {
+						return null;
+					}
+				}
+			});
 		} else {
 			if("manual".equals(settings) && proxyHost != null && proxyHost.length() > 0) {
 				// force system wide proxy settings
@@ -278,7 +291,7 @@ public class InstallServlet extends HttpServlet {
 			        }
 			        if(repoURL.startsWith("https")) {
 			        	// update server registration if not already done
-			        	updateServerRegistration(authKey, strPassword);
+			        	updateServerRegistration(repoURL, authKey, strPassword);
 			        }
 				}
 				
@@ -370,7 +383,7 @@ public class InstallServlet extends HttpServlet {
 		        if(repoURL.startsWith("https")) {
 		        	// update server registration if not already done
 		        	try {
-						updateServerRegistration(newAuthKey, null);
+						updateServerRegistration(repoURL, newAuthKey, null);
 					} catch (Exception e) {
 						request.setAttribute(ErrorTag.ERROR,
 								"Unable to register server: " + e.getMessage());
@@ -578,7 +591,7 @@ public class InstallServlet extends HttpServlet {
 			request.getSession().setAttribute(INSTALL_STATUS, status);
 
 			// launch the trhead to install the bundles
-			Thread th = new Thread(new Installer(context, pa, repo, installables, monitor, status));
+			Thread th = new Thread(new Installer(elConfig, context, pa, repo, installables, monitor, status));
 			th.start();
 			
 			request.setAttribute(INSTALLABLE, installedResource);
@@ -655,14 +668,16 @@ public class InstallServlet extends HttpServlet {
 		private IProgressMonitor fProgressMonitor;
 		private Status fStatus;
 		private PackageAdmin fPackageAdmin;
+		private Element fConfig;
 		
-		Installer(BundleContext context, PackageAdmin packageAdmin, RepositoryAdmin repo, Installable[] resources, IProgressMonitor monitor, Status status) {
+		Installer(Element elConfig, BundleContext context, PackageAdmin packageAdmin, RepositoryAdmin repo, Installable[] resources, IProgressMonitor monitor, Status status) {
 			fContext = context;
 			fResources = resources;
 			fRepo = repo;
 			fPackageAdmin = packageAdmin;
 			fProgressMonitor = monitor;
 			fStatus = status;
+			fConfig = elConfig;
 		}
 		
 		public void run() {
@@ -825,7 +840,7 @@ public class InstallServlet extends HttpServlet {
 					elResource.setAttribute("date", format.format(new Date()));
 				}
 	            // register the new application if something was installed
-	        	registerInstalledApplication(installable, elResource);
+	        	registerInstalledApplication(fConfig, installable, elResource);
 	        }
 		}
 				
@@ -858,9 +873,8 @@ public class InstallServlet extends HttpServlet {
     }
 	
 	
-	private void registerInstalledApplication(Installable installable, Element elResource) throws Exception {
+	private void registerInstalledApplication(Element elConfig, Installable installable, Element elResource) throws Exception {
 		
-    	Element elConfig = getServerConfig(fConfigDir);
 		String repoURL = XMLUtils.getChildText(elConfig, "RepoURL");
 		if(repoURL != null) {
 			URL url = new URL(repoURL);
@@ -868,6 +882,8 @@ public class InstallServlet extends HttpServlet {
 				// not registrable
 				return;
 			}
+		} else {
+			repoURL = DEFAULT_REPO;
 		}
 		String fileName = installable.getID();
 		String version = installable.getVersion();
@@ -920,13 +936,16 @@ public class InstallServlet extends HttpServlet {
         w.write(xml);
         w.close();
 
-		HttpPost httppost = new HttpPost("/dysoweb/repo/contents/registerinstall");
+        URL url = new URL(repoURL);
+		HttpPost httppost = new HttpPost(new URL(url, "registerinstall").toString());
 
 		List formparams = new ArrayList();
         
         // post install info the the repo server
 		// retrieve the list of applications that can be installed
-		formparams.add(new BasicNameValuePair("feature", installable.getSysId()));
+		if(installable.getSysId() != null) {
+			formparams.add(new BasicNameValuePair("feature", installable.getSysId()));
+		}
 		formparams.add(new BasicNameValuePair("LocalIP", InetAddress.getLocalHost().getHostAddress()));
 		formparams.add(new BasicNameValuePair("java.version", System.getProperty("java.version")));
 		formparams.add(new BasicNameValuePair("java.vendor", System.getProperty("java.vendor")));
@@ -1342,8 +1361,8 @@ public class InstallServlet extends HttpServlet {
 	private DefaultHttpClient createHttpClient(
 			SchemeRegistry schemeRegistry) {
 		HttpParams params = new BasicHttpParams();
-		HttpConnectionParams.setConnectionTimeout(params, 30 * 1000);
-		HttpConnectionParams.setSoTimeout(params, 30 * 1000);
+		HttpConnectionParams.setConnectionTimeout(params, 120 * 1000);
+		HttpConnectionParams.setSoTimeout(params, 120 * 1000);
 		HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);	
 		ClientConnectionManager cm = new ThreadSafeClientConnManager(schemeRegistry);		
 		DefaultHttpClient httpClient = new DefaultHttpClient(cm, params);
@@ -1480,16 +1499,20 @@ public class InstallServlet extends HttpServlet {
 	
 
 
-	private void updateServerRegistration(String authKey, String password) throws Exception {
+	private void updateServerRegistration(String repoURL, String authKey, String password) throws Exception {
 
-		HttpPost httppost;
 		// check if there is a certificate?
 		File fileCert = new File(fConfigDir, "dysoweb.p12"); 
+
+		URL url = new URL(repoURL);
+		// check if there is a certificate?
 		if(fileCert.exists()) {
-			httppost = new HttpPost("/dysoweb/repo/contents/update");
+			url = new URL(url, "update");
 		} else {
-			httppost = new HttpPost("/dysoweb/repo/init");
+			url = new URL(url, "../init");
 		}
+		
+		HttpPost httppost = new HttpPost(url.toString());
 
 		List formparams = new ArrayList();
 		

@@ -18,9 +18,7 @@
  */
 package com.requea.dysoweb.bundlerepository;
 
-import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
-import java.net.Proxy;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,15 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import javax.net.ssl.SSLSocketFactory;
-
-import org.apache.http.HttpHost;
-import org.apache.http.client.HttpClient;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Filter;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.service.obr.Repository;
-import org.osgi.service.obr.RepositoryAdmin;
 import org.osgi.service.obr.Resolver;
 import org.osgi.service.obr.Resource;
 
@@ -47,9 +40,8 @@ import com.requea.dysoweb.bundlerepository.RepositoryImpl;
 import com.requea.dysoweb.bundlerepository.ResolverImpl;
 import com.requea.dysoweb.bundlerepository.ResourceComparator;
 import com.requea.dysoweb.service.obr.ClientAuthRepositoryAdmin;
+import com.requea.dysoweb.service.obr.HttpClientExecutor;
 
-import org.osgi.framework.*;
-import org.osgi.service.obr.*;
 
 public class RepositoryAdminImpl implements ClientAuthRepositoryAdmin
 {
@@ -61,9 +53,7 @@ public class RepositoryAdminImpl implements ClientAuthRepositoryAdmin
 
     // Reusable comparator for sorting resources by name.
     private Comparator m_nameComparator = new ResourceComparator();
-	private URL m_repoURL;
-	private HttpClient m_httpClient;
-	private HttpHost m_targetHost;
+	private HttpClientExecutor m_executor;
 
     public static final String REPOSITORY_URL_PROP = "obr.repository.url";
     public static final String EXTERN_REPOSITORY_TAG = "extern-repositories";
@@ -91,7 +81,7 @@ public class RepositoryAdminImpl implements ClientAuthRepositoryAdmin
         // If the repository URL is a duplicate, then we will just
         // replace the existing repository object with a new one,
         // which is effectively the same as refreshing the repository.
-        Repository repo = new RepositoryImpl(this, url, hopCount, m_logger, m_httpClient, m_targetHost);
+        Repository repo = new RepositoryImpl(this, url, hopCount, m_logger, m_executor);
         m_repoMap.put(url, repo);
         return repo;
     }
@@ -128,7 +118,7 @@ public class RepositoryAdminImpl implements ClientAuthRepositoryAdmin
             initialize();
         }
 
-        return new ResolverImpl(m_context, this, m_logger, m_httpClient, m_targetHost);
+        return new ResolverImpl(m_context, this, m_logger, m_executor);
     }
 
     public synchronized Resource[] discoverResources(String filterExpr)
@@ -215,7 +205,7 @@ public class RepositoryAdminImpl implements ClientAuthRepositoryAdmin
             URL url = (URL) m_urlList.get(i);
             try
             {
-                Repository repo = new RepositoryImpl(this, url, m_logger, m_httpClient, m_targetHost);
+                Repository repo = new RepositoryImpl(this, url, m_logger, m_executor);
                 if (repo != null)
                 {
                     m_repoMap.put(url, repo);
@@ -233,8 +223,8 @@ public class RepositoryAdminImpl implements ClientAuthRepositoryAdmin
     }
 
 
-	public void setHttp(HttpClient httpClient, HttpHost targetHost) {
-		m_httpClient = httpClient;
-		m_targetHost = targetHost;
+
+	public void setHttp(HttpClientExecutor executor) {
+		m_executor = executor;
 	}
 }

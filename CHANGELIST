@@ -1,3 +1,7 @@
+1.0.23 VERSION
+- better control of OBR version to avoid conflicts with existing versions
+- use of http-client for full support of NTLM proxies
+
 1.0.22 VERSION
 - support for NTLM auth proxies (using httpclient)
 

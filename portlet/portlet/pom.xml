@@ -55,11 +55,6 @@
 			<scope>provided</scope>
 		</dependency>
         <dependency>
-            <groupId>com.requea.dysoweb</groupId>
-            <artifactId>com.requea.dysoweb.commons-logging</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>com.requea.dysoweb.portlet</groupId>
             <artifactId>com.requea.dysoweb.portlet.processor</artifactId>
             <scope>provided</scope>
@@ -150,13 +145,6 @@
 										${project.build.directory}/dysoweb/WEB-INF/bundle
 									</outputDirectory>
 								</artifactItem>
-                                <artifactItem>
-                                    <groupId>com.requea.dysoweb</groupId>
-                                    <artifactId>com.requea.dysoweb.commons-logging</artifactId>
-                                    <type>jar</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>${project.build.directory}/dysoweb/WEB-INF/bundle</outputDirectory>
-                                </artifactItem>
                                 <artifactItem>
                                     <groupId>com.requea.dysoweb.portlet</groupId>
                                     <artifactId>com.requea.dysoweb.portlet.processor</artifactId>

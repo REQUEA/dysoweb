@@ -54,11 +54,6 @@
 			<artifactId>com.requea.dysoweb.api</artifactId>
    			<scope>provided</scope>
 		</dependency>
-        <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
 	    <dependency>
 			<groupId>net.sf.kxml</groupId>
 			<artifactId>kxml2</artifactId>
@@ -69,12 +64,6 @@
             <artifactId>com.requea.dysoweb.service.obr</artifactId>
             <scope>provided</scope>
             <version>${version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.1.2</version>
-            <scope>provided</scope>
         </dependency>
 	</dependencies>
 	<build>
@@ -118,6 +107,7 @@
 			            <Bundle-Activator>com.requea.dysoweb.bundlerepository.Activator</Bundle-Activator>
                         <Bundle-ClassPath>.,lib/kxml2-2.2.2.jar</Bundle-ClassPath>
                         <Import-Package>
+                            com.requea.dysoweb.service.obr;version="2.2.23",
                         	!sun.*,!com.sun.*,*
                         </Import-Package>
                         <Include-Resource>lib=target/lib</Include-Resource>

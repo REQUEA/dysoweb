@@ -15,8 +15,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -524,8 +522,6 @@ public class XMLUtils {
 	static private class MyEntityResolver implements EntityResolver {
 
 	    // Logger
-	    private Log log = LogFactory.getLog(MyEntityResolver.class);
-
 	    public InputSource resolveEntity(String publicId, String systemId)
 	            throws SAXException {
 	        for (int i = 0; i < CACHED_DTD_PUBLIC_IDS.length; i++) {
@@ -541,9 +537,6 @@ public class XMLUtils {
 	                return isrc;
 	            }
 	        }
-	        if (log.isDebugEnabled())
-	            log.debug("Resolve entity failed" + publicId + " " + systemId);
-	        log.error("jsp.error.parse.xml.invalidPublicId" + publicId);
 	        return null;
 	    }
 	}

@@ -49,11 +49,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>requeabuild</groupId>
             <artifactId>jcommon</artifactId>
             <version>1.0.5</version>

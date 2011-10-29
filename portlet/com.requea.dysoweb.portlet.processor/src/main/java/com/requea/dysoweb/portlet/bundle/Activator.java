@@ -4,8 +4,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -20,7 +18,6 @@ import com.requea.dysoweb.portlet.processor.PortletProcessor;
 public class Activator implements BundleActivator {
 
 	PortletProcessor fProcessor;
-    private static Log fLog = LogFactory.getLog(Activator.class);
 	
 	public void start(BundleContext context) throws Exception {
 		
@@ -39,7 +36,7 @@ public class Activator implements BundleActivator {
 						try {
 							fProcessor.deploy(bundle);
 						} catch(Exception e) {
-							fLog.error("Unable to deploy bundle " + bundle.getBundleId(), e);
+							System.err.println("Unable to deploy bundle " + bundle.getBundleId() + " " + e.getMessage());
 						}
 					}
 					break;
@@ -47,7 +44,7 @@ public class Activator implements BundleActivator {
 					try {
 						fProcessor.undeploy(bundle);
 					} catch(Exception e) {
-						fLog.error("Unable to undeploy bundle " + bundle.getBundleId(), e);
+						System.err.println("Unable to deploy bundle " + bundle.getBundleId() + " " + e.getMessage());
 					}
 					break;
 				}				

@@ -38,12 +38,6 @@
             <artifactId>org.osgi.service.obr</artifactId>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.1.2</version>
-            <scope>provided</scope>
-        </dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -57,7 +51,7 @@
                         <Bundle-Name>Requea Dysoweb OBR API</Bundle-Name>                    
                         <Bundle-Vendor>Requea.com</Bundle-Vendor>
 			            <Bundle-SymbolicName>${pom.artifactId}</Bundle-SymbolicName>
-                        <Export-Package>com.requea.dysoweb.service.obr</Export-Package>
+                        <Export-Package>com.requea.dysoweb.service.obr;version="2.2.23"</Export-Package>
 					</instructions>
 				</configuration>
 			</plugin>

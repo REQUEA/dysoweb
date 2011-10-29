@@ -19,32 +19,18 @@
 package com.requea.dysoweb.bundlerepository;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
-import java.net.Proxy;
 import java.net.URL;
-import java.net.URLConnection;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSocketFactory;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
 import org.osgi.service.obr.Capability;
 import org.osgi.service.obr.Repository;
 import org.osgi.service.obr.Requirement;
@@ -52,6 +38,7 @@ import org.osgi.service.obr.Resource;
 
 import com.requea.dysoweb.bundlerepository.metadataparser.XmlCommonHandler;
 import com.requea.dysoweb.bundlerepository.metadataparser.kxmlsax.KXml2SAXParser;
+import com.requea.dysoweb.service.obr.HttpClientExecutor;
 
 public class RepositoryImpl implements Repository
 {
@@ -65,24 +52,19 @@ public class RepositoryImpl implements Repository
 
     // Reusable comparator for sorting resources by name.
     private ResourceComparator m_nameComparator = new ResourceComparator();
-	private SSLSocketFactory m_sslSocketFactory;
-	private String m_proxyAuth;
-	private Proxy m_proxy;
-	private HttpClient m_httpClient;
-	private HttpHost m_targetHost;
+	private HttpClientExecutor m_executor;
 
-    public RepositoryImpl(RepositoryAdminImpl repoAdmin, URL url, Logger logger, HttpClient httpClient, HttpHost targetHost) throws Exception
+    public RepositoryImpl(RepositoryAdminImpl repoAdmin, URL url, Logger logger, HttpClientExecutor executor) throws Exception
     {
-    	this(repoAdmin, url, Integer.MAX_VALUE, logger, httpClient, targetHost);
+    	this(repoAdmin, url, Integer.MAX_VALUE, logger, executor);
     }
 	
-    public RepositoryImpl(RepositoryAdminImpl repoAdmin, URL url, final int hopCount, Logger logger, HttpClient httpClient, HttpHost targetHost) throws Exception
+    public RepositoryImpl(RepositoryAdminImpl repoAdmin, URL url, final int hopCount, Logger logger, HttpClientExecutor executor) throws Exception
     {
         m_repoAdmin = repoAdmin;
         m_url = url;
         m_logger = logger;
-        m_httpClient = httpClient;
-        m_targetHost = targetHost;
+        m_executor = executor;
         
         try
         {
@@ -208,12 +190,13 @@ public class RepositoryImpl implements Repository
         {
             // Do it the manual way to have a chance to
             // set request properties as proxy auth (EW).
-			HttpGet httpget = new HttpGet(m_url.toString());
-			HttpResponse response = m_httpClient.execute(m_targetHost, httpget);
-			HttpEntity entity = response.getEntity();
-			if (entity != null) {
-            
-	            is = entity.getContent();
+        	if(m_url.getProtocol().startsWith("http")) {
+        		is = m_executor.executeGet(m_url.toString());
+        	} else {
+        		is = m_url.openStream();
+        	}
+        	
+        	if(is != null) {
         	
                 // Create the parser Kxml
                 XmlCommonHandler handler = new XmlCommonHandler(m_logger);

@@ -19,19 +19,9 @@
 package com.requea.dysoweb.bundlerepository;
 
 import java.io.InputStream;
-import java.net.Proxy;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.*;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSocketFactory;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -47,6 +37,7 @@ import org.osgi.service.packageadmin.PackageAdmin;
 import com.requea.dysoweb.bundlerepository.LocalRepositoryImpl;
 import com.requea.dysoweb.bundlerepository.Util;
 import com.requea.dysoweb.bundlerepository.LocalRepositoryImpl.LocalResourceImpl;
+import com.requea.dysoweb.service.obr.HttpClientExecutor;
 import com.requea.dysoweb.service.obr.IProgressMonitor;
 import com.requea.dysoweb.service.obr.MonitoredResolver;
 import com.requea.dysoweb.service.obr.SubProgressMonitor;
@@ -65,17 +56,15 @@ public class ResolverImpl implements MonitoredResolver
     private Map m_reasonMap = new HashMap();
     private Map m_unsatisfiedMap = new HashMap();
     private boolean m_resolved = false;
-	private HttpClient m_httpClient;
-	private HttpHost m_targetHost;
+	private HttpClientExecutor m_executor;
 	
 
-    public ResolverImpl(BundleContext context, RepositoryAdmin admin, Logger logger, HttpClient httpClient, HttpHost targetHost)
+    public ResolverImpl(BundleContext context, RepositoryAdmin admin, Logger logger, HttpClientExecutor executor)
     {
         m_context = context;
         m_admin = admin;
         m_logger = logger;
-        m_httpClient = httpClient;
-        m_targetHost = targetHost;
+        m_executor = executor;
     }
 
     public synchronized void add(Resource resource)
@@ -589,14 +578,9 @@ public class ResolverImpl implements MonitoredResolver
 	                    try
 	                    {
 	                    	URL url = deployResources[i].getURL();
-	                    	
-	            			HttpGet httpget = new HttpGet(url.toString());
-	            			HttpResponse response = m_httpClient.execute(m_targetHost, httpget);
-	            			HttpEntity entity = response.getEntity();
-	            			if (entity != null) {
+	                    	InputStream is = m_executor.executeGet(url.toString());
+	            			if (is != null) {
 	                        
-	            	            InputStream is = entity.getContent();
-	                    	
 		                    	long lSize = getResourceSize(deployResources[i]);
 		                    	IProgressMonitor subMonitor = new SubProgressMonitor(groupMonitor,(int)lSize);
 		                    	subMonitor.setTaskName("Installing " + deployResources[i].getSymbolicName() + " " + deployResources[i].getVersion().toString());
@@ -643,12 +627,8 @@ public class ResolverImpl implements MonitoredResolver
 	                    URL url = repoURL.getPath().endsWith("zip") ? repoURL : res.getURL();
 	                    if (url != null)
 	                    {
-	            			HttpGet httpget = new HttpGet(url.toString());
-	            			HttpResponse response = m_httpClient.execute(m_targetHost, httpget);
-	            			HttpEntity entity = response.getEntity();
-	            			if (entity != null) {
-	                        
-	            	            InputStream is = entity.getContent();
+	                    	InputStream is = m_executor.executeGet(url.toString());
+	            			if (is != null) {
 		                    	long lSize = getResourceSize(deployResources[i]);
 		                    	IProgressMonitor subMonitor = new SubProgressMonitor(groupMonitor, (int)lSize);
 		                    	subMonitor.setTaskName("Installing " + deployResources[i].getSymbolicName() + " " + deployResources[i].getVersion().toString());

@@ -74,9 +74,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging-api</artifactId>
-            <scope>provided</scope>
+		    <groupId>commons-logging</groupId>
+		    <artifactId>commons-logging</artifactId>
+		    <version>1.1.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.ant</groupId>
@@ -201,6 +201,22 @@
                                         ${project.build.directory}/lib
                                     </outputDirectory>
                                 </artifactItem>
+                                <artifactItem>
+								    <groupId>commons-logging</groupId>
+								    <artifactId>commons-logging</artifactId>
+								    <version>1.1.1</version>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+								    <groupId>log4j</groupId>
+								    <artifactId>log4j</artifactId>
+								    <version>1.2.16</version>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                                </artifactItem>
+                                
+                                
                             </artifactItems>
                         </configuration>
                     </execution>
@@ -222,7 +238,7 @@
                         <Bundle-Vendor>Requea.com</Bundle-Vendor>
                         <Private-Package>org.apache.jasper.*,com.requea.dysoweb.bundle,com.requea.dysoweb.defaultservlet,com.requea.dysoweb.org.*,com.requea.dysoweb.util.xml,com.requea.dysoweb.util.xml.impl,com.requea.dysoweb.processor,com.requea.dysoweb.processor.definitions,com.requea.dysoweb.servlet.*</Private-Package>
                         <Include-Resource>lib=target/lib</Include-Resource>
-                        <Bundle-ClassPath>.,lib/jsp-api-2.0.jar,lib/jasper-runtime-5.5.20.jar,lib/jasper-compiler-5.5.20.jar,lib/ant-launcher-1.7.0.jar,lib/ant-1.7.0.jar,lib/backport-util-concurrent-3.0.jar,lib/commons-el-5.5.20.jar,lib/janino-2.5.7.jar,lib/naming-resources-5.5.20.jar</Bundle-ClassPath>
+                        <Bundle-ClassPath>.,lib/commons-logging-1.1.1.jar,lib/log4j-1.2.16.jar,lib/jsp-api-2.0.jar,lib/jasper-runtime-5.5.20.jar,lib/jasper-compiler-5.5.20.jar,lib/ant-launcher-1.7.0.jar,lib/ant-1.7.0.jar,lib/backport-util-concurrent-3.0.jar,lib/commons-el-5.5.20.jar,lib/janino-2.5.7.jar,lib/naming-resources-5.5.20.jar</Bundle-ClassPath>
                         <Bundle-Activator>
                             com.requea.dysoweb.bundle.Activator
                         </Bundle-Activator>
@@ -235,7 +251,21 @@
                         </Export-Package>
                         <Import-Package>
                         	javax.servlet.resources,
-                        	!sun.*,!org.eclipse.jdt.*,*
+                        	javax.naming,
+                        	!sun.*,!org.eclipse.jdt.*,
+                            !org.apache.avalon.framework.logger,
+                            !org.apache.log,
+                            !org.ietf.jgss,
+                            !com.ibm.*,
+                            !com.sun.*,
+                            !javax.jmdns.*,
+                            !javax.jms.*,
+                            !javax.mail.*,
+                            !javax.management,
+                            !javax.naming,
+                            !javax.net.ssl,
+                            !javax.swing.*,
+                        	*
                         </Import-Package>
                     </instructions>
                 </configuration>

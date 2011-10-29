@@ -70,15 +70,36 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.1.2</version>
-            <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.1.3</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.4</version>
+        </dependency>
+		<dependency>
+		    <groupId>commons-logging</groupId>
+		    <artifactId>commons-logging</artifactId>
+		    <version>1.1.1</version>
+		</dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.16</version>
+        </dependency>
+		
+		
 	</dependencies>
 	<build>
 		<plugins>
             <plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
-			    <version>1.0.0</version>
+			    <version>1.4.3</version>
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
@@ -91,6 +112,7 @@
 			            	com.requea.dysoweb.panel.monitor
 			            </Private-Package>
                         <Bundle-Vendor>Requea.com</Bundle-Vendor>
+                        <Embed-Dependency>*;scope=compile|runtime</Embed-Dependency>
 			            <Bundle-SymbolicName>${pom.artifactId}</Bundle-SymbolicName>
 			            <Bundle-Activator>com.requea.dysoweb.panel.Activator</Bundle-Activator>
 						<Import-Package>
@@ -100,13 +122,25 @@
                         	javax.servlet.http,
                         	javax.servlet.jsp,
 							javax.servlet.jsp.tagext,
+                            javax.naming,
+                            com.requea.dysoweb.service.obr;version="2.2.23",
 							com.requea.dysoweb.util.xml,
 							com.requea.dysoweb.utils.tags,
                             !junit.*,
+                            !org.apache.avalon.framework.logger,
+                            !org.apache.log,
+                            !org.ietf.jgss,
+                            !com.ibm.*,
+                            !com.sun.*,
+                            !javax.jmdns.*,
+                            !javax.jms.*,
+                            !javax.mail.*,
+	                        !javax.management,
+	                        !javax.naming,
+	                        !javax.swing.*,
 							*
 						</Import-Package>
                         <Include-Resource>webapp=src/main/webapp</Include-Resource>
-                        <Bundle-ClassPath>.</Bundle-ClassPath>
 					</instructions>
 				</configuration>
 			</plugin>

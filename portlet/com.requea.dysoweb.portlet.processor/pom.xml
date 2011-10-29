@@ -52,11 +52,6 @@
             <artifactId>jsp-api</artifactId>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
 		<dependency>
 		    <groupId>portlet-api</groupId>
 		    <artifactId>portlet-api</artifactId>

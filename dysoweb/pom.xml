@@ -22,8 +22,6 @@
 		<module>com.requea.dysoweb.service.obr</module>
 		<module>com.requea.dysoweb.obr</module>
 		<module>com.requea.dysoweb.utils.tags</module>
-        <module>com.requea.dysoweb.commons-logging</module>
-        <module>com.requea.dysoweb.commons-httpclient</module>
 		<module>com.requea.dysoweb.log4j</module>
 	</modules>
 </project>
