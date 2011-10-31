@@ -24,6 +24,7 @@ import com.requea.dysoweb.panel.SecurityFilter;
 import com.requea.dysoweb.panel.tags.ErrorTag;
 import com.requea.dysoweb.panel.utils.Base64;
 import com.requea.dysoweb.util.xml.XMLUtils;
+import com.requea.webenv.IWebProcessor;
 
 public class SecurityServlet extends HttpServlet {
 
@@ -149,15 +150,33 @@ public class SecurityServlet extends HttpServlet {
 		return hash; // step 6
 	}
 
-	public File getConfigDir(ServletContext servletContext) {
+	public static File getConfigDir(ServletContext servletContext) {
 		File dir = null;
 		Thread th = Thread.currentThread();
 		ClassLoader cl = th.getContextClassLoader();
 		try {
-			th.setContextClassLoader(this.getClass().getClassLoader());
+			th.setContextClassLoader(IWebProcessor.class.getClassLoader());
 			InitialContext ic = new InitialContext();
 			Context nc = (Context) ic.lookup("java:comp/env");
-			dir = new File((String) (nc.lookup("dysoweb.home")),"config");
+			String home = (String) nc.lookup("dysoweb.home");
+			File basedir = null;
+			if("dysoweb.home".equals(home)) {
+				if(System.getProperty("jboss.home.dir") != null) {
+					basedir = new File(new File(System.getProperty("jboss.home.dir")), "dysoweb.home");
+				} else if(System.getProperty("catalina.home") != null) {
+					basedir = new File(new File(System.getProperty("catalina.home")), "dysoweb.home");
+				} else if(System.getProperty("jonas.base") != null) {
+					basedir = new File(new File(System.getProperty("jonas.base")), "dysoweb.home");
+				} else if(System.getProperty("weblogic.home") != null) {
+					basedir = new File(new File(System.getProperty("weblogic.home")), "dysoweb.home");
+				}
+			}
+			if(basedir == null) {
+				// use default value
+				basedir = new File(home);
+			}
+			basedir.mkdirs();
+			dir = new File(basedir,"config");
 		} catch (NamingException nex) {
 			// unable to lookup the requea configuration file
 			dir = new File(SecurityFilter.getScratchDir(servletContext),"config");

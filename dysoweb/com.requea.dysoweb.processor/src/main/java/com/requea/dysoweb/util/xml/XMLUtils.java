@@ -43,6 +43,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 
+
 /**
  * Utilities to manipulate w3c DOM trees.
  * @author Pierre Dubois
@@ -572,18 +573,8 @@ public class XMLUtils {
         Element element,
         boolean omitXMLDecl,
 		boolean pretty) throws XMLException {
-    	try {
-	    	Source source = new DOMSource(element);
-			StringWriter out = new StringWriter();
-			
-			StreamResult result = new StreamResult(out);
-			Transformer xformer = TransformerFactory.newInstance().newTransformer();
-			xformer.setOutputProperty("indent", "yes");
-			xformer.transform(source, result);
-			return out.toString();
-    	} catch(Exception e) {
-    		throw new XMLException(e);
-    	}
+    	
+        return DOM2Writer.nodeToString(element, omitXMLDecl, pretty);
     }
     
 	public static String getAttribute(Element el, String att) {

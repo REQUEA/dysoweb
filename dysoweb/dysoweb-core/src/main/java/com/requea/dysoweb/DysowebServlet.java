@@ -201,7 +201,25 @@ public class DysowebServlet extends HttpServlet {
 		try {
 			InitialContext ic = new InitialContext();
 			Context nc = (Context) ic.lookup("java:comp/env");
-			fCache = new File((String) (nc.lookup("dysoweb.home")));
+			String home = (String) nc.lookup("dysoweb.home");
+			File basedir = null;
+			if("dysoweb.home".equals(home)) {
+				if(System.getProperty("jboss.home.dir") != null) {
+					basedir = new File(new File(System.getProperty("jboss.home.dir")), "dysoweb.home");
+				} else if(System.getProperty("catalina.home") != null) {
+					basedir = new File(new File(System.getProperty("catalina.home")), "dysoweb.home");
+				} else if(System.getProperty("jonas.base") != null) {
+					basedir = new File(new File(System.getProperty("jonas.base")), "dysoweb.home");
+				} else if(System.getProperty("weblogic.home") != null) {
+					basedir = new File(new File(System.getProperty("weblogic.home")), "dysoweb.home");
+				}
+			}
+			if(basedir == null) {
+				// use default value
+				basedir = new File(home);
+			}
+			basedir.mkdirs();
+			fCache = basedir;
 		} catch (NamingException nex) {
 			// unable to lookup the requea configuration file
 			fCache = getScratchDir(ctx);

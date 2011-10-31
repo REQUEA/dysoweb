@@ -9,16 +9,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.io.Writer;
-import java.net.HttpURLConnection;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.URI;
 import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -35,35 +28,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.zip.GZIPOutputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
-import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.HttpClient;
@@ -102,7 +81,6 @@ import com.requea.dysoweb.panel.monitor.AjaxProgressMonitor;
 import com.requea.dysoweb.panel.tags.ErrorTag;
 import com.requea.dysoweb.panel.utils.Base64;
 import com.requea.dysoweb.panel.utils.ISO8601DateTimeFormat;
-import com.requea.dysoweb.panel.utils.Util;
 import com.requea.dysoweb.service.obr.ClientAuthRepositoryAdmin;
 import com.requea.dysoweb.service.obr.HttpClientExecutor;
 import com.requea.dysoweb.service.obr.MonitoredResolver;
@@ -141,7 +119,7 @@ public class InstallServlet extends HttpServlet {
 	
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
-		fConfigDir = getConfigDir(config.getServletContext());
+		fConfigDir = SecurityServlet.getConfigDir(config.getServletContext());
 		fConfigDir.mkdirs();
 	}
 	
@@ -1333,14 +1311,7 @@ public class InstallServlet extends HttpServlet {
 		}
 
 		// output the content as XML
-		Source source = new DOMSource(elConfig);
-		StringWriter sw = new StringWriter();
-
-		StreamResult result = new StreamResult(sw);
-		Transformer xformer = TransformerFactory.newInstance().newTransformer();
-		xformer.setOutputProperty("indent", "yes");
-		xformer.transform(source, result);
-		String xml = sw.toString();
+		String xml = XMLUtils.ElementToString(elConfig, true);
 
 		OutputStream os = new FileOutputStream(new File(configDir, "server.xml"));
 		Writer w = new OutputStreamWriter(os, "UTF-8");
@@ -1605,14 +1576,7 @@ public class InstallServlet extends HttpServlet {
 			}
 	
 			// output the content as XML
-			Source source = new DOMSource(elServer);
-			StringWriter sw = new StringWriter();
-	
-			StreamResult result = new StreamResult(sw);
-			Transformer xformer = TransformerFactory.newInstance().newTransformer();
-			xformer.setOutputProperty("indent", "yes");
-			xformer.transform(source, result);
-			String xml = sw.toString();
+			String xml = XMLUtils.ElementToString(elServer, true);
 	
 			OutputStream os = new FileOutputStream(new File(fConfigDir, "server.xml"));
 			Writer w = new OutputStreamWriter(os, "UTF-8");
@@ -1621,23 +1585,6 @@ public class InstallServlet extends HttpServlet {
 		}
 	}
 
-	public File getConfigDir(ServletContext servletContext) {
-		File dir = null;
-		Thread th = Thread.currentThread();
-		ClassLoader cl = th.getContextClassLoader();
-		try {
-			th.setContextClassLoader(this.getClass().getClassLoader());
-			InitialContext ic = new InitialContext();
-			Context nc = (Context) ic.lookup("java:comp/env");
-			dir = new File((String) (nc.lookup("dysoweb.home")),"config");
-		} catch (NamingException nex) {
-			// unable to lookup the requea configuration file
-			dir = new File(SecurityFilter.getScratchDir(servletContext),"config");
-		} finally {
-			th.setContextClassLoader(cl);
-		}
-		return dir;
-	}
 	
 	
 }

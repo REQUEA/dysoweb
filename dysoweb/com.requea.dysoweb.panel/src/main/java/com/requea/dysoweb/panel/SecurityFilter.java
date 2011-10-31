@@ -4,9 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -32,7 +29,7 @@ public class SecurityFilter implements Filter {
 	private File fConfigDir;
 	
 	public void init(FilterConfig config) throws ServletException {
-		fConfigDir = getConfigDir(config.getServletContext());
+		fConfigDir = SecurityServlet.getConfigDir(config.getServletContext());
 	}
 
 	public void destroy() {
@@ -104,23 +101,6 @@ public class SecurityFilter implements Filter {
 		}
 	}
 
-	public File getConfigDir(ServletContext servletContext) {
-		File dir = null;
-		Thread th = Thread.currentThread();
-		ClassLoader cl = th.getContextClassLoader();
-		try {
-			th.setContextClassLoader(this.getClass().getClassLoader());
-			InitialContext ic = new InitialContext();
-			Context nc = (Context) ic.lookup("java:comp/env");
-			dir = new File((String) (nc.lookup("dysoweb.home")),"config");
-		} catch (NamingException nex) {
-			// unable to lookup the requea configuration file
-			dir = new File(getScratchDir(servletContext),"config");
-		} finally {
-			th.setContextClassLoader(cl);
-		}
-		return dir;
-	}
 	
 	private static final String TMP_DIR = "javax.servlet.context.tempdir";
 	public static String getScratchDir(ServletContext context) {
