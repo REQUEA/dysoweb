@@ -37,9 +37,9 @@ function pb(elt) {
 					<div class="rqview">
 						<div>
 							<h2><span>Dysoweb Security Registration</span></h2>
-							<p>This platform has not been secured. Please register and enter a password to access to this feature</p>
+							<p>This platform has not been secured. Please register and enter a password.</p>
 							<panel:error />
-							<form method="post" action="<%=response.encodeURL(request.getContextPath()+'/dysoweb/panel/secure/install')" class="secure">
+							<form method="post" action="<%=response.encodeURL(request.getContextPath()+"/dysoweb/panel/secure/install")%>" class="secure">
 							<input name="ru" type="hidden" value="<%=request.getAttribute("com.requea.dysoweb.panel.ru") %>" />
 							<input name="op" type="hidden" value="register" />
 							<table width="100%">

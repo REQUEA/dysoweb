@@ -914,48 +914,51 @@ public class InstallServlet extends HttpServlet {
         w.write(xml);
         w.close();
 
-        URL url = new URL(repoURL);
-		HttpPost httppost = new HttpPost(new URL(url, "registerinstall").toString());
-
-		List formparams = new ArrayList();
-        
-        // post install info the the repo server
-		// retrieve the list of applications that can be installed
-		if(installable.getSysId() != null) {
-			formparams.add(new BasicNameValuePair("feature", installable.getSysId()));
-		}
-		formparams.add(new BasicNameValuePair("LocalIP", InetAddress.getLocalHost().getHostAddress()));
-		formparams.add(new BasicNameValuePair("java.version", System.getProperty("java.version")));
-		formparams.add(new BasicNameValuePair("java.vendor", System.getProperty("java.vendor")));
-		formparams.add(new BasicNameValuePair("os.name", System.getProperty("os.name")));
-		formparams.add(new BasicNameValuePair("os.arch", System.getProperty("os.arch")));
-		formparams.add(new BasicNameValuePair("os.version", System.getProperty("os.version")));
-		// send name and some platform info for support and OBR repository
-		
-		// bundles
-		StringBuffer sb = new StringBuffer();
-		Element elBundles = XMLUtils.getChild(elResource, "bundles");
-		if(elBundles != null) {
-			Element elBundle = XMLUtils.getChild(elBundles, "bundle");
-			boolean first = true;
-			while(elBundle != null) {
-				if(first) { first = false; } else { sb.append(","); }
-				String symName = elBundle.getAttribute("symbolicName");
-				if(symName != null) {
-					sb.append(symName + ":" + elBundle.getAttribute("version"));
-				} else {
-					sb.append(elBundle.getAttribute("name"));
-				}
-				elBundle = XMLUtils.getNextSibling(elBundle);
+        try {
+	        URL url = new URL(repoURL);
+			HttpPost httppost = new HttpPost(new URL(url, "registerinstall").toString());
+	
+			List formparams = new ArrayList();
+	        
+	        // post install info the the repo server
+			// retrieve the list of applications that can be installed
+			if(installable.getSysId() != null) {
+				formparams.add(new BasicNameValuePair("feature", installable.getSysId()));
 			}
-    		formparams.add(new BasicNameValuePair("bundles", sb.toString()));
-		}
-		UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formparams, "UTF-8");		
-		httppost.setEntity(entity);
-		
-		// execute method and handle any error responses.
-		m_httpClient.execute(m_targetHost, httppost);
-		
+			formparams.add(new BasicNameValuePair("LocalIP", InetAddress.getLocalHost().getHostAddress()));
+			formparams.add(new BasicNameValuePair("java.version", System.getProperty("java.version")));
+			formparams.add(new BasicNameValuePair("java.vendor", System.getProperty("java.vendor")));
+			formparams.add(new BasicNameValuePair("os.name", System.getProperty("os.name")));
+			formparams.add(new BasicNameValuePair("os.arch", System.getProperty("os.arch")));
+			formparams.add(new BasicNameValuePair("os.version", System.getProperty("os.version")));
+			// send name and some platform info for support and OBR repository
+			
+			// bundles
+			StringBuffer sb = new StringBuffer();
+			Element elBundles = XMLUtils.getChild(elResource, "bundles");
+			if(elBundles != null) {
+				Element elBundle = XMLUtils.getChild(elBundles, "bundle");
+				boolean first = true;
+				while(elBundle != null) {
+					if(first) { first = false; } else { sb.append(","); }
+					String symName = elBundle.getAttribute("symbolicName");
+					if(symName != null) {
+						sb.append(symName + ":" + elBundle.getAttribute("version"));
+					} else {
+						sb.append(elBundle.getAttribute("name"));
+					}
+					elBundle = XMLUtils.getNextSibling(elBundle);
+				}
+				formparams.add(new BasicNameValuePair("bundles", sb.toString()));
+				UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formparams, "UTF-8");		
+				httppost.setEntity(entity);
+				
+				// execute method and handle any error responses.
+				m_httpClient.execute(m_targetHost, httppost);
+			}
+        } catch(Exception e) {
+        	// ignore
+        }
 	}
 	
 

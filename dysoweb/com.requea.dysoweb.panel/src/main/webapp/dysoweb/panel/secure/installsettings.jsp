@@ -35,7 +35,7 @@ function pb(elt) {
 			<div class="rqdefaultpage">
 				<div class="rqportlet">
 					<div class="rqview">
-						<form method="post" action="<%=response.encodeURL(request.getContextPath()+'/dysoweb/panel/secure/install')">
+						<form method="post" action="<%=response.encodeURL(request.getContextPath()+"/dysoweb/panel/secure/install")%>">
 							<panel:error />
 							<panel:input name="info" style="testok" />
 							<input name="ru" type="hidden" value="<%=request.getAttribute("com.requea.dysoweb.panel.ru") %>" />
