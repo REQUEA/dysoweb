@@ -165,6 +165,7 @@ public class DysowebServlet extends HttpServlet {
 
 		// add extra properties
 		configMap.put(FelixConstants.SERVICE_URLHANDLERS_PROP, "true");
+		configMap.put(FelixConstants.FRAMEWORK_BUNDLE_PARENT, "framework");
 		
 		// parse the autostart property, and add URL handlers
 		Iterator iter = configMap.keySet().iterator();
@@ -235,7 +236,7 @@ public class DysowebServlet extends HttpServlet {
 		// setup the local cache path
 		configMap.put(BundleCache.CACHE_ROOTDIR_PROP, fCache.getAbsolutePath());
 		configMap.put("org.osgi.framework.storage", "bundles");
-
+		
 		Thread th = Thread.currentThread();
 		ClassLoader cl = th.getContextClassLoader();
 		try {

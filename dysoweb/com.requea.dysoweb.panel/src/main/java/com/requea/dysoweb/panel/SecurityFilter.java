@@ -13,6 +13,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.w3c.dom.Document;
@@ -80,7 +81,8 @@ public class SecurityFilter implements Filter {
 		}
 		
 		HttpServletRequest req = (HttpServletRequest)request;
-		String ru = req.getRequestURI();
+		HttpServletResponse resp = (HttpServletResponse)response;
+		String ru = resp.encodeURL(req.getRequestURI());
 		if(!bSecured && "register".equals(op)) {
 			// ok to process: platform not secured
 			chain.doFilter(request, response);

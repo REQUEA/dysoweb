@@ -217,7 +217,7 @@ public class InstallServlet extends HttpServlet {
 		// first of all, check if the server is a registered server
 		if (elConfig == null && !"register".equals(op)) {
 			// include registration page
-			String ru = request.getRequestURI();
+			String ru = response.encodeURL(request.getRequestURI());
 			request.setAttribute("com.requea.dysoweb.panel.ru", ru);
 			
 			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure.jsp");
