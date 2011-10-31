@@ -167,8 +167,8 @@ public class SecurityServlet extends HttpServlet {
 					basedir = new File(new File(System.getProperty("catalina.home")), "dysoweb.home");
 				} else if(System.getProperty("jonas.base") != null) {
 					basedir = new File(new File(System.getProperty("jonas.base")), "dysoweb.home");
-				} else if(System.getProperty("weblogic.home") != null) {
-					basedir = new File(new File(System.getProperty("weblogic.home")), "dysoweb.home");
+				} else if(System.getProperty("weblogic.home") != null && System.getenv("DOMAIN_HOME") != null) {
+					basedir = new File(new File(System.getenv("DOMAIN_HOME")), "dysoweb.home");
 				}
 			}
 			if(basedir == null) {
