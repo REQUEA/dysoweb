@@ -1,3 +1,6 @@
+1.0.25 VERSION
+- simplification of XML parsing with Jonas5 and Weblogic server
+
 1.0.24 VERSION
 - compat with weblogic server
 
