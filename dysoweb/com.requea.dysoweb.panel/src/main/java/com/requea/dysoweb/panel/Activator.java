@@ -99,6 +99,7 @@ public class Activator implements BundleActivator {
 	
 	public void stop(BundleContext context) throws Exception {
 		fContext = null;
+		fDefault = null;
 	}
 
 	public static Activator getDefault() {
