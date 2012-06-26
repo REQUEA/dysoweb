@@ -25,7 +25,8 @@
 	<artifactId>dysoweb-core</artifactId>
 	<name>Requea Dysoweb Platform bootstrap</name>
 	<version>1.0.26-SNAPSHOT</version>
-	<url>http://www.requea.com</url><dependencies>
+	<url>http://www.requea.com</url>
+	<dependencies>
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
