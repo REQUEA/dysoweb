@@ -280,6 +280,12 @@ a.rpurl:hover {
 /*****************************************
     Features
 ******************************************/
+.versions {
+    padding:10px;
+    border:1px solid #ccc;
+    margin:0px 10px 20px 0px;    
+}
+
 .rpcat {
 	border:1px solid #ccc;	
 	padding:5px;

@@ -1,3 +1,9 @@
+1.0.27 VERSION
+- multiple versions on repo
+
+1.0.26 VERSION
+- http client for NTLM proxy support
+
 1.0.25 VERSION
 - simplification of XML parsing with Jonas5 and Weblogic server
 

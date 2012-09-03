@@ -51,6 +51,12 @@
 		</attribute>
 	</tag>
 
+    <tag>
+        <name>versions</name>
+        <tagclass>com.requea.dysoweb.panel.tags.VersionsTag</tagclass>
+        <bodycontent>JSP</bodycontent>
+    </tag>
+
 	<tag>
 		<name>input</name>
 		<tagclass>com.requea.dysoweb.panel.tags.InputTag</tagclass>

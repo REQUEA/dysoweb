@@ -29,6 +29,9 @@
 							<td>
 								<form method="post" name="frminstall" action="<%=response.encodeURL(request.getContextPath()+"/dysoweb/panel/secure/install") %>">
 								<input type="hidden" name="op" value="install"/>
+								<div class="versions">
+                                <panel:versions />
+                                </div>
 								<div class="rpfeatinst"><input type="submit" value="Install Selected"></input></div>
                                 <h2><span>Project Bundles</span></h2>
                                 <table cellpadding="5">

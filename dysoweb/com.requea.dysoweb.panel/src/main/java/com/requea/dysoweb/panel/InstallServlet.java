@@ -74,8 +74,6 @@ import org.osgi.service.packageadmin.PackageAdmin;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.requea.dysoweb.panel.InstallServlet;
-import com.requea.dysoweb.panel.SecurityFilter;
 import com.requea.dysoweb.panel.SecurityServlet.RegistrationException;
 import com.requea.dysoweb.panel.monitor.AjaxProgressMonitor;
 import com.requea.dysoweb.panel.tags.ErrorTag;
@@ -83,8 +81,8 @@ import com.requea.dysoweb.panel.utils.Base64;
 import com.requea.dysoweb.panel.utils.ISO8601DateTimeFormat;
 import com.requea.dysoweb.service.obr.ClientAuthRepositoryAdmin;
 import com.requea.dysoweb.service.obr.HttpClientExecutor;
-import com.requea.dysoweb.service.obr.MonitoredResolver;
 import com.requea.dysoweb.service.obr.IProgressMonitor;
+import com.requea.dysoweb.service.obr.MonitoredResolver;
 import com.requea.dysoweb.service.obr.SubProgressMonitor;
 import com.requea.dysoweb.util.xml.XMLException;
 import com.requea.dysoweb.util.xml.XMLUtils;
@@ -92,7 +90,9 @@ import com.requea.dysoweb.util.xml.XMLUtils;
 public class InstallServlet extends HttpServlet {
 
 	public static final String CATEGORIES = "com.requea.dysoweb.categories";
-	public static final String INSTALLABLES = "com.requea.dysoweb.installables";
+    public static final String INSTALLABLES = "com.requea.dysoweb.installables";
+    public static final String VERSIONS = "com.requea.dysoweb.versions";
+    public static final String CURRENTVERSION = "com.requea.dysoweb.currentversion";
 
 	public static final String CATEGORY = "com.requea.dysoweb.category";
 	public static final String INSTALLABLE = "com.requea.dysoweb.installable";
@@ -123,7 +123,7 @@ public class InstallServlet extends HttpServlet {
 		fConfigDir.mkdirs();
 	}
 	
-	public RepositoryAdmin initRepo(File configDir, Element elConfig) throws Exception {
+	public RepositoryAdmin initRepo(File configDir, Element elConfig, String ver) throws Exception {
 		
 		// get the repo
 		RepositoryAdmin repo = Activator.getDefault().getRepo();
@@ -188,6 +188,14 @@ public class InstallServlet extends HttpServlet {
 		if(repoURL == null) {
 			repoURL = DEFAULT_REPO;
 		}
+		// add repo version
+        if(ver != null && !"".equals(ver) && !"base".equals(ver)) {
+            if(repoURL.indexOf('?') < 0)
+                repoURL += "?ver="+ver;
+            else
+                repoURL += "&ver="+ver;
+        }
+		
 		repo.addRepository(new URL(repoURL));
 		
 		return repo;
@@ -552,8 +560,16 @@ public class InstallServlet extends HttpServlet {
 			
 			// turn it as an array
 			Installable[] installables = (Installable[])lst.toArray(new Installable[lst.size()]);
+            String ver = request.getParameter("ver");
+            if(ver == null || ver.equals("")) {
+                ver = (String) request.getSession().getAttribute(CURRENTVERSION);
+            }
+            if("".equals(ver) || "base".equals(ver)) {
+                ver = null;
+            }
 			
-			RepositoryAdmin repo = initRepo(fConfigDir, elConfig);
+			
+			RepositoryAdmin repo = initRepo(fConfigDir, elConfig, ver);
 			
 			PackageAdmin pa = null;
 	        ServiceReference ref = context.getServiceReference(
@@ -1158,7 +1174,13 @@ public class InstallServlet extends HttpServlet {
 			installables = (Installable[])o;
 			req.setAttribute(INSTALLABLES, installables);
 			req.setAttribute(CATEGORIES, session.getAttribute(CATEGORIES));
+            req.setAttribute(VERSIONS, session.getAttribute(VERSIONS));
+            String currentVersion = (String)session.getAttribute(CURRENTVERSION);
+            if(currentVersion != null) {
+                req.setAttribute(CURRENTVERSION, currentVersion);
+            }
 		} else {
+		    loadVersions(req,resp,elConfig);
 			loadInstallables(req, resp, elConfig);
 			installables = (Installable[])req.getAttribute(INSTALLABLES);
 		}
@@ -1172,9 +1194,15 @@ public class InstallServlet extends HttpServlet {
 		if(repoURL == null) {
 			repoURL = DEFAULT_REPO;
 		}
-		String authKey = XMLUtils.getChildText(elConfig, "AuthKey");
 		
-		HttpGet httpget = new HttpGet("/dysoweb/repo/contents/repository.xml");
+		String ver = (String) session.getAttribute(CURRENTVERSION);
+		if(ver != null && !"".equals(ver) && !"base".equals(ver)) {
+		    if(repoURL.indexOf('?') < 0)
+		        repoURL += "?ver="+ver;
+		    else
+                repoURL += "&ver="+ver;
+		}
+		HttpGet httpget = new HttpGet(repoURL);
 		HttpResponse response = m_httpClient.execute(m_targetHost, httpget);
 		HttpEntity entity = response.getEntity();
 		if (entity != null) {
@@ -1246,6 +1274,62 @@ public class InstallServlet extends HttpServlet {
 			}
 		}
 	}
+
+    private void loadVersions(HttpServletRequest req, HttpServletResponse resp, Element elConfig) throws Exception {
+        
+        HttpSession session = req.getSession();
+        String repoURL = XMLUtils.getChildText(elConfig, "RepoURL");
+        if(repoURL == null) {
+            repoURL = DEFAULT_REPO;
+        }
+
+        
+        HttpGet httpget = new HttpGet("/dysoweb/repo/contents/config");
+        HttpResponse response = m_httpClient.execute(m_targetHost, httpget);
+        HttpEntity entity = response.getEntity();
+        if (entity != null) {
+        
+            InputStream is = entity.getContent();
+        
+            try {
+                Document doc = XMLUtils.parse(is);
+                Element elResult = doc.getDocumentElement();
+                if("error".equals(elResult.getLocalName())) {
+                    throw new Exception(XMLUtils.getChildText(elResult, "message"));
+                }
+                List lstVersions = new ArrayList();
+                
+                Element elVersions = XMLUtils.getChild(elResult, "versions");
+                if(elVersions != null) {
+                    // list the versions
+                    Element elVersion = XMLUtils.getChild(elVersions, "version");
+                    while(elVersion != null) {
+                        lstVersions.add(XMLUtils.getTextValue(elVersion));
+                        
+                        elVersion = XMLUtils.getNextSibling(elVersion);
+                    }
+                }
+                
+                // versions loaded
+                String[] versions = (String[])lstVersions.toArray(new String[lstVersions.size()]);
+                
+                session.setAttribute(VERSIONS, versions);
+                req.setAttribute(VERSIONS, versions);
+                
+                String ver = req.getParameter("ver");
+                if(ver == null || ver.equals("")) {
+                    ver = (String) session.getAttribute(CURRENTVERSION);
+                }
+                if(ver != null ) {
+                    session.setAttribute(CURRENTVERSION, ver);
+                    req.setAttribute(CURRENTVERSION, ver);
+                }
+                
+            } catch(XMLException e) {
+                req.setAttribute(ErrorTag.ERROR, "Unable to find repository information. Please try later, or check the repository URL");
+            }
+        }
+    }
 
 
 	private Installable[] parseInstallablesFromFeatures(Element elConfig) throws Exception {
@@ -1398,15 +1482,17 @@ public class InstallServlet extends HttpServlet {
 				HttpHost proxy = new HttpHost(proxyHost, Integer.parseInt(proxyPort));
 		        httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
 		        // set proxy credentials
-				httpClient.getCredentialsProvider().setCredentials(
-		                new AuthScope(proxyHost, Integer.parseInt(proxyPort)),
-		                new UsernamePasswordCredentials(proxyUserName, proxyUserPassword));
+		        if(proxyUserName != null) {
+    				httpClient.getCredentialsProvider().setCredentials(
+    		                new AuthScope(proxyHost, Integer.parseInt(proxyPort)),
+    		                new UsernamePasswordCredentials(proxyUserName, proxyUserPassword));
+		        }
 			} catch (SecurityException e) {
 			    ; // failing to set this property isn't fatal
 			}
 		} else {
 			try {
-			    System.setProperty("java.net.useSystemProxies","true");
+                System.setProperty("java.net.useSystemProxies","true");
 			} catch (SecurityException e) {
 			    ; // failing to set this property isn't fatal
 			}
@@ -1416,7 +1502,6 @@ public class InstallServlet extends HttpServlet {
         m_targetHost = new HttpHost("repo.requea.com", 443, "https");
 		
 	}
-	
 	
 
 	private void removeConfigValue(Element elConfig, String name) {
