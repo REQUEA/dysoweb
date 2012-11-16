@@ -50,7 +50,6 @@ public class RequestWrapper extends HttpServletRequestWrapper {
 	}
 
 	
-	@Override
     public String getPathInfo() {
 	    // retrieve the key
 	    String key = (String) this.getAttribute(RequestProcessor.PATHINFO);
