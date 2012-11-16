@@ -50,7 +50,45 @@ public class RequestWrapper extends HttpServletRequestWrapper {
 	}
 
 	
-	private class DysowebSession implements HttpSession {
+	@Override
+    public String getPathInfo() {
+	    // retrieve the key
+	    String key = (String) this.getAttribute(RequestProcessor.PATHINFO);
+	    if(key == null || key.startsWith("*")) {
+	        // use default value
+	        return super.getPathInfo();
+	    } else {
+            // get the uri
+            String uri = this.getRequestURI();
+            String contextPath = this.getContextPath();
+            if(uri.startsWith(contextPath)) {
+                uri = uri.substring(contextPath.length());
+            } else {
+             // use default value
+                return super.getPathInfo();
+            }
+            // remove the key
+	        int idx = key.indexOf('*');
+	        if(idx > 0) {
+	            // remove star
+	            key = key.substring(0, idx);
+	        }
+	        if(key.endsWith("/")) {
+	            key = key.substring(0, key.length()-1);
+	        }
+	        if(uri.startsWith(key)) {
+	            uri = uri.substring(key.length());
+	        }
+	        idx = uri.indexOf('?');
+	        if(idx >= 0) {
+	            uri = uri.substring(0,idx);
+	        }
+	        return uri;
+	    }
+    }
+
+
+    private class DysowebSession implements HttpSession {
 
 		HttpSession fSession;
 		

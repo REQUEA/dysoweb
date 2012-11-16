@@ -66,8 +66,6 @@ import org.osgi.framework.Version;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.requea.dysoweb.processor.IFilterDefinition;
-import com.requea.dysoweb.processor.IServletDefinition;
 import com.requea.dysoweb.WebAppException;
 import com.requea.dysoweb.defaultservlet.DefaultServlet;
 import com.requea.dysoweb.processor.definitions.ContextParam;
@@ -462,7 +460,7 @@ public class RequestProcessor implements IWebProcessor {
         	IFilterDefinition[] filters = fRequestMapper.getFilters(uri);
 			// remove the context path
 			// get the servet wrapper for this request
-			ServletWrapper wrapper = fRequestMapper.getServletWrapper(uri);
+			ServletWrapper wrapper = fRequestMapper.getServletWrapper(request, uri);
 			// regular servlet?
 			if(wrapper != null) {
 				Long bundleId = (Long)request.getAttribute("com.requea.dysoweb.service");
@@ -1139,6 +1137,7 @@ public class RequestProcessor implements IWebProcessor {
 	}
 
 	private static final String TMP_DIR = "javax.servlet.context.tempdir";
+    public static final String PATHINFO = "com.requea.dysoweb.pathinfo";
 
 	/*
 	 * Retrieve the web container scratch directory

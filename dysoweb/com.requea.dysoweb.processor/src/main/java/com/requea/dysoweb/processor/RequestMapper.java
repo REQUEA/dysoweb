@@ -19,14 +19,14 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.requea.dysoweb.processor.IFilterDefinition;
-import com.requea.dysoweb.processor.RequestProcessor.EntryInfo;
 import com.requea.dysoweb.WebAppException;
 import com.requea.dysoweb.org.mortbay.jetty.servlet.PathMap;
+import com.requea.dysoweb.processor.RequestProcessor.EntryInfo;
 import com.requea.dysoweb.servlet.wrapper.FilterMappingDefinition;
 import com.requea.dysoweb.servlet.wrapper.ServletMappingDefinition;
 import com.requea.dysoweb.servlet.wrapper.ServletWrapper;
@@ -68,7 +68,7 @@ public class RequestMapper {
 		return filters;
 	}
 	
-	public ServletWrapper getServletWrapper(String uri) throws IOException {
+	public ServletWrapper getServletWrapper(ServletRequest req, String uri) throws IOException {
 		if(!fInitialized) {
 			return null;
 		}
@@ -79,7 +79,13 @@ public class RequestMapper {
 			return ei == null ? null : fRequestProcessor.getJapserWrapper(new Long(ei.getBundleId()));
 		} else {
 			// regular wrapper
-			return (ServletWrapper)fServletsPathMap.match(uri);
+		    PathMap.Entry entry = fServletsPathMap.getMatch(uri);
+		    if(entry != null) {
+		        req.setAttribute(RequestProcessor.PATHINFO, entry.getKey());
+		        return (ServletWrapper)entry.getValue();
+		    } else {
+		        return null;
+		    }
 		}
 	}
 
