@@ -74,6 +74,7 @@ public class RequestMapper {
 		}
 		
 		if(uri.endsWith(".jsp") || uri.endsWith(".jspx")) {
+            req.setAttribute(RequestProcessor.PATHINFO, null);
 			// jasper wrappers
 			EntryInfo ei = fRequestProcessor.getEntryInfo(uri);
 			return ei == null ? null : fRequestProcessor.getJapserWrapper(new Long(ei.getBundleId()));
