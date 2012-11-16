@@ -77,6 +77,9 @@ public class RequestWrapper extends HttpServletRequestWrapper {
 	        }
 	        if(uri.startsWith(key)) {
 	            uri = uri.substring(key.length());
+	        } else {
+	            // use default value
+                return super.getPathInfo();
 	        }
 	        idx = uri.indexOf('?');
 	        if(idx >= 0) {
