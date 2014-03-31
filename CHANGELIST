@@ -1,3 +1,7 @@
+1.0.29 VERSION
+- added javax imports for support of Apache CXF
+- save username and password for proxy
+
 1.0.28 VERSION
 - added javax imports for support of Apache CXF
 - getPathInfo return the proper path for servlets
