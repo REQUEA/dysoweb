@@ -1134,6 +1134,18 @@ public class InstallServlet extends HttpServlet {
 		}
 		setValueInSession(session, "ProxyAuth", proxyAuth);
 		
+        // proxy auth
+        String proxyUsername = XMLUtils.getChildText(elConfig, "ProxyUsername");
+        if(proxyUsername == null) {
+            proxyUsername = "";
+        }
+        setValueInSession(session, "ProxyUsername", proxyUsername);
+        String proxyPassword = XMLUtils.getChildText(elConfig, "ProxyPassword");
+        if(proxyPassword == null) {
+            proxyPassword = "";
+        }
+        setValueInSession(session, "ProxyPassword", proxyPassword);
+        
 		// localcache
 		String local = XMLUtils.getChildText(elConfig, "LocalCacheURL");
 		if(local == null) {
@@ -1535,11 +1547,15 @@ public class InstallServlet extends HttpServlet {
 			saveConfigValue(request, elConfig, "RepoURL");
 			saveConfigValue(request, elConfig, "ProxyHost");
 			saveConfigValue(request, elConfig, "ProxyPort");
+            saveConfigValue(request, elConfig, "ProxyUsername");
+            saveConfigValue(request, elConfig, "ProxyPassword");
 			saveConfigValue(request, elConfig, "LocalCacheURL");
 		} else {
 			removeConfigValue(elConfig, "ProxyHost");
 			removeConfigValue(elConfig, "ProxyPort");
 			removeConfigValue(elConfig, "ProxyAuth");
+            removeConfigValue(elConfig, "ProxyUsername");
+            removeConfigValue(elConfig, "ProxyPassword");
 			removeConfigValue(elConfig, "LocalCacheURL");
 		}
 
