@@ -1058,6 +1058,8 @@ public class InstallServlet extends HttpServlet {
 		updateValue(session, request, "ProxyHost");
 		updateValue(session, request, "ProxyPort");
 		updateValue(session, request, "ProxyAuth");
+        updateValue(session, request, "ProxyUsername");
+        updateValue(session, request, "ProxyPassword");
 		updateValue(session, request, "LocalCacheURL");
 	}
 
