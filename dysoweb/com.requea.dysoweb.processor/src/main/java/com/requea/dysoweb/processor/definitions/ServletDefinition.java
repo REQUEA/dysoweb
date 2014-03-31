@@ -30,8 +30,8 @@ import org.apache.commons.logging.LogFactory;
 import org.osgi.framework.Bundle;
 import org.w3c.dom.Element;
 
-import com.requea.dysoweb.processor.IServletDefinition;
 import com.requea.dysoweb.WebAppException;
+import com.requea.dysoweb.processor.IServletDefinition;
 import com.requea.dysoweb.util.xml.XMLUtils;
 
 /**
@@ -213,7 +213,7 @@ public class ServletDefinition implements IServletDefinition {
 	}
 
 	public void unload() {
-		if(fInstance != null) {
+		if(fInstance != null && fInitialized) {
 			fLog.info("Destroying Servlet " + fName);
 			fInstance.destroy();
 		}
