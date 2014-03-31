@@ -3,7 +3,7 @@
 	<groupId>com.requea.dysoweb</groupId>
 	<artifactId>main</artifactId>
 	<packaging>pom</packaging>
-	<version>1.0.33</version>
+	<version>1.0.33-SNAPSHOT</version>
 	<name>Requea Dysoweb</name>
 	<url>http://www.requea.com</url>
 
@@ -162,9 +162,9 @@
 	</repositories>
 
 	<scm>
-		<connection>scm:svn:svn+ssh://null@svn.forge.objectweb.org/svnroot/dysoweb/tags/main-1.0.33</connection>
-		<developerConnection>scm:svn:svn+ssh://null@svn.forge.objectweb.org/svnroot/dysoweb/tags/main-1.0.33</developerConnection>
-		<url>scm:svn:svn+ssh://null@svn.forge.objectweb.org/svnroot/dysoweb/tags/main-1.0.33</url>
+		<connection>scm:svn:svn+ssh://pdubois@svn.forge.objectweb.org/svnroot/dysoweb/tags/main-1.0.33</connection>
+		<developerConnection>scm:svn:svn+ssh://pdubois@svn.forge.objectweb.org/svnroot/dysoweb/tags/main-1.0.33</developerConnection>
+		<url>scm:svn:svn+ssh://pdubois@svn.forge.objectweb.org/svnroot/dysoweb/tags/main-1.0.33</url>
 	</scm>
 	<build>
 		<plugins>
@@ -172,7 +172,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
 				<configuration>
-					<tagBase>svn+ssh://${maven.username}@svn.forge.objectweb.org/svnroot/dysoweb/tags</tagBase>
+					<tagBase>svn+ssh://pdubois@svn.forge.objectweb.org/svnroot/dysoweb/tags</tagBase>
 					<preparationGoals>clean install</preparationGoals>
 				</configuration>
 			</plugin>
