@@ -1039,7 +1039,7 @@ public class InstallServlet extends HttpServlet {
 		String value = request.getParameter(param);
 		if(value != null) {
 			// password are stored encrypted
-			if("ProxyPassword".equals(param) && value.startsWith("3DES:")) {
+			if("ProxyPassword".equals(param) && !"".equals(value) && !value.startsWith("3DES:")) {
 				try {
 					CryptUtils cu = CryptUtils.getInstance("3DES");
 					value = "3DES:"+cu.encrypt(value);
@@ -1479,7 +1479,7 @@ public class InstallServlet extends HttpServlet {
 		String proxyPort = XMLUtils.getChildText(elConfig, "ProxyPort");
 		final String proxyUserName = XMLUtils.getChildText(elConfig, "ProxyUsername");
 		String proxyPassword = XMLUtils.getChildText(elConfig, "ProxyPassword");
-		if(proxyPassword != null && !"".equals(proxyPassword) && proxyPassword.startsWith("3DES:")) {
+		if(proxyPassword != null && proxyPassword.startsWith("3DES:")) {
 			CryptUtils cu = CryptUtils.getInstance("3DES");
 			proxyPassword = cu.decrypt(proxyPassword.substring("3DES:".length()));
 		}
