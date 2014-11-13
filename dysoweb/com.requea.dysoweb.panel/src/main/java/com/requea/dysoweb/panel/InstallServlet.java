@@ -10,15 +10,13 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.Writer;
+import java.net.Authenticator;
 import java.net.InetAddress;
+import java.net.PasswordAuthentication;
+import java.net.ProxySelector;
 import java.net.URL;
-import java.security.KeyManagementException;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -42,26 +40,16 @@ import javax.servlet.http.HttpSession;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
-import org.apache.http.HttpVersion;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.params.ConnRoutePNames;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.params.HttpProtocolParams;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -74,6 +62,10 @@ import org.osgi.service.packageadmin.PackageAdmin;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.btr.proxy.search.ProxySearch;
+import com.btr.proxy.selector.fixed.FixedProxySelector;
+import com.btr.proxy.selector.pac.PacProxySelector;
+import com.btr.proxy.selector.pac.UrlPacScriptSource;
 import com.requea.dysoweb.panel.SecurityServlet.RegistrationException;
 import com.requea.dysoweb.panel.monitor.AjaxProgressMonitor;
 import com.requea.dysoweb.panel.tags.ErrorTag;
@@ -98,7 +90,7 @@ public class InstallServlet extends HttpServlet {
 	public static final String INSTALLABLE = "com.requea.dysoweb.installable";
 	public static final String INSTALLED = "com.requea.dysoweb.installed";
 
-	private static final String COM_REQUEA_DYSOWEB_PANEL = "com.requea.dysoweb.panel.";
+	public static final String COM_REQUEA_DYSOWEB_PANEL = "com.requea.dysoweb.panel.";
 	
 	private static final String INSTALL_MONITOR = "com.requea.dysoweb.panel.install.monitor";
 	private static final String INSTALL_STATUS = "com.requea.dysoweb.panel.install.status";
@@ -111,6 +103,7 @@ public class InstallServlet extends HttpServlet {
     protected static final DateFormat format = new ISO8601DateTimeFormat();
 	private static final int DEFAULT_REPO_REGISTRATION_TIMEOUT = 60*1000;
 	public static final String REGISTERED = "com.requea.dysoweb.registered";
+	private static final int TIMEOUT = 60;
 	
 	private File fConfigDir;
 
@@ -132,14 +125,6 @@ public class InstallServlet extends HttpServlet {
 			throw new Exception("No repository service available at this time");
 		}
 
-		
-		// init proxy settings
-		String settings = XMLUtils.getChildText(elConfig, "Settings");
-		String proxyHost = XMLUtils.getChildText(elConfig, "ProxyHost");
-		String proxyPort = XMLUtils.getChildText(elConfig, "ProxyPort");
-		String proxyUsername = XMLUtils.getChildText(elConfig, "ProxyUsername");
-		String proxyPassword = XMLUtils.getChildText(elConfig, "ProxyPassword");
-		
 		// ssl client certificate and proxy settings
 		if(repo instanceof ClientAuthRepositoryAdmin) {
 			ClientAuthRepositoryAdmin clr = (ClientAuthRepositoryAdmin)repo;
@@ -157,24 +142,6 @@ public class InstallServlet extends HttpServlet {
 					}
 				}
 			});
-		} else {
-			if("manual".equals(settings) && proxyHost != null && proxyHost.length() > 0) {
-				// force system wide proxy settings
-				try {
-				    System.setProperty("http.proxyHost",proxyHost);
-				    System.setProperty("http.proxyPort",proxyPort);
-				    if(proxyUsername != null)
-				    System.setProperty("http.proxyAuth",proxyUsername+":"+proxyPassword);
-				} catch (SecurityException e) {
-				    ; // failing to set this property isn't fatal
-				}
-			} else {
-				try {
-				    System.setProperty("java.net.useSystemProxies","true");
-				} catch (SecurityException e) {
-				    ; // failing to set this property isn't fatal
-				}
-			}
 		}
 		
 		// local cache URL if any
@@ -185,7 +152,7 @@ public class InstallServlet extends HttpServlet {
 		
 		// update the repo URL
 		String repoURL = XMLUtils.getChildText(elConfig, "RepoURL");
-		if(repoURL == null) {
+		if(repoURL == null || repoURL.equals("")) {
 			repoURL = DEFAULT_REPO;
 		}
 		// add repo version
@@ -298,7 +265,7 @@ public class InstallServlet extends HttpServlet {
 
 			// registration was ok, redirect to the install page
 			response.sendRedirect(response.encodeURL(request.getContextPath()
-					+ "/dysoweb/panel/secure/install"));
+					+ "/dysoweb/panel/secure/install?refresh=true"));
 			
 		} else if("install".equals(op)) {
 			// check if server certificate is there
@@ -321,7 +288,7 @@ public class InstallServlet extends HttpServlet {
 						"Unable to register server: " + e.getMessage());
 				// re forward to registration for correction of errors
 				RequestDispatcher rd = request
-						.getRequestDispatcher("/dysoweb/panel/secure/installsettings.jsp");
+						.getRequestDispatcher("/dysoweb/panel/secure/settings.jsp");
 				rd.forward(request, response);
 				return;
 			}				
@@ -366,6 +333,9 @@ public class InstallServlet extends HttpServlet {
 			
 			if(!registered || (oldAuthKey != null && !oldAuthKey.equals(newAuthKey))) {
 		        String repoURL = getValueFromSession(request.getSession(), "RepoURL");
+		        if(repoURL == null || repoURL.equals("")) {
+		        	repoURL = DEFAULT_REPO;
+		        }
 		        if(repoURL.startsWith("https")) {
 		        	// update server registration if not already done
 		        	try {
@@ -375,7 +345,7 @@ public class InstallServlet extends HttpServlet {
 								"Unable to register server: " + e.getMessage());
 						// re forward to registration for correction of errors
 						RequestDispatcher rd = request
-								.getRequestDispatcher("/dysoweb/panel/secure/installsettings.jsp");
+								.getRequestDispatcher("/dysoweb/panel/secure/settings.jsp");
 						rd.forward(request, response);
 						return;
 					}
@@ -398,7 +368,7 @@ public class InstallServlet extends HttpServlet {
 			// redirect to settings
 			initSettingsValues(request);
 			updateSettingsValues(request);
-			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure/installsettings.jsp");
+			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure/settings.jsp");
 			rd.forward(request, response);
 			return;
 		} else {
@@ -407,7 +377,7 @@ public class InstallServlet extends HttpServlet {
 			} catch (Exception e) {
 				// show the error
 				request.setAttribute(ErrorTag.ERROR, "Unable to retrieve installable application list: " + e.getMessage());
-				RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure/install.jsp");
+				RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure/setup.jsp");
 				rd.forward(request, response);
 			}
 		}
@@ -589,12 +559,12 @@ public class InstallServlet extends HttpServlet {
 			th.start();
 			
 			request.setAttribute(INSTALLABLE, installedResource);
-			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure/installing.jsp");
+			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure/progress.jsp");
 			rd.forward(request, response);
 		} catch (Exception e) {
 			// show the error
 			request.setAttribute(ErrorTag.ERROR, "Unable to install resources: " + e.getMessage());
-			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure/install.jsp");
+			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure/setup.jsp");
 			rd.forward(request, response);
 		}
 	}
@@ -1013,7 +983,7 @@ public class InstallServlet extends HttpServlet {
 
 		Status status = (Status)request.getSession().getAttribute(INSTALL_STATUS);
 		if(status != null && status.getStatus() != Status.ERROR && status.getStatus() != Status.DONE) {
-			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure/installing.jsp");
+			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure/progress.jsp");
 			rd.forward(request, response);
 			return;
 		}
@@ -1023,7 +993,7 @@ public class InstallServlet extends HttpServlet {
 		if(!file.exists()) {
 			// redirect to settings
 			initSettingsValues(request);
-			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure/installsettings.jsp");
+			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure/settings.jsp");
 			rd.forward(request, response);
 			return;
 		}
@@ -1041,7 +1011,7 @@ public class InstallServlet extends HttpServlet {
 			rd.forward(request, response);
 		} else {
 			// show list of resources
-			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure/install.jsp");
+			RequestDispatcher rd = request.getRequestDispatcher("/dysoweb/panel/secure/setup.jsp");
 			rd.forward(request, response);
 		}		
 		return;
@@ -1055,6 +1025,7 @@ public class InstallServlet extends HttpServlet {
 		updateValue(session, request, "Version");
 		updateValue(session, request, "Settings");
 		updateValue(session, request, "Proxy");
+		updateValue(session, request, "ProxyPAC");
 		updateValue(session, request, "ProxyHost");
 		updateValue(session, request, "ProxyPort");
 		updateValue(session, request, "ProxyAuth");
@@ -1067,6 +1038,15 @@ public class InstallServlet extends HttpServlet {
 			String param) {
 		String value = request.getParameter(param);
 		if(value != null) {
+			// password are stored encrypted
+			if("ProxyPassword".equals(param)) {
+				try {
+					CryptUtils cu = CryptUtils.getInstance("3DES");
+					value = "3DES:"+cu.encrypt(value);
+				} catch(Exception e) {
+					// ignore
+				}
+			}			
 			setValueInSession(session, param, value);
 		}
 	}
@@ -1115,6 +1095,13 @@ public class InstallServlet extends HttpServlet {
 		}
 		setValueInSession(session, "Proxy", proxy);
 		
+		// proxy pac
+		String proxyPAC = XMLUtils.getChildText(elConfig, "ProxyPAC");
+		if(proxyPAC == null) {
+			proxyPAC = "";
+		}
+		setValueInSession(session, "ProxyPAC", proxyPAC);
+		
 		// proxy host
 		String proxyHost = XMLUtils.getChildText(elConfig, "ProxyHost");
 		if(proxyHost == null) {
@@ -1125,7 +1112,7 @@ public class InstallServlet extends HttpServlet {
 		// proxy port
 		String proxyPort = XMLUtils.getChildText(elConfig, "ProxyPort");
 		if(proxyPort == null) {
-			proxyPort = "3128";
+			proxyPort = "80";
 		}
 		setValueInSession(session, "ProxyPort", proxyPort);
 		
@@ -1160,7 +1147,11 @@ public class InstallServlet extends HttpServlet {
 		return (String)session.getAttribute(COM_REQUEA_DYSOWEB_PANEL+name);
 	}
 	private void setValueInSession(HttpSession session, String name, String value) {
-		session.setAttribute(COM_REQUEA_DYSOWEB_PANEL+name, value);
+		if(value == null) {
+			session.removeAttribute(COM_REQUEA_DYSOWEB_PANEL+name);
+		} else {
+			session.setAttribute(COM_REQUEA_DYSOWEB_PANEL+name, value);
+		}
 	}
 	
 	
@@ -1430,94 +1421,127 @@ public class InstallServlet extends HttpServlet {
 		XMLUtils.setText(elPassword, value);
 	}
 
-	private DefaultHttpClient createHttpClient(
-			SchemeRegistry schemeRegistry) {
-		HttpParams params = new BasicHttpParams();
-		HttpConnectionParams.setConnectionTimeout(params, 120 * 1000);
-		HttpConnectionParams.setSoTimeout(params, 120 * 1000);
-		HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);	
-		ClientConnectionManager cm = new ThreadSafeClientConnManager(schemeRegistry);		
-		DefaultHttpClient httpClient = new DefaultHttpClient(cm, params);
-		return httpClient;
-	}
-	
-	private SchemeRegistry createSchemeRegistry()
-				throws KeyStoreException, FileNotFoundException, IOException,
-				NoSuchAlgorithmException, CertificateException,
-				UnrecoverableKeyException, KeyManagementException {
+    private SSLContext createSSLContext() throws IOException {
+        try {
+    		File certFile = new File(fConfigDir, "dysoweb.p12");
+    		if(certFile.exists()) {
+        	
+	            String strCertPassword = "dysoweb";
+	            KeyStore keyStore = KeyStore.getInstance("PKCS12");
+	            InputStream keyInput = new FileInputStream(certFile);
+	            keyStore.load(keyInput, strCertPassword.toCharArray());
+	            keyInput.close();           
+	            
+	            // does an HTTPS request to the repo passing the client certificates
+	            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+	            keyManagerFactory.init(keyStore, strCertPassword.toCharArray());
+	            SSLContext context = SSLContext.getInstance("TLS");
+	            context.init(keyManagerFactory.getKeyManagers(), null, new SecureRandom());
+	            return context;
+    		} else {
+    			// default SSL context
+	            SSLContext context = SSLContext.getInstance("TLS");
+	            context.init(null, null, null);	            
+	            return context;
+    		}
+        } catch(Exception e) {
+            throw new IOException(e);
+        }
+    }
 
-		SchemeRegistry schemeRegistry = new SchemeRegistry();		
-		schemeRegistry.register(new Scheme("http", 80, PlainSocketFactory.getSocketFactory()));
-
-		
-		File fileCertificate = new File(fConfigDir, "dysoweb.p12");
-		if(fileCertificate.exists()) {
-			String strCertPassword = "dysoweb";
-			KeyStore keyStore = KeyStore.getInstance("PKCS12");
-			InputStream keyInput = new FileInputStream(fileCertificate);
-			keyStore.load(keyInput, strCertPassword.toCharArray());
-			keyInput.close();           
-	
-			// does an HTTPS request to the repo passing the client certificates
-			KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-			keyManagerFactory.init(keyStore, strCertPassword.toCharArray());
-			SSLContext sslContext = SSLContext.getInstance("TLS");
-			sslContext.init(keyManagerFactory.getKeyManagers(), null, new SecureRandom());
-	
-			SSLSocketFactory sf = new SSLSocketFactory(
-					sslContext,
-					SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-			Scheme https = new Scheme("https", 443, sf);
-	
-			schemeRegistry.register(https);
-		} else {
-			schemeRegistry.register(new Scheme("https", 443, SSLSocketFactory.getSocketFactory()));
-		}
-		return schemeRegistry;
-	}
-	
+    
 	public void initHttpClient(Element elConfig) throws Exception {
 
-		SchemeRegistry schemeRegistry = createSchemeRegistry();
-		
-        DefaultHttpClient httpClient = createHttpClient(schemeRegistry);
+        SSLContext sslcontext = createSSLContext();
+        // Allow client cert
+        SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
+                sslcontext,
+                SSLConnectionSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
+
+        // setup timeouts
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setSocketTimeout(TIMEOUT * 1000)
+                .setConnectTimeout(TIMEOUT * 1000)
+                .build();        
+
+        // build http client connexion
+        HttpClientBuilder builder = HttpClients.custom();
+        
+		// ssl client certificate
+		builder.setDefaultRequestConfig(requestConfig)
+			.setSSLSocketFactory(sslsf);
+        
         
 		// init proxy settings
 		String settings = XMLUtils.getChildText(elConfig, "Settings");
+		String proxyPAC = XMLUtils.getChildText(elConfig, "ProxyPAC");
 		String proxyHost = XMLUtils.getChildText(elConfig, "ProxyHost");
 		String proxyPort = XMLUtils.getChildText(elConfig, "ProxyPort");
-		String proxyUserName = XMLUtils.getChildText(elConfig, "ProxyUsername");
-		String proxyUserPassword = XMLUtils.getChildText(elConfig, "ProxyPassword");
+		final String proxyUserName = XMLUtils.getChildText(elConfig, "ProxyUsername");
+		String proxyPassword = XMLUtils.getChildText(elConfig, "ProxyPassword");
+		if(proxyPassword != null && proxyPassword.startsWith("3DES:")) {
+			CryptUtils cu = CryptUtils.getInstance("3DES");
+			proxyPassword = cu.decrypt(proxyPassword.substring("3DES:".length()));
+		}
+		final String proxyUserPassword = proxyPassword;
 		
-		// ssl client certificate and proxy settings
-		if("manual".equals(settings) && proxyHost != null && proxyHost.length() > 0) {
-			// force proxy settings
-			try {
-				HttpHost proxy = new HttpHost(proxyHost, Integer.parseInt(proxyPort));
-		        httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
-		        // set proxy credentials
-		        if(proxyUserName != null) {
-    				httpClient.getCredentialsProvider().setCredentials(
-    		                new AuthScope(proxyHost, Integer.parseInt(proxyPort)),
-    		                new UsernamePasswordCredentials(proxyUserName, proxyUserPassword));
-		        }
-			} catch (SecurityException e) {
-			    ; // failing to set this property isn't fatal
+		// force proxy settings with manual settings
+		if("manual".equals(settings)) {
+			
+			ProxySelector selector = null; 
+			if(proxyPAC != null && !"".equals(proxyPAC)) {
+				UrlPacScriptSource pacSource = new UrlPacScriptSource(proxyPAC);
+				selector = new PacProxySelector(pacSource);
+			} else if (proxyHost != null && proxyHost.length() > 0) {
+				// uses a proxy host
+				if(proxyPort == null || proxyPort.equals("")) {
+					proxyPort = "80";
+				}
+				selector = new FixedProxySelector(proxyHost, Integer.parseInt(proxyPort));
+			}
+			
+			// auth
+			if(proxyUserName != null && !"".equals(proxyUserName)) {
+				Authenticator.setDefault(new Authenticator() {
+					@Override
+					protected PasswordAuthentication getPasswordAuthentication() {
+						if (getRequestorType() == RequestorType.PROXY) {
+							return new PasswordAuthentication(proxyUserName, 
+									proxyUserPassword == null ? "".toCharArray() : proxyUserPassword.toCharArray());
+						} else { 
+							return super.getPasswordAuthentication();
+						}
+					}
+				});				
+			}
+			if(selector != null) {
+	            // build the route with the proxy selector
+	            SystemDefaultRoutePlanner routePlanner = new SystemDefaultRoutePlanner(selector);
+	            // set the route planner with the proxy configuration
+	    		builder.setRoutePlanner(routePlanner);
 			}
 		} else {
-			try {
-                System.setProperty("java.net.useSystemProxies","true");
-			} catch (SecurityException e) {
-			    ; // failing to set this property isn't fatal
-			}
+            // use proxy-vole for proxy settings auto search
+            ProxySearch proxySearch = ProxySearch.getDefaultProxySearch();
+            proxySearch.setPacCacheSettings(32, 1000*60*5); // Cache 32 urls for up to 5 min.
+            ProxySelector selector = proxySearch.getProxySelector();
+
+            // is there a proxy selector?
+            if(selector != null) {
+                SystemDefaultRoutePlanner routePlanner = new SystemDefaultRoutePlanner(selector);
+	            // set the route planner with the proxy configuration
+	    		builder.setRoutePlanner(routePlanner);
+            }
 		}
+        
+		// build the http client with the config
+        m_httpClient = builder.build();
 		
-		m_httpClient = httpClient;
+        // target host is hard coded
         m_targetHost = new HttpHost("repo.requea.com", 443, "https");
-		
 	}
 	
-
+	
 	private void removeConfigValue(Element elConfig, String name) {
 		Element elVal = XMLUtils.getChild(elConfig, name);
 		if(elVal != null) {
@@ -1547,12 +1571,14 @@ public class InstallServlet extends HttpServlet {
 		String settings = (String)request.getSession().getAttribute(COM_REQUEA_DYSOWEB_PANEL+"Settings");
 		if("manual".equals(settings)) {
 			saveConfigValue(request, elConfig, "RepoURL");
+			saveConfigValue(request, elConfig, "ProxyPAC");
 			saveConfigValue(request, elConfig, "ProxyHost");
 			saveConfigValue(request, elConfig, "ProxyPort");
             saveConfigValue(request, elConfig, "ProxyUsername");
             saveConfigValue(request, elConfig, "ProxyPassword");
 			saveConfigValue(request, elConfig, "LocalCacheURL");
 		} else {
+			removeConfigValue(elConfig, "ProxyPAC");
 			removeConfigValue(elConfig, "ProxyHost");
 			removeConfigValue(elConfig, "ProxyPort");
 			removeConfigValue(elConfig, "ProxyAuth");
@@ -1595,8 +1621,8 @@ public class InstallServlet extends HttpServlet {
 		
 		
 		Element elConfig = getServerConfig(fConfigDir);
-		if(m_httpClient == null) 
-			initHttpClient(elConfig);
+		// reinit http client, since proxy settings may have changed
+		initHttpClient(elConfig);
 		
 		Element elServer = null;
 		String sysId = null;
