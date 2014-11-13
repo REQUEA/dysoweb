@@ -146,13 +146,6 @@
 		</dependencies>
 	</dependencyManagement>
 
-	<distributionManagement>
-		<repository>
-			<id>requea-maven-repository</id>
-			<name>Requea repository</name>
-			<url>scp://maven@maven.requea.com:/home/maven/repo/</url>
-		</repository>
-	</distributionManagement>
 	<repositories>
 		<repository>
 			<id>requea-maven-repository</id>
@@ -162,9 +155,9 @@
 	</repositories>
 
 	<scm>
-		<connection>scm:svn:svn+ssh://pdubois@svn.forge.objectweb.org/svnroot/dysoweb/tags/main-1.0.33</connection>
-		<developerConnection>scm:svn:svn+ssh://pdubois@svn.forge.objectweb.org/svnroot/dysoweb/tags/main-1.0.33</developerConnection>
-		<url>scm:svn:svn+ssh://pdubois@svn.forge.objectweb.org/svnroot/dysoweb/tags/main-1.0.33</url>
+		<connection>scm:svn:svn+ssh://pdubois@svn.forge.objectweb.org/svnroot/dysoweb/trunk</connection>
+		<developerConnection>scm:svn:svn+ssh://pdubois@svn.forge.objectweb.org/svnroot/dysoweb/trunk</developerConnection>
+		<url>scm:svn:svn+ssh://pdubois@svn.forge.objectweb.org/svnroot/dysoweb/trunk</url>
 	</scm>
 	<build>
 		<plugins>
