@@ -71,21 +71,6 @@
             <scope>provided</scope>
             <version>${version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.1.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpcore</artifactId>
-            <version>4.1.3</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
-            <version>1.4</version>
-        </dependency>
 		<dependency>
 		    <groupId>commons-logging</groupId>
 		    <artifactId>commons-logging</artifactId>
@@ -95,6 +80,41 @@
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
             <version>1.2.16</version>
+        </dependency>
+        <dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.3.5</version>
+        </dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpmime</artifactId>
+			<version>4.3.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpcore</artifactId>
+			<version>4.3.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>1.8.5</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.6</version>
+		</dependency>
+		<dependency>
+			<groupId>requeabuild</groupId>
+			<artifactId>proxy-vole</artifactId>
+			<version>20131209</version>
+		</dependency>
+        <dependency>
+            <groupId>org.mozilla</groupId>
+            <artifactId>rhino</artifactId>
+            <version>1.7R3</version>
         </dependency>
 		
 		
@@ -133,6 +153,11 @@
 							com.requea.dysoweb.utils.tags,
                             !junit.*,
                             !org.apache.avalon.framework.logger,
+                            !org.apache.tools.ant.*,
+                            !org.hamcrest.*,
+                            !org.apache.xmlbeans.*,
+                            !org.objenesis.*,
+                            !org.junit.*,
                             !org.apache.log,
                             !org.ietf.jgss,
                             !com.ibm.*,
@@ -140,6 +165,7 @@
                             !javax.jmdns.*,
                             !javax.jms.*,
                             !javax.mail.*,
+                            !javax.script.*,
 	                        !javax.management,
 	                        !javax.naming,
 	                        !javax.swing.*,
