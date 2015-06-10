@@ -199,10 +199,16 @@ public class DysowebServlet extends HttpServlet {
 		}
 		// creates the cache directory
 		File fCache = null;
+		String home = null;
+		
 		try {
 			InitialContext ic = new InitialContext();
 			Context nc = (Context) ic.lookup("java:comp/env");
-			String home = (String) nc.lookup("dysoweb.home");
+			home = (String) nc.lookup("dysoweb.home");
+        } catch (NamingException nex) {
+            home = System.getProperty("dysoweb.home");
+		}
+        if(home != null) {
 			File basedir = null;
 			if("dysoweb.home".equals(home)) {
 				if(System.getProperty("jboss.home.dir") != null) {
@@ -221,7 +227,7 @@ public class DysowebServlet extends HttpServlet {
 			}
 			basedir.mkdirs();
 			fCache = basedir;
-		} catch (NamingException nex) {
+		} else {
 			// unable to lookup the requea configuration file
 			fCache = getScratchDir(ctx);
 
@@ -232,6 +238,10 @@ public class DysowebServlet extends HttpServlet {
 			System.out.println("    see http://dysoweb.requea.com/dysopedia/index.php/Configuring_dysoweb_home");
 			System.out.println("-----------------------------");
 		}
+
+        // set the path
+        System.setProperty("dysoweb.home.dir", fCache.getAbsolutePath());
+        
 		fCache.mkdirs();
 		// setup the local cache path
 		configMap.put(BundleCache.CACHE_ROOTDIR_PROP, fCache.getAbsolutePath());
