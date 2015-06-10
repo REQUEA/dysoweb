@@ -448,7 +448,7 @@ public class RequestProcessor implements IWebProcessor {
              */
         	uri = hsr.getServletPath();
             String pathInfo = hsr.getPathInfo();
-            if (pathInfo != null) {
+            if (pathInfo != null && !uri.endsWith(pathInfo)) {
                 uri += pathInfo;
             }
         }
@@ -493,6 +493,12 @@ public class RequestProcessor implements IWebProcessor {
 						fDefaultServlet.service(wrappedRequest, response);
 					}
 					return;
+				} else if(filters != null && filters.length > 0) {
+				    // there is a chain of filters that may be doing something
+                    HttpServletRequest wrappedRequest = new RequestWrapper(fDefaultServlet.getServletContext(), (HttpServletRequest)request);
+                    DefaultServletChain fc = new DefaultServletChain(null, filters);
+                    fc.doFilter(wrappedRequest, response);
+                    return;
 				}
 			}
         } finally {
@@ -1015,8 +1021,6 @@ public class RequestProcessor implements IWebProcessor {
 	        	fTagBundles.put(tagURI, new Long(bundleId));
 	        }
 		} catch (IOException e) {
-			throw new WebAppException(e);
-		} catch (XMLException e) {
 			throw new WebAppException(e);
 		}
 	}
