@@ -72,7 +72,7 @@
                             Requea Dysoweb Portlet Processor
                         </Bundle-Name>
                         <Bundle-SymbolicName>
-                            ${pom.artifactId}
+                            ${project.artifactId}
                         </Bundle-SymbolicName>
                         <Bundle-Vendor>Requea.com</Bundle-Vendor>
                         <Private-Package>com.requea.dysoweb.portlet.bundle,com.requea.dysoweb.portlet.processor,com.requea.dysoweb.portlet.util</Private-Package>

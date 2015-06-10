@@ -67,47 +67,47 @@
 	        <dependency>
 	            <groupId>com.requea.dysoweb</groupId>
 	            <artifactId>dysoweb-core</artifactId>
-	            <version>${version}</version>
+	            <version>${project.version}</version>
 	        </dependency>
 	        <dependency>
 	            <groupId>com.requea.dysoweb</groupId>
 	            <artifactId>com.requea.dysoweb.api</artifactId>
-	            <version>${version}</version>
+	            <version>${project.version}</version>
 	        </dependency>
 	        <dependency>
 	            <groupId>com.requea.dysoweb</groupId>
 	            <artifactId>com.requea.dysoweb.utils.tags</artifactId>
-	            <version>${version}</version>
+	            <version>${project.version}</version>
 	        </dependency>
 	        <dependency>
 	            <groupId>com.requea.dysoweb</groupId>
 	            <artifactId>com.requea.dysoweb.shell</artifactId>
-	            <version>${version}</version>
+	            <version>${project.version}</version>
 	        </dependency>
 	        <dependency>
 	            <groupId>com.requea.dysoweb</groupId>
 	            <artifactId>com.requea.dysoweb.panel</artifactId>
-	            <version>${version}</version>
+	            <version>${project.version}</version>
 	        </dependency>
 	        <dependency>
 	            <groupId>com.requea.dysoweb</groupId>
 	            <artifactId>com.requea.dysoweb.service.obr</artifactId>
-	            <version>${version}</version>
+	            <version>${project.version}</version>
 	        </dependency>
 	        <dependency>
 	            <groupId>com.requea.dysoweb</groupId>
 	            <artifactId>com.requea.dysoweb.obr</artifactId>
-	            <version>${version}</version>
+	            <version>${project.version}</version>
 	        </dependency>
 	        <dependency>
 	            <groupId>com.requea.dysoweb</groupId>
 	            <artifactId>com.requea.dysoweb.processor</artifactId>
-	            <version>${version}</version>
+	            <version>${project.version}</version>
 	        </dependency>
 	        <dependency>
 	            <groupId>com.requea.dysoweb</groupId>
 	            <artifactId>com.requea.dysoweb.log4j</artifactId>
-	            <version>${version}</version>
+	            <version>${project.version}</version>
 	        </dependency>
 
 

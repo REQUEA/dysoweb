@@ -63,7 +63,7 @@
             <groupId>com.requea.dysoweb</groupId>
             <artifactId>com.requea.dysoweb.service.obr</artifactId>
             <scope>provided</scope>
-            <version>${version}</version>
+            <version>${project.version}</version>
         </dependency>
 	</dependencies>
 	<build>
@@ -103,7 +103,7 @@
                         <Bundle-Name>Requea Dysoweb OBR</Bundle-Name>                    
 			            <Private-Package>com.requea.dysoweb.bundlerepository,com.requea.dysoweb.bundlerepository.metadataparser,com.requea.dysoweb.bundlerepository.metadataparser.kxmlsax</Private-Package>
                         <Bundle-Vendor>Requea.com</Bundle-Vendor>
-			            <Bundle-SymbolicName>${pom.artifactId}</Bundle-SymbolicName>
+			            <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 			            <Bundle-Activator>com.requea.dysoweb.bundlerepository.Activator</Bundle-Activator>
                         <Bundle-ClassPath>.,lib/kxml2-2.2.2.jar</Bundle-ClassPath>
                         <Import-Package>

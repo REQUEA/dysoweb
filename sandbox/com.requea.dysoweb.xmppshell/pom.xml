@@ -101,7 +101,7 @@
                             com.requea.dysoweb.xmpp.impl
                         </Private-Package>
                         <Bundle-SymbolicName>
-                            ${pom.artifactId}
+                            ${project.artifactId}
                         </Bundle-SymbolicName>
                         <Bundle-ClassPath>.,lib/smack-3.0.4.jar,lib/smackx-3.0.4.jar</Bundle-ClassPath>
                         <Include-Resource>lib=target/lib</Include-Resource>

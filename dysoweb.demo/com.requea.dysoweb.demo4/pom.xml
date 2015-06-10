@@ -115,7 +115,7 @@
                             com.requea.dysoweb.demo4
                         </Private-Package>
                         <Bundle-SymbolicName>
-                            ${pom.artifactId}
+                            ${project.artifactId}
                         </Bundle-SymbolicName>
                         <Bundle-Activator>
                             com.requea.dysoweb.demo4.Activator

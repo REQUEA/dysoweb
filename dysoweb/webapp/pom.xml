@@ -75,11 +75,11 @@
 						<phase>compile</phase>
 						<configuration>
 							<tasks>
-								<echo>Processing dysoweb.properties file with ${version}</echo>
+								<echo>Processing dysoweb.properties file with ${project.version}</echo>
 								<copy file="src/main/config/dysoweb.properties" toFile="target/dysoweb/WEB-INF/classes/dysoweb.properties" />
 								<replace file="target/dysoweb/WEB-INF/classes/dysoweb.properties" summary="true">
 									<replacetoken>@version</replacetoken>
-									<replacevalue>${version}</replacevalue>							
+									<replacevalue>${project.version}</replacevalue>							
 								</replace>
 							</tasks>
 						</configuration>

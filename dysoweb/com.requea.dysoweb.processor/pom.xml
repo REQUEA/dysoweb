@@ -233,7 +233,7 @@
                             Requea Dysoweb Processor
                         </Bundle-Name>
                         <Bundle-SymbolicName>
-                            ${pom.artifactId}
+                            ${project.artifactId}
                         </Bundle-SymbolicName>
                         <Bundle-Vendor>Requea.com</Bundle-Vendor>
                         <Private-Package>org.apache.jasper.*,com.requea.dysoweb.bundle,com.requea.dysoweb.defaultservlet,com.requea.dysoweb.org.*,com.requea.dysoweb.util.xml,com.requea.dysoweb.util.xml.impl,com.requea.dysoweb.processor,com.requea.dysoweb.processor.definitions,com.requea.dysoweb.servlet.*</Private-Package>

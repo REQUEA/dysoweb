@@ -22,12 +22,12 @@
 	        <dependency>
 	            <groupId>com.requea.dysoweb.portlet</groupId>
 	            <artifactId>portlet-core</artifactId>
-	            <version>${version}</version>
+	            <version>${project.version}</version>
 	        </dependency>
 	        <dependency>
 	            <groupId>com.requea.dysoweb.portlet</groupId>
 	            <artifactId>com.requea.dysoweb.portlet.processor</artifactId>
-	            <version>${version}</version>
+	            <version>${project.version}</version>
 	        </dependency>
 		</dependencies>
 	</dependencyManagement>	

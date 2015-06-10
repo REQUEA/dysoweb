@@ -49,7 +49,7 @@
 				<configuration>
 					<instructions>
                         <Bundle-Name>Requea Dysoweb API</Bundle-Name>                    
-                        <Bundle-SymbolicName>${pom.artifactId}</Bundle-SymbolicName>
+                        <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Vendor>Requea.com</Bundle-Vendor>
 			            <Export-Package>com.requea.dysoweb</Export-Package>
                         <Private-Package>com.requea.dysoweb.impl,com.requea.dysoweb.xml.impl</Private-Package>

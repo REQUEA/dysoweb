@@ -78,7 +78,7 @@
                             com.requea.dysoweb.log4j.Activator
                         </Bundle-Activator>
 						<Bundle-SymbolicName>
-							${pom.artifactId}
+							${project.artifactId}
 						</Bundle-SymbolicName>
                         <Include-Resource>lib=target/lib,src/main/resources</Include-Resource>
  						<Bundle-ClassPath>.,lib/mail-1.4.jar,lib/activation-1.1.jar</Bundle-ClassPath>
