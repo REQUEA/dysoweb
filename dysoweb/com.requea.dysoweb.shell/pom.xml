@@ -32,7 +32,7 @@
             <groupId>com.requea.dysoweb</groupId>
             <artifactId>com.requea.dysoweb.processor</artifactId>
             <scope>provided</scope>
-            <version>${version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>
@@ -72,7 +72,7 @@
                         <Bundle-Name>Requea Dysoweb Ajax Shell Webapp</Bundle-Name>                    
 			            <Private-Package>com.requea.dysoweb.shell.impl,com.requea.dysoweb.shell.util.xml</Private-Package>
                         <Bundle-Vendor>Requea.com</Bundle-Vendor>
-			            <Bundle-SymbolicName>${pom.artifactId}</Bundle-SymbolicName>
+			            <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 			            <Bundle-Activator>com.requea.dysoweb.shell.impl.Activator</Bundle-Activator>
                         <Import-Service>org.apache.felix.shell.ShellService</Import-Service>
                         <Include-Resource>webapp=src/main/webapp</Include-Resource>

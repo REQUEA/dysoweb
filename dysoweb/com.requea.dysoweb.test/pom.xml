@@ -62,7 +62,7 @@
                         <Bundle-Name>Requea Dysoweb Test Webapp</Bundle-Name>                    
 			            <Private-Package>com.requea.dysoweb.test</Private-Package>
                         <Bundle-Vendor>Requea.com</Bundle-Vendor>
-			            <Bundle-SymbolicName>${pom.artifactId}</Bundle-SymbolicName>
+			            <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 			            <Bundle-Activator>com.requea.dysoweb.test.Activator</Bundle-Activator>
 						<Import-Package>*</Import-Package>
                         <Include-Resource>webapp=src/main/webapp</Include-Resource>

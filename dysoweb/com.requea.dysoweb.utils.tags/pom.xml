@@ -66,7 +66,7 @@
                             com.requea.dysoweb.utils.impl,com.requea.dysoweb.utils.impl.*
                         </Private-Package>
                         <Bundle-SymbolicName>
-                            ${pom.artifactId}
+                            ${project.artifactId}
                         </Bundle-SymbolicName>
                         <Bundle-Activator>
                             com.requea.dysoweb.utils.impl.Activator

@@ -50,7 +50,7 @@
 					<instructions>
                         <Bundle-Name>Requea Dysoweb OBR API</Bundle-Name>                    
                         <Bundle-Vendor>Requea.com</Bundle-Vendor>
-			            <Bundle-SymbolicName>${pom.artifactId}</Bundle-SymbolicName>
+			            <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Export-Package>com.requea.dysoweb.service.obr;version="2.2.23"</Export-Package>
 					</instructions>
 				</configuration>
