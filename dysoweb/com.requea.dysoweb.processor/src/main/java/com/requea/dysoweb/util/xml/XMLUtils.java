@@ -1,46 +1,25 @@
-// ========================================================================
-// Copyright 2007 Requea.
-// ------------------------------------------------------------------------
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at 
-// http://www.apache.org/licenses/LICENSE-2.0
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-// ========================================================================
-
+/*
+ */
 package com.requea.dysoweb.util.xml;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.util.Stack;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+
 
 
 
@@ -50,80 +29,29 @@ import org.xml.sax.SAXParseException;
  */
 public class XMLUtils {
 
-    private static DocumentBuilderFactory fDocumentFactory;
+    private static DocumentBuilderFactory fFactory;
     private static Stack fParsersPool = new Stack();
 
-    /**
-     * Public Id and the Resource path (of the cached copy) 
-     * of the DTDs for tag library descriptors. 
-     */
-    public static final String TAGLIB_DTD_PUBLIC_ID_11 = 
-	"-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.1//EN";
-    public static final String TAGLIB_DTD_RESOURCE_PATH_11 = 
-	"/javax/servlet/jsp/resources/web-jsptaglibrary_1_1.dtd";
-    public static final String TAGLIB_DTD_PUBLIC_ID_12 = 
-	"-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.2//EN";
-    public static final String TAGLIB_DTD_RESOURCE_PATH_12 = 
-	"/javax/servlet/jsp/resources/web-jsptaglibrary_1_2.dtd";
-
-    /**
-     * Public Id and the Resource path (of the cached copy) 
-     * of the DTDs for web application deployment descriptors
-     */
-    public static final String WEBAPP_DTD_PUBLIC_ID_22 = 
-	"-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN";
-    public static final String WEBAPP_DTD_RESOURCE_PATH_22 = 
-	"/javax/servlet/resources/web-app_2_2.dtd";
-    public static final String WEBAPP_DTD_PUBLIC_ID_23 = 
-	"-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN";
-    public static final String WEBAPP_DTD_RESOURCE_PATH_23 = 
-	"/javax/servlet/resources/web-app_2_3.dtd";
-
-    /**
-     * List of the Public IDs that we cache, and their
-     * associated location. This is used by 
-     * an EntityResolver to return the location of the
-     * cached copy of a DTD.
-     */
-    public static final String[] CACHED_DTD_PUBLIC_IDS = {
-	TAGLIB_DTD_PUBLIC_ID_11,
-	TAGLIB_DTD_PUBLIC_ID_12,
-	WEBAPP_DTD_PUBLIC_ID_22,
-	WEBAPP_DTD_PUBLIC_ID_23,
-    };
-    public static final String[] CACHED_DTD_RESOURCE_PATHS = {
-	TAGLIB_DTD_RESOURCE_PATH_11,
-	TAGLIB_DTD_RESOURCE_PATH_12,
-	WEBAPP_DTD_RESOURCE_PATH_22,
-	WEBAPP_DTD_RESOURCE_PATH_23,
-    };
-
-
-    private static synchronized void initFactory() {
-    	if(fDocumentFactory != null) 
-    		return;
-    	
-    	fDocumentFactory =
+    static {
+        fFactory =
             DocumentBuilderFactory.newInstance();
-    	fDocumentFactory.setNamespaceAware(true);
-    	fDocumentFactory.setIgnoringElementContentWhitespace(true);
-    	fDocumentFactory.setValidating(false);
+        fFactory.setNamespaceAware(true);
+        fFactory.setIgnoringElementContentWhitespace(true);
+        fFactory.setValidating(false);
     }
     
     public static synchronized DocumentBuilder getParser() throws ParserConfigurationException {
-    	if(fParsersPool.isEmpty()) {
-    		// create a new parser
-    		initFactory();
-    		DocumentBuilder builder = fDocumentFactory.newDocumentBuilder();
-            builder.setEntityResolver(entityResolver);
-    		return builder;
-    	} else {
-    		return (DocumentBuilder)fParsersPool.pop();
-    	}
+        if(fParsersPool.isEmpty()) {
+            // create a new parser
+            DocumentBuilder builder = fFactory.newDocumentBuilder();
+            return builder;
+        } else {
+            return (DocumentBuilder)fParsersPool.pop();
+        }
     }
     public static synchronized void releaseParser(DocumentBuilder parser) {
-    	if(parser != null)
-    	    fParsersPool.push(parser);
+        if(parser != null)
+            fParsersPool.push(parser);
     }
     
     /**
@@ -133,27 +61,27 @@ public class XMLUtils {
      * @throws XMLException
      */
     public static Document parse(InputStream is) throws XMLException {
-    	DocumentBuilder builder = null;
-    	try {
-    		builder = getParser();
-	        // parse the document
-	        try {
-	            Document doc = builder.parse(is);
-	            return doc;
-	        } catch (SAXParseException e) {
-	            String msg = e.getLocalizedMessage();
-	            msg += " line:" + e.getLineNumber();
-	            throw new XMLException(msg);
-	        } catch (SAXException e) {
-	            throw new XMLException(e);
-	        } catch (IOException e) {
-	            throw new XMLException(e);
-	        }
+        DocumentBuilder builder = null;
+        try {
+            builder = getParser();
+            // parse the document
+            try {
+                Document doc = builder.parse(is);
+                return doc;
+            } catch (SAXParseException e) {
+                String msg = e.getLocalizedMessage();
+                msg += " line:" + e.getLineNumber();
+                throw new XMLException(msg);
+            } catch (SAXException e) {
+                throw new XMLException(e);
+            } catch (IOException e) {
+                throw new XMLException(e);
+            }
         } catch (ParserConfigurationException e) {
             throw new XMLException(e);
         } finally {
-    		releaseParser(builder);
-    	}
+            releaseParser(builder);
+        }
     }
 
     /**
@@ -163,24 +91,24 @@ public class XMLUtils {
      * @throws XMLException
      */
     public static Document parse(String xml) throws XMLException {
-    	DocumentBuilder builder = null;
-    	try {
-    		builder = getParser();
-	        // parse the document
-	        try {
-	            InputStream is = new ByteArrayInputStream(xml.getBytes());
-	            Document doc = builder.parse(is);
-	            return doc;
-	        } catch (SAXException e) {    
-	            throw new XMLException(e);
-	        } catch (IOException e) {
-	            throw new XMLException(e); 
-	        }
+        DocumentBuilder builder = null;
+        try {
+            builder = getParser();
+            // parse the document
+            try {
+                InputStream is = new ByteArrayInputStream(xml.getBytes("UTF-8"));
+                Document doc = builder.parse(is);
+                return doc;
+            } catch (SAXException e) {    
+                throw new XMLException(e);
+            } catch (IOException e) {
+                throw new XMLException(e); 
+            }
         } catch (ParserConfigurationException e) {
             throw new XMLException(e);
         } finally {
-    		releaseParser(builder);
-    	}
+            releaseParser(builder);
+        }
     }
 
 
@@ -189,15 +117,15 @@ public class XMLUtils {
      * @return
      */
     public static Document newDocument() {
-    	DocumentBuilder builder = null;
-    	try {
-    		builder = getParser();
+        DocumentBuilder builder = null;
+        try {
+            builder = getParser();
             return builder.newDocument();
-	    } catch (ParserConfigurationException e) {
-	        throw new RuntimeException(e);
-	    } finally {
-			releaseParser(builder);
-		}
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException(e);
+        } finally {
+            releaseParser(builder);
+        }
     }
 
     /**
@@ -206,31 +134,30 @@ public class XMLUtils {
      * @return
      */
     public static Element newElement(String name) {
-    	DocumentBuilder builder = null;
-    	try {
-    		builder = getParser();
+        DocumentBuilder builder = null;
+        try {
+            builder = getParser();
             Document doc = builder.newDocument();
             Element el = doc.createElement(name);
             doc.appendChild(el);
             return el;
-	    } catch (ParserConfigurationException e) {
-	        throw new RuntimeException(e);
-	    } finally {
-			releaseParser(builder);
-		}
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException(e);
+        } finally {
+            releaseParser(builder);
+        }
     }
 
     /**
      * Serialize an element to a string.
      * @param element
      * @return
-     * @throws XMLException 
      */
-    public static String ElementToString(Element element) throws XMLException {
+    public static String ElementToString(Element element) {
         return privateElementToString(element, true, true);
     }
 
-    public static String ElementToString(Element element, boolean pretty) throws XMLException {
+    public static String ElementToString(Element element, boolean pretty) {
         return privateElementToString(element, true, pretty);
     }
 
@@ -239,10 +166,10 @@ public class XMLUtils {
      * @param doc
      * @return
      */
-    public static String DocumentToString(Document doc) throws XMLException {
+    public static String DocumentToString(Document doc) {
         return privateElementToString(doc.getDocumentElement(), false, true);
     }
-    public static String DocumentToString(Document doc, boolean pretty) throws XMLException  {
+    public static String DocumentToString(Document doc, boolean pretty) {
         return privateElementToString(doc.getDocumentElement(), false, pretty);
     }
 
@@ -255,18 +182,18 @@ public class XMLUtils {
      * @return
      */
     public static Element getChild(Element parent, String name) {
-    	Element child = getFirstChild(parent);
-    	while(child != null) {
-        	String tagName = child.getTagName(); 
-    		if(tagName != null && tagName.equals(name)) {
-    			return child;
-    		}
-    		if(child.getPrefix() != null && child.getPrefix().equals(parent.getPrefix()) && child.getLocalName() != null && child.getLocalName().equals(name)) {
-    			return child;
-    		}
-    		child = getNext(child);
-    	}
-    	return child;
+        Element child = getFirstChild(parent);
+        while(child != null) {
+            String tagName = child.getTagName(); 
+            if(tagName != null && tagName.equals(name)) {
+                return child;
+            }
+            if(child.getPrefix() != null && child.getPrefix().equals(parent.getPrefix()) && child.getLocalName() != null && child.getLocalName().equals(name)) {
+                return child;
+            }
+            child = getNext(child);
+        }
+        return child;
     }
 
     /**
@@ -278,18 +205,18 @@ public class XMLUtils {
      * @return
      */
     public static Element getChild(Element parent, String ns, String name) {
-    	Element child = getFirstChild(parent);
-    	while(child != null) {
-    		if(child.getLocalName().equals(name)) {
-    			if(ns == null && child.getNamespaceURI() == null) {
-    				return child;
-    			} else if(ns != null && ns.equals(child.getNamespaceURI())) {
-        			return child;
-    			}
-    		}
-    		child = getNext(child);
-    	}
-    	return child;
+        Element child = getFirstChild(parent);
+        while(child != null) {
+            if(child.getLocalName().equals(name)) {
+                if(ns == null && child.getNamespaceURI() == null) {
+                    return child;
+                } else if(ns != null && ns.equals(child.getNamespaceURI())) {
+                    return child;
+                }
+            }
+            child = getNext(child);
+        }
+        return child;
     }
 
     /**
@@ -298,9 +225,9 @@ public class XMLUtils {
      * @return
      */
     public static Element getFirstChild(Element el) {
-    	if(el == null) {
-    		return null;
-    	}
+        if(el == null) {
+            return null;
+        }
         NodeList lst = el.getChildNodes();
         int len = lst.getLength();
         for (int i = 0; i < len; i++) {
@@ -336,14 +263,14 @@ public class XMLUtils {
      * @return
      */
     public static Element getNextSibling(Element el) {
-    	String tagName = el.getTagName();
-    	if(tagName == null) {
-    		return null;
-    	}
-    	Node n = el.getNextSibling();
+        String tagName = el.getTagName();
+        if(tagName == null) {
+            return null;
+        }
+        Node n = el.getNextSibling();
         while (n != null && (
-        		!(n instanceof Element) || 
-        		!tagName.equals(((Element)n).getTagName()))) {
+                !(n instanceof Element) || 
+                !tagName.equals(((Element)n).getTagName()))) {
             // get the next one
             n = n.getNextSibling();
         }
@@ -351,8 +278,8 @@ public class XMLUtils {
         if (n instanceof Element) {
             return (Element) n;
         } else {
-	        // else, nothing to return
-	        return null;
+            // else, nothing to return
+            return null;
         }
     }
 
@@ -371,8 +298,8 @@ public class XMLUtils {
         if (n instanceof Element) {
             return (Element) n;
         } else {
-	        // else, nothing to return
-	        return null;
+            // else, nothing to return
+            return null;
         }
     }
 
@@ -384,8 +311,8 @@ public class XMLUtils {
     public static Element getPreviousSibling(Element el) {
         Node n = el.getPreviousSibling();
         while (n != null && ( 
-        		!(n instanceof Element) || 
-        		!el.getTagName().equals(((Element)n).getTagName()))) {
+                !(n instanceof Element) || 
+                !el.getTagName().equals(((Element)n).getTagName()))) {
             // get the next one
             n = n.getPreviousSibling();
         }
@@ -393,8 +320,8 @@ public class XMLUtils {
         if (n instanceof Element) {
             return (Element) n;
         } else {
-	        // else, nothing to return
-	        return null;
+            // else, nothing to return
+            return null;
         }
     }
 
@@ -418,20 +345,24 @@ public class XMLUtils {
         // trim the result, ignoring the first spaces and cariage return
         int iFirst =0;
         for(; iFirst<b.length(); iFirst++) {
-        	char c = b.charAt(iFirst);
-        	if(c != ' ' && c != '\r' && c != '\n' && c != '\t') {
-        		break;
-        	}
+            char c = b.charAt(iFirst);
+            if(c != ' ' && c != '\r' && c != '\n' && c != '\t') {
+                break;
+            }
         }
         // start by the end as well
         int iLast = b.length()-1; 
         for(; iLast>=0; iLast--) {
-        	char c = b.charAt(iLast);
-        	if(c != ' ' && c != '\r' && c != '\n' && c != '\t') {
-        		break;
-        	}
+            char c = b.charAt(iLast);
+            if(c != ' ' && c != '\r' && c != '\n' && c != '\t') {
+                break;
+            }
         }
-        return b.substring(iFirst, iLast+1);
+        if(iLast < iFirst) {
+            return "";
+        } else {
+            return b.substring(iFirst, iLast+1);
+        }
     }
 
     /**
@@ -499,7 +430,7 @@ public class XMLUtils {
         Element child = addElement(parent, name);
         // create a text node
         if(textValue == null) {
-        	textValue = "";
+            textValue = "";
         }
         Text txt = child.getOwnerDocument().createTextNode(textValue);
         child.appendChild(txt);
@@ -517,7 +448,7 @@ public class XMLUtils {
             el.removeChild(el.getFirstChild());
         }
         if(value == null) {
-        	value = "";
+            value = "";
         }
         Text txt = el.getOwnerDocument().createTextNode(value);
         el.appendChild(txt);
@@ -534,7 +465,7 @@ public class XMLUtils {
             el.removeChild(el.getFirstChild());
         }
         if(value == null) {
-        	value = "";
+            value = "";
         }
         CDATASection txt = el.getOwnerDocument().createCDATASection(value);
         el.appendChild(txt);
@@ -572,47 +503,17 @@ public class XMLUtils {
     private static String privateElementToString(
         Element element,
         boolean omitXMLDecl,
-		boolean pretty) throws XMLException {
-    	
+        boolean pretty) {
+        
         return DOM2Writer.nodeToString(element, omitXMLDecl, pretty);
     }
     
-	public static String getAttribute(Element el, String att) {
-		String str = el.getAttribute(att);
-		if(str == null || str.length() == 0) {
-			return null;
-		} else {
-			return str;
-		}
-	}
-	
-    static EntityResolver entityResolver = new MyEntityResolver();
-
-	static private class MyEntityResolver implements EntityResolver {
-
-	    // Logger
-	    private Log log = LogFactory.getLog(MyEntityResolver.class);
-
-	    public InputSource resolveEntity(String publicId, String systemId)
-	            throws SAXException {
-	        for (int i = 0; i < CACHED_DTD_PUBLIC_IDS.length; i++) {
-	            String cachedDtdPublicId = CACHED_DTD_PUBLIC_IDS[i];
-	            if (cachedDtdPublicId.equals(publicId)) {
-	                String resourcePath = CACHED_DTD_RESOURCE_PATHS[i];
-	                InputStream input = this.getClass().getResourceAsStream(
-	                        resourcePath);
-	                if (input == null) {
-	                    throw new SAXException("file.not.found"+resourcePath);
-	                }
-	                InputSource isrc = new InputSource(input);
-	                return isrc;
-	            }
-	        }
-	        if (log.isDebugEnabled())
-	            log.debug("Resolve entity failed" + publicId + " " + systemId);
-	        log.error("jsp.error.parse.xml.invalidPublicId" + publicId);
-	        return null;
-	    }
-	}
-
+    public static String getAttribute(Element el, String att) {
+        String str = el.getAttribute(att);
+        if(str == null || str.length() == 0) {
+            return null;
+        } else {
+            return str;
+        }
+    }
 }
