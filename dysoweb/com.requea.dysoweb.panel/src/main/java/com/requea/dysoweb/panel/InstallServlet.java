@@ -41,15 +41,11 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -62,10 +58,6 @@ import org.osgi.service.packageadmin.PackageAdmin;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.btr.proxy.search.ProxySearch;
-import com.btr.proxy.selector.fixed.FixedProxySelector;
-import com.btr.proxy.selector.pac.PacProxySelector;
-import com.btr.proxy.selector.pac.UrlPacScriptSource;
 import com.requea.dysoweb.panel.SecurityServlet.RegistrationException;
 import com.requea.dysoweb.panel.monitor.AjaxProgressMonitor;
 import com.requea.dysoweb.panel.tags.ErrorTag;
@@ -1276,6 +1268,13 @@ public class InstallServlet extends HttpServlet {
 				req.setAttribute(CATEGORIES, categories);
 			} catch(XMLException e) {
 				req.setAttribute(ErrorTag.ERROR, "Unable to find repository information. Please try later, or check the repository URL");
+				
+				// unable to parse content: get the content and output it to the 
+		        httpget = new HttpGet(repoURL);
+		        response = m_httpClient.execute(m_targetHost, httpget);
+		        entity = response.getEntity();
+		        String str = EntityUtils.toString(entity);
+		        System.out.println(str);
 			}
 		}
 	}
@@ -1453,6 +1452,7 @@ public class InstallServlet extends HttpServlet {
 	public void initHttpClient(Element elConfig) throws Exception {
 
         SSLContext sslcontext = createSSLContext();
+        
         // Allow client cert
         SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
                 sslcontext,
