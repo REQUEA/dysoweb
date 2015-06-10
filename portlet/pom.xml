@@ -3,13 +3,13 @@
 	<groupId>com.requea.dysoweb.portlet</groupId>
 	<artifactId>main</artifactId>
 	<packaging>pom</packaging>
-	<version>1.0.37-SNAPSHOT</version>
+	<version>1.0.37</version>
 	<name>Requea Dysoweb Portlet Support</name>
 	<url>http://www.requea.com</url>
 	<parent>
 		<artifactId>main</artifactId>
 		<groupId>com.requea.dysoweb</groupId>
-		<version>1.0.37-SNAPSHOT</version>
+		<version>1.0.37</version>
 	</parent>
 	<modules>
 		<module>portlet-core</module>
