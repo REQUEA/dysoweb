@@ -106,6 +106,13 @@
 			<url>http://maven.requea.com/repo/</url>
 		</repository>
 	</repositories>
+    <distributionManagement>
+        <repository>
+            <id>requea-maven-repository</id>
+            <name>Requea repository</name>
+            <url>scp://build@maven.requea.com:/home/maven/repo/</url>
+        </repository>
+    </distributionManagement>
 
 	<scm>
 		<connection>scm:svn:svn+ssh://pdubois@svn.forge.objectweb.org/svnroot/dysoweb/trunk</connection>
