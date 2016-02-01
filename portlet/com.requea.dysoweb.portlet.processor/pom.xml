@@ -18,14 +18,14 @@
 	<parent>
 		<artifactId>main</artifactId>
 		<groupId>com.requea.dysoweb.portlet</groupId>
-		<version>1.0.41-SNAPSHOT</version>
+		<version>1.0.41</version>
 	</parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.requea.dysoweb.portlet</groupId>
     <artifactId>com.requea.dysoweb.portlet.processor</artifactId>
     <packaging>bundle</packaging>
     <name>Requea Dysoweb Portlet Processor</name>
-	<version>1.0.41-SNAPSHOT</version>
+	<version>1.0.41</version>
     <url>http://www.requea.com</url>
     <dependencies>
         <dependency>
