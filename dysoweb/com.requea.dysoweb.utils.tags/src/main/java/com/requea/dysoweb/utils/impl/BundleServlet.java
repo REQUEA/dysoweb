@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 
+
 public class BundleServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
@@ -73,8 +74,6 @@ public class BundleServlet extends HttpServlet {
 		
 		// redirect to the refererer (if any)
 		String ru = request.getParameter("ru");
-		if(ru == null)
-			ru = request.getHeader("Referer");
 		if(ru == null)
 			ru = request.getContextPath();
 		

@@ -49,11 +49,12 @@ function pb(elt) {
 							<table width="100%">
                                 <tr><td class="lbl">Settings</td><td class="val"><panel:input name="Settings" style="radio" /></td></tr>							
                                 <panel:input name="ManualSettings">                              
-								<tr><td class="lbl">Proxy PAC:</td><td class="val"><panel:input name="ProxyPAC"/></td></tr>
 								<tr><td class="lbl">Proxy Host:</td><td class="val"><panel:input name="ProxyHost"/></td></tr>
 								<tr><td class="lbl">Proxy Port:</td><td class="val"><panel:input name="ProxyPort" size="4"/></td></tr>
+								<tr><td class="lbl">or Proxy PAC URL:</td><td class="val"><panel:input name="ProxyPAC"/></td></tr>
 								<tr><td class="lbl">Proxy Authorization Name:</td><td class="val"><panel:input name="ProxyUsername"/></td></tr>
                                 <tr><td class="lbl">Proxy Authorization Password:</td><td class="val"><panel:input name="ProxyPassword"/></td></tr>
+                                <tr><td class="lbl">Proxy Authorization Domain (NTLM only):</td><td class="val"><panel:input name="ProxyNTDomain"/></td></tr>
                                 </panel:input>
 							</table>							
 							<table width="100%">

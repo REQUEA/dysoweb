@@ -18,23 +18,23 @@
 	<parent>
 		<artifactId>dysoweb</artifactId>
 		<groupId>com.requea.dysoweb</groupId>
-		<version>1.0.38-SNAPSHOT</version>
+		<version>1.0.39-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.requea.dysoweb</groupId>
 	<artifactId>com.requea.dysoweb.api</artifactId>
     <packaging>bundle</packaging>
 	<name>Requea Dysoweb API</name>
-	<version>1.0.38-SNAPSHOT</version>
+	<version>1.0.39-SNAPSHOT</version>
 	<url>http://www.requea.com</url>
 	<dependencies>
 		<dependency>
 			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
+			<artifactId>javax.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
         <dependency>
-            <groupId>org.apache.felix</groupId>
+			<groupId>org.osgi</groupId>
             <artifactId>org.osgi.core</artifactId>
             <scope>provided</scope>
         </dependency>

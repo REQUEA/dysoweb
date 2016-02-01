@@ -18,18 +18,18 @@
 	<parent>
 		<artifactId>dysoweb</artifactId>
 		<groupId>com.requea.dysoweb</groupId>
-		<version>1.0.38-SNAPSHOT</version>
+		<version>1.0.39-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.requea.dysoweb</groupId>
 	<artifactId>com.requea.dysoweb.obr</artifactId>
 	<packaging>bundle</packaging>
 	<name>Requea Dysoweb OBR</name>
-	<version>1.0.38-SNAPSHOT</version>
+	<version>1.0.39-SNAPSHOT</version>
 	<url>http://www.requea.com</url>
     <dependencies>
         <dependency>
-            <groupId>org.apache.felix</groupId>
+			<groupId>org.osgi</groupId>
             <artifactId>org.osgi.core</artifactId>
             <scope>provided</scope>
         </dependency>
@@ -38,16 +38,34 @@
 	        <artifactId>org.osgi.compendium</artifactId>
 	        <version>1.2.0</version>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+					<groupId>org.apache.felix</groupId>
+					<artifactId>org.osgi.core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.osgi.service.obr</artifactId>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+					<groupId>org.apache.felix</groupId>
+					<artifactId>org.osgi.core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.shell</artifactId>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+					<groupId>org.apache.felix</groupId>
+					<artifactId>org.osgi.core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 		<dependency>
 			<groupId>com.requea.dysoweb</groupId>

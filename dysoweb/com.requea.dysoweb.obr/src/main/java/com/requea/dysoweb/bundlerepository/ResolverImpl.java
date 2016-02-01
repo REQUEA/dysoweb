@@ -57,7 +57,6 @@ public class ResolverImpl implements MonitoredResolver
     private Map m_unsatisfiedMap = new HashMap();
     private boolean m_resolved = false;
 	private HttpClientExecutor m_executor;
-	
 
     public ResolverImpl(BundleContext context, RepositoryAdmin admin, Logger logger, HttpClientExecutor executor)
     {
@@ -420,7 +419,7 @@ public class ResolverImpl implements MonitoredResolver
                 {
                     // If there is no best version or if the current
                     // resource's version is lower, then select it.
-                    if ((bestVersion == null) || (bestVersion.compareTo(v) < 0))
+                    if ((bestVersion == null) || (bestVersion.compareTo((Version)v) < 0))
                     {
                         best = currentResource;
                         bestVersion = (Version) v;
@@ -428,7 +427,7 @@ public class ResolverImpl implements MonitoredResolver
                     // If the current resource version is equal to the
                     // best, then select the one with the greatest
                     // number of capabilities.
-                    else if ((bestVersion != null) && (bestVersion.compareTo(v) == 0)
+                    else if ((bestVersion != null) && (bestVersion.compareTo((Version)v) == 0)
                             && (best.getCapabilities().length < currentResource.getCapabilities().length))
                     {
                         best = currentResource;

@@ -13,13 +13,13 @@ import java.io.ObjectStreamClass;
 import java.io.OutputStream;
 import java.io.Serializable;
 
-import org.apache.felix.framework.Felix;
-import org.apache.felix.framework.ModuleImpl;
+import org.apache.felix.framework.BundleWiringImpl;
 
 //import org.apache.felix.framework. .searchpolicy. .ModuleImpl;
 //import org.apache.felix.moduleloader.IModule;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.launch.Framework;
 
 import com.requea.dysoweb.DysowebServlet;
 
@@ -123,11 +123,11 @@ public class DysowebSessionSerializer implements Externalizable {
 		protected void annotateClass(Class cls) throws IOException {
 
 			ClassLoader cl = cls.getClassLoader();
-			if(cl instanceof ModuleImpl.ModuleClassLoader) {
+			if(cl instanceof BundleWiringImpl.BundleClassLoader) {
 				// class loaded by bundle
-				Felix platform = DysowebServlet.getPlatform();
+				Framework platform = DysowebServlet.getPlatform();
 				if(platform != null) {
-					Bundle b = ((ModuleImpl.ModuleClassLoader)cl).getBundle();
+					Bundle b = ((BundleWiringImpl.BundleClassLoader)cl).getBundle();
 					// get the symbolic name
 					String symName = b == null ? null : b.getSymbolicName();
 					if(symName != null) {
@@ -167,7 +167,7 @@ public class DysowebSessionSerializer implements Externalizable {
 					}
 				} else {
 					// retrieve the bundle
-					Felix platform = DysowebServlet.getPlatform();
+					Framework platform = DysowebServlet.getPlatform();
 					BundleContext context = platform.getBundleContext();
 					Bundle[] bundles = context.getBundles();
 					Bundle b = null;

@@ -2,14 +2,14 @@
 	<parent>
 		<artifactId>dysoweb</artifactId>
 		<groupId>com.requea.dysoweb</groupId>
-		<version>1.0.38-SNAPSHOT</version>
+		<version>1.0.39-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.requea.dysoweb</groupId>
 	<artifactId>webapp</artifactId>
 	<packaging>war</packaging>
 	<name>Requea Dysoweb WebApp</name>
-	<version>1.0.38-SNAPSHOT</version>
+	<version>1.0.39-SNAPSHOT</version>
 	<url>http://www.requea.com</url>
 	<dependencies>
 		<dependency>
@@ -20,7 +20,6 @@
 			<groupId>com.requea.dysoweb</groupId>
 			<artifactId>dysoweb-core</artifactId>
 		</dependency>
-		
 		<!--  dependencies used only to order properly pom build -->
 		<dependency>
 			<groupId>com.requea.dysoweb</groupId>

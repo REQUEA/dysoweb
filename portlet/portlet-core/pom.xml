@@ -3,22 +3,22 @@
 	<parent>
 		<artifactId>main</artifactId>
 		<groupId>com.requea.dysoweb.portlet</groupId>
-		<version>1.0.38-SNAPSHOT</version>
+		<version>1.0.39-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.requea.dysoweb.portlet</groupId>
 	<artifactId>portlet-core</artifactId>
 	<name>Requea Dysoweb Portlet Bootstrap</name>
-	<version>1.0.38-SNAPSHOT</version>
+	<version>1.0.39-SNAPSHOT</version>
 	<url>http://www.requea.com</url><dependencies>
 		<dependency>
 			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
+			<artifactId>javax.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>jsp-api</artifactId>
+			<groupId>javax.servlet.jsp</groupId>
+			<artifactId>javax.servlet.jsp-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>

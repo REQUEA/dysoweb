@@ -56,6 +56,7 @@ public class SecurityServlet extends HttpServlet {
 		if ("auth".equals(op)) {
 
 			String ru = request.getParameter("ru");
+			// check host name
 			request.setAttribute("com.requea.dysoweb.panel.ru", ru == null ? ""
 					: ru);
 

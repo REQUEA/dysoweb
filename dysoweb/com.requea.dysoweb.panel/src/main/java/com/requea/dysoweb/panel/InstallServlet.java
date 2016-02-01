@@ -10,11 +10,10 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.Writer;
-import java.net.Authenticator;
 import java.net.InetAddress;
-import java.net.PasswordAuthentication;
 import java.net.ProxySelector;
 import java.net.URL;
+import java.net.URLConnection;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.text.DateFormat;
@@ -40,12 +39,19 @@ import javax.servlet.http.HttpSession;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.NTCredentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
@@ -103,8 +109,10 @@ public class InstallServlet extends HttpServlet {
 	
     protected static final DateFormat format = new ISO8601DateTimeFormat();
 	private static final int DEFAULT_REPO_REGISTRATION_TIMEOUT = 60*1000;
+	
 	public static final String REGISTERED = "com.requea.dysoweb.registered";
 	private static final int TIMEOUT = 60;
+	
 	
 	private File fConfigDir;
 
@@ -132,14 +140,25 @@ public class InstallServlet extends HttpServlet {
 			clr.setHttp(new HttpClientExecutor() {
 				
 				public InputStream executeGet(String path) throws IOException {
-					HttpGet httpget = new HttpGet(path);
-					HttpResponse response = m_httpClient.execute(m_targetHost, httpget);
-					HttpEntity entity = response.getEntity();
-					if (entity != null) {
-			            InputStream is = entity.getContent();
-			            return is;
+					if(path.startsWith("http")) {
+						HttpGet httpget = new HttpGet(path);
+						HttpResponse response = m_httpClient.execute(m_targetHost, httpget);
+						HttpEntity entity = response.getEntity();
+						if (entity != null) {
+				            InputStream is = entity.getContent();
+				            return is;
+						} else {
+							return null;
+						}
 					} else {
-						return null;
+						URL url = new URL(path);
+						URLConnection cnx = url.openConnection();
+						if(cnx != null && cnx.getContentLength() > 0) {
+							InputStream is = cnx.getInputStream();
+							return is;
+						} else {
+							return null;
+						}
 					}
 				}
 			});
@@ -211,6 +230,7 @@ public class InstallServlet extends HttpServlet {
 		} else if ("register".equals(op)) {
 
 			String ru = request.getParameter("ru");
+			// check host name
 			request.setAttribute("com.requea.dysoweb.panel.ru", ru == null ? "" : ru);
 			
 			if (!checkParameters(request, response)) {
@@ -231,6 +251,7 @@ public class InstallServlet extends HttpServlet {
 				HttpSession session = request.getSession();
 				session.setAttribute(SecurityFilter.SECURED, Boolean.TRUE);
 				session.setAttribute(SecurityFilter.AUTH, Boolean.TRUE);
+				session.setAttribute("com.requea.dysoweb.shell.auth", Boolean.TRUE);
 
 				// save the settings and switch to the install page
 				updateSettingsValues(request);
@@ -253,7 +274,6 @@ public class InstallServlet extends HttpServlet {
 				m_httpClient = null;
 				m_targetHost = null;
 				session.removeAttribute(InstallServlet.INSTALLABLES);
-				session.setAttribute("com.requea.dysoweb.shell.auth", Boolean.TRUE);
 			} catch (Exception e) {
 				request.setAttribute(ErrorTag.ERROR,
 						"Unable to register server: " + e.getMessage());
@@ -868,24 +888,7 @@ public class InstallServlet extends HttpServlet {
 			// copy the image on the local directory
 			try {
 				File fileImage = new File(fConfigDir, "install/"+sysId+".jpg");
-	            OutputStream os = new FileOutputStream(fileImage);
-
-				HttpGet httpget = new HttpGet(strURL);
-				HttpResponse response = m_httpClient.execute(m_targetHost, httpget);
-				HttpEntity entity = response.getEntity();
-				if (entity != null) {
-	            
-		            InputStream is = entity.getContent();
-		            byte[] buffer = new byte[4096];
-		            int count = 0;
-		            for (int len = is.read(buffer); len > 0; len = is.read(buffer))
-		            {
-		                count += len;
-		                os.write(buffer, 0, len);
-		            }
-		            os.close();
-		            is.close();
-				}	            
+	            copyImage(repoURL, strURL, fileImage);	            
 	            // update the image
 	            elResource.removeChild(elImage);
 	            XMLUtils.addElement(elResource, "image", sysId+".jpg");
@@ -946,6 +949,42 @@ public class InstallServlet extends HttpServlet {
         } catch(Exception e) {
         	// ignore
         }
+	}
+
+	private void copyImage(String repoURL, String strURL, File fileImage)
+			throws FileNotFoundException, IOException, ClientProtocolException {
+		OutputStream os = new FileOutputStream(fileImage);
+
+		if(repoURL == null || repoURL.startsWith("http")) {
+			HttpGet httpget = new HttpGet(strURL);
+			HttpResponse response = m_httpClient.execute(m_targetHost, httpget);
+			HttpEntity entity = response.getEntity();
+			if (entity != null) {
+			
+			    InputStream is = entity.getContent();
+			    byte[] buffer = new byte[4096];
+			    for (int len = is.read(buffer); len > 0; len = is.read(buffer))
+			    {
+			        os.write(buffer, 0, len);
+			    }
+			    os.close();
+			    is.close();
+			}
+		} else {
+			URL baseURL = new URL(repoURL);
+			URL imgURL = new URL(baseURL, strURL);
+			URLConnection cnx = imgURL.openConnection();
+        	if(cnx != null && cnx.getContentLength() > 0) {
+			    InputStream is = cnx.getInputStream();
+			    byte[] buffer = new byte[4096];
+			    for (int len = is.read(buffer); len > 0; len = is.read(buffer))
+			    {
+			        os.write(buffer, 0, len);
+			    }
+			    os.close();
+			    is.close();
+			}
+		}
 	}
 	
 
@@ -1032,6 +1071,7 @@ public class InstallServlet extends HttpServlet {
 		updateValue(session, request, "ProxyAuth");
         updateValue(session, request, "ProxyUsername");
         updateValue(session, request, "ProxyPassword");
+        updateValue(session, request, "ProxyNTDomain");
 		updateValue(session, request, "LocalCacheURL");
 	}
 
@@ -1129,12 +1169,19 @@ public class InstallServlet extends HttpServlet {
         if(proxyUsername == null) {
             proxyUsername = "";
         }
+
         setValueInSession(session, "ProxyUsername", proxyUsername);
         String proxyPassword = XMLUtils.getChildText(elConfig, "ProxyPassword");
         if(proxyPassword == null) {
             proxyPassword = "";
         }
         setValueInSession(session, "ProxyPassword", proxyPassword);
+        
+        String proxyNTDomain = XMLUtils.getChildText(elConfig, "ProxyNTDomain");
+        if(proxyNTDomain == null) {
+        	proxyNTDomain = "";
+        }
+        setValueInSession(session, "ProxyNTDomain", proxyNTDomain);
         
 		// localcache
 		String local = XMLUtils.getChildText(elConfig, "LocalCacheURL");
@@ -1201,20 +1248,29 @@ public class InstallServlet extends HttpServlet {
 			repoURL = DEFAULT_REPO;
 		}
 		
-		String ver = (String) session.getAttribute(CURRENTVERSION);
-		if(ver != null && !"".equals(ver) && !"base".equals(ver)) {
-		    if(repoURL.indexOf('?') < 0)
-		        repoURL += "?ver="+ver;
-		    else
-                repoURL += "&ver="+ver;
-		}
-		HttpGet httpget = new HttpGet(repoURL);
-		HttpResponse response = m_httpClient.execute(m_targetHost, httpget);
-		HttpEntity entity = response.getEntity();
-		if (entity != null) {
-        
-            InputStream is = entity.getContent();
 		
+		InputStream is = null;
+		if(repoURL.startsWith("http")) {
+			String ver = (String) session.getAttribute(CURRENTVERSION);
+			if(ver != null && !"".equals(ver) && !"base".equals(ver)) {
+			    if(repoURL.indexOf('?') < 0)
+			        repoURL += "?ver="+ver;
+			    else
+	                repoURL += "&ver="+ver;
+			}
+			HttpGet httpget = new HttpGet(repoURL);
+			HttpResponse response = m_httpClient.execute(m_targetHost, httpget);
+			HttpEntity entity = response.getEntity();
+			if (entity != null) {
+	            is = entity.getContent();
+			}
+		} else {
+			URL url = new URL(repoURL);
+			URLConnection cnx = url.openConnection();
+			is = cnx.getInputStream();
+		}
+				
+		if(is != null) {
 	        try {
 				Document doc = XMLUtils.parse(is);
 				Element elRepository = doc.getDocumentElement();
@@ -1240,31 +1296,15 @@ public class InstallServlet extends HttpServlet {
 					// parse the list of installable resources
 					installables = Installable.parse(elRepository);
 				}
+
 				// grab all the images
 				for(int j=0; j<installables.length; j++) {
 					Installable f = installables[j];
 					String strImage = f.getImage();
+					String installableName = f.getName();
+					String version = f.getVersion();
 					if(strImage != null && !strImage.startsWith("http")) {
-						HttpGet httpgetImg = new HttpGet(strImage);
-						HttpResponse responseImg = m_httpClient.execute(m_targetHost, httpgetImg);
-						HttpEntity entityImg = responseImg.getEntity();
-						if (entityImg != null) {
-				        
-				            InputStream isImg = entity.getContent();
-							File file = new File(fConfigDir, "products/image/"+f.getName()+"-"+f.getVersion()+".jpg");
-							file.getParentFile().mkdirs();
-	
-							OutputStream os = new FileOutputStream(file);
-				            byte[] buffer = new byte[4096];
-				            int count = 0;
-				            for (int len = isImg.read(buffer); len > 0; len = isImg.read(buffer))
-				            {
-				                count += len;
-				                os.write(buffer, 0, len);
-				            }
-				            os.close();
-				            isImg.close();
-						}
+						downloadImage(repoURL, strImage, installableName, version);
 					}
 				}
 				// get the category map
@@ -1277,13 +1317,50 @@ public class InstallServlet extends HttpServlet {
 				req.setAttribute(CATEGORIES, categories);
 			} catch(XMLException e) {
 				req.setAttribute(ErrorTag.ERROR, "Unable to find repository information. Please try later, or check the repository URL");
-				
-				// unable to parse content: get the content and output it to the 
-		        httpget = new HttpGet(repoURL);
-		        response = m_httpClient.execute(m_targetHost, httpget);
-		        entity = response.getEntity();
-		        String str = EntityUtils.toString(entity);
-		        System.out.println(str);
+			}
+		} else {
+			req.setAttribute(ErrorTag.ERROR, "Unable to find repository information. Please try later, or check the repository URL");
+		}
+	}
+
+	private void downloadImage(String repoURL, String strImage, String installableName,
+			String version) throws IOException, ClientProtocolException,
+			FileNotFoundException {
+
+		if(repoURL == null || repoURL.startsWith("http")) {
+			// use http client
+			HttpGet httpgetImg = new HttpGet(strImage);
+			HttpResponse responseImg = m_httpClient.execute(m_targetHost, httpgetImg);
+			HttpEntity entityImg = responseImg.getEntity();
+			if (entityImg != null) {
+			    InputStream isImg = entityImg.getContent();
+				File file = new File(fConfigDir, "products/image/"+installableName+"-"+version+".jpg");
+				file.getParentFile().mkdirs();
+				OutputStream os = new FileOutputStream(file);
+			    byte[] buffer = new byte[4096];
+			    for (int len = isImg.read(buffer); len > 0; len = isImg.read(buffer))
+			    {
+			        os.write(buffer, 0, len);
+			    }
+			    os.close();
+			    isImg.close();
+			}
+		} else {
+			URL url = new URL(repoURL);
+			URL imgURL = new URL(url, strImage);
+			URLConnection cnx = imgURL.openConnection();
+        	if(cnx != null && cnx.getContentLength() > 0) {
+			    InputStream isImg = cnx.getInputStream();
+				File file = new File(fConfigDir, "products/image/"+installableName+"-"+version+".jpg");
+				file.getParentFile().mkdirs();
+				OutputStream os = new FileOutputStream(file);
+			    byte[] buffer = new byte[4096];
+			    for (int len = isImg.read(buffer); len > 0; len = isImg.read(buffer))
+			    {
+			        os.write(buffer, 0, len);
+			    }
+			    os.close();
+			    isImg.close();
 			}
 		}
 	}
@@ -1296,14 +1373,26 @@ public class InstallServlet extends HttpServlet {
             repoURL = DEFAULT_REPO;
         }
 
+        InputStream is = null;
         
-        HttpGet httpget = new HttpGet("/dysoweb/repo/contents/config");
-        HttpResponse response = m_httpClient.execute(m_targetHost, httpget);
-        HttpEntity entity = response.getEntity();
-        if (entity != null) {
+        if(repoURL == null || repoURL.startsWith("http")) {
+            HttpGet httpget = new HttpGet("/dysoweb/repo/contents/config");
+            HttpResponse response = m_httpClient.execute(m_targetHost, httpget);
+            HttpEntity entity = response.getEntity();
+            if (entity != null) {
+                is = entity.getContent();
+            }
+        } else {
+        	URL baseURL = new URL(repoURL);
+        	URL url = new URL(baseURL, "/dysoweb/repo/contents/config");
+        	URLConnection cnx = url.openConnection();
+        	if(cnx != null && cnx.getContentLength() > 0) {
+        		is = cnx.getInputStream();
+        	}
+        }
         
-            InputStream is = entity.getContent();
-        
+        if(is != null) {
+
             try {
                 Document doc = XMLUtils.parse(is);
                 Element elResult = doc.getDocumentElement();
@@ -1461,7 +1550,6 @@ public class InstallServlet extends HttpServlet {
 	public void initHttpClient(Element elConfig) throws Exception {
 
         SSLContext sslcontext = createSSLContext();
-        
         // Allow client cert
         SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
                 sslcontext,
@@ -1492,7 +1580,7 @@ public class InstallServlet extends HttpServlet {
 			CryptUtils cu = CryptUtils.getInstance("3DES");
 			proxyPassword = cu.decrypt(proxyPassword.substring("3DES:".length()));
 		}
-		final String proxyUserPassword = proxyPassword;
+		String proxyNTDomain = XMLUtils.getChildText(elConfig, "ProxyNTDomain");
 		
 		// force proxy settings with manual settings
 		if("manual".equals(settings)) {
@@ -1511,17 +1599,17 @@ public class InstallServlet extends HttpServlet {
 			
 			// auth
 			if(proxyUserName != null && !"".equals(proxyUserName)) {
-				Authenticator.setDefault(new Authenticator() {
-					@Override
-					protected PasswordAuthentication getPasswordAuthentication() {
-						if (getRequestorType() == RequestorType.PROXY) {
-							return new PasswordAuthentication(proxyUserName, 
-									proxyUserPassword == null ? "".toCharArray() : proxyUserPassword.toCharArray());
-						} else { 
-							return super.getPasswordAuthentication();
-						}
-					}
-				});				
+    			CredentialsProvider credsProvider = new BasicCredentialsProvider();
+    			Credentials creds;
+    			if(proxyNTDomain != null && !"".equals(proxyNTDomain)) {
+        			creds = new NTCredentials(proxyUserName, proxyPassword, proxyNTDomain, null); 
+    			} else {
+    				creds = new UsernamePasswordCredentials(proxyUserName, proxyPassword);
+    			}
+    		    credsProvider.setCredentials(
+    		    		AuthScope.ANY,
+    		    		creds);
+    			builder.setDefaultCredentialsProvider(credsProvider);	    
 			}
 			if(selector != null) {
 	            // build the route with the proxy selector
@@ -1585,6 +1673,7 @@ public class InstallServlet extends HttpServlet {
 			saveConfigValue(request, elConfig, "ProxyPort");
             saveConfigValue(request, elConfig, "ProxyUsername");
             saveConfigValue(request, elConfig, "ProxyPassword");
+            saveConfigValue(request, elConfig, "ProxyNTDomain");
 			saveConfigValue(request, elConfig, "LocalCacheURL");
 		} else {
 			removeConfigValue(elConfig, "ProxyPAC");
@@ -1593,6 +1682,7 @@ public class InstallServlet extends HttpServlet {
 			removeConfigValue(elConfig, "ProxyAuth");
             removeConfigValue(elConfig, "ProxyUsername");
             removeConfigValue(elConfig, "ProxyPassword");
+            removeConfigValue(elConfig, "ProxyNTDomain");
 			removeConfigValue(elConfig, "LocalCacheURL");
 		}
 
@@ -1613,6 +1703,10 @@ public class InstallServlet extends HttpServlet {
 
 	private void updateServerRegistration(String repoURL, String authKey, String password) throws Exception {
 
+		if(repoURL != null && !repoURL.startsWith("http")) {
+			// do nothing if not http
+			return;
+		}
 		// check if there is a certificate?
 		File fileCert = new File(fConfigDir, "dysoweb.p12"); 
 
@@ -1725,8 +1819,5 @@ public class InstallServlet extends HttpServlet {
 			w.close();
 		}
 	}
-
-	
-	
 }
 

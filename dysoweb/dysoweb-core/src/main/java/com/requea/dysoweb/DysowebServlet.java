@@ -25,10 +25,9 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpSession;
 
-import org.apache.felix.framework.Felix;
+import org.apache.felix.framework.FrameworkFactory;
 import org.apache.felix.framework.cache.BundleCache;
 import org.apache.felix.framework.util.FelixConstants;
-import org.apache.felix.framework.util.StringMap;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -38,6 +37,7 @@ import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
+import org.osgi.framework.launch.Framework;
 
 import com.requea.webenv.DysowebSessionSerializer;
 import com.requea.webenv.IWebProcessor;
@@ -45,7 +45,7 @@ import com.requea.webenv.IWebProcessor;
 public class DysowebServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
-	private static Felix fPlatform;
+	private static Framework fPlatform;
 
 	private static Bundle fActiveProcessorBundle;
 	private static IWebProcessor fActiveProcessor;
@@ -59,7 +59,7 @@ public class DysowebServlet extends HttpServlet {
 		startFelix(ctx);
 	}
 
-	public static Felix getPlatform() {
+	public static Framework getPlatform() {
 		return fPlatform;
 	}
 	
@@ -132,24 +132,22 @@ public class DysowebServlet extends HttpServlet {
 		    ; // failing to set this property isn't fatal
 		}
 		
+		
 		// the bundles are placed undef the WEB-INF directory
-		Map configMap = new StringMap(false);
-
+		Properties properties = new Properties();
 		// loads the dysoweb properties files
 		try {
-			Properties props = new Properties();
 			InputStream is = ctx.getResourceAsStream("/WEB-INF/classes/dysoweb.properties");
 			if(is != null) {
-				props.load(is);
+				properties.load(is);
 			}
-			configMap.putAll(props);
 		} catch(IOException e) {
 			// cannot load the dysoweb properties: throw a servlet exception to stop intialisation 
 			throw new ServletException(e);
 		}
 
 		// javax autoexport packages
-		String str = (String)configMap.get("autoexport.packages");
+		String str = (String)properties.get("autoexport.packages");
 		if(str != null) {
 			ArrayList lst = new ArrayList();
 			StringTokenizer st = new StringTokenizer(str, ",");
@@ -164,15 +162,15 @@ public class DysowebServlet extends HttpServlet {
 		}
 
 		// add extra properties
-		configMap.put(FelixConstants.SERVICE_URLHANDLERS_PROP, "true");
-		configMap.put(FelixConstants.FRAMEWORK_BUNDLE_PARENT, "framework");
+		properties.put(FelixConstants.SERVICE_URLHANDLERS_PROP, "true");
+		properties.put(FelixConstants.FRAMEWORK_BUNDLE_PARENT, "framework");
 		
 		// parse the autostart property, and add URL handlers
-		Iterator iter = configMap.keySet().iterator();
+		Iterator<?> iter = properties.keySet().iterator();
 		while(iter.hasNext()) {
 			String key = (String)iter.next();
 			if(key.startsWith(AutoActivator.AUTO_START_PROP)) {
-				String autoStart = (String)configMap.get(key);
+				String autoStart = (String)properties.get(key);
 				StringBuffer sb = new StringBuffer();
 				StringTokenizer st = new StringTokenizer(autoStart,",");
 				while(st.hasMoreTokens()) {
@@ -194,21 +192,15 @@ public class DysowebServlet extends HttpServlet {
 						// ignore this one
 					}
 				}
-				configMap.put(key, sb.toString());
+				properties.put(key, sb.toString());
 			}
 		}
 		// creates the cache directory
 		File fCache = null;
-		String home = null;
-		
 		try {
 			InitialContext ic = new InitialContext();
 			Context nc = (Context) ic.lookup("java:comp/env");
-			home = (String) nc.lookup("dysoweb.home");
-        } catch (NamingException nex) {
-            home = System.getProperty("dysoweb.home");
-		}
-        if(home != null) {
+			String home = (String) nc.lookup("dysoweb.home");
 			File basedir = null;
 			if("dysoweb.home".equals(home)) {
 				if(System.getProperty("jboss.home.dir") != null) {
@@ -227,7 +219,7 @@ public class DysowebServlet extends HttpServlet {
 			}
 			basedir.mkdirs();
 			fCache = basedir;
-		} else {
+		} catch (NamingException nex) {
 			// unable to lookup the requea configuration file
 			fCache = getScratchDir(ctx);
 
@@ -238,14 +230,10 @@ public class DysowebServlet extends HttpServlet {
 			System.out.println("    see http://dysoweb.requea.com/dysopedia/index.php/Configuring_dysoweb_home");
 			System.out.println("-----------------------------");
 		}
-
-        // set the path
-        System.setProperty("dysoweb.home.dir", fCache.getAbsolutePath());
-        
 		fCache.mkdirs();
 		// setup the local cache path
-		configMap.put(BundleCache.CACHE_ROOTDIR_PROP, fCache.getAbsolutePath());
-		configMap.put("org.osgi.framework.storage", "bundles");
+		properties.put(BundleCache.CACHE_ROOTDIR_PROP, fCache.getAbsolutePath());
+		properties.put(Constants.FRAMEWORK_STORAGE, "bundles");
 		
 		Thread th = Thread.currentThread();
 		ClassLoader cl = th.getContextClassLoader();
@@ -253,15 +241,15 @@ public class DysowebServlet extends HttpServlet {
 			th.setContextClassLoader(DysowebServlet.class.getClassLoader());
 			
             List list = new ArrayList();
-            list.add(new AutoActivator(configMap));
+            list.add(new AutoActivator(properties));
             
-            configMap.put("felix.systembundle.activators", list);
+            properties.put("felix.systembundle.activators", list);
 
             // Create a case-insensitive property map.
-            Map cisMap = new StringMap(configMap, false);
-			
+  		
 			// Now create an instance of the framework.
-			Felix felix = new Felix(cisMap);
+			FrameworkFactory factory = new FrameworkFactory();
+			Framework felix = factory.newFramework(properties);
 			felix.start();
 			fPlatform = felix;
 			
