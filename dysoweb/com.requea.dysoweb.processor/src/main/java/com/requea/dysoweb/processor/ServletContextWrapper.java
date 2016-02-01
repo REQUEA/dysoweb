@@ -22,18 +22,25 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.EventListener;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
+import javax.servlet.Filter;
+import javax.servlet.FilterRegistration;
+import javax.servlet.FilterRegistration.Dynamic;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
+import javax.servlet.SessionCookieConfig;
+import javax.servlet.SessionTrackingMode;
+import javax.servlet.descriptor.JspConfigDescriptor;
 
 import com.requea.dysoweb.processor.RequestProcessor.EntryInfo;
-
-import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
 
 public class ServletContextWrapper implements ServletContext {
 
@@ -244,6 +251,156 @@ public class ServletContextWrapper implements ServletContext {
 			fContext.removeAttribute(name);
 		}
 		fAttributesMap.clear();
+	}
+
+	@Override
+	public Dynamic addFilter(String arg0, String arg1) {
+		return fContext.addFilter(arg0, arg1);
+	}
+
+	@Override
+	public Dynamic addFilter(String arg0, Filter arg1) {
+		return fContext.addFilter(arg0, arg1);
+	}
+
+	@Override
+	public Dynamic addFilter(String arg0, Class<? extends Filter> arg1) {
+		return fContext.addFilter(arg0, arg1);
+	}
+
+	@Override
+	public void addListener(String arg0) {
+		fContext.addListener(arg0);
+	}
+
+	@Override
+	public <T extends EventListener> void addListener(T arg0) {
+		fContext.addListener(arg0);
+	}
+
+	@Override
+	public void addListener(Class<? extends EventListener> arg0) {
+		fContext.addListener(arg0);
+	}
+
+	@Override
+	public javax.servlet.ServletRegistration.Dynamic addServlet(String arg0,
+			String arg1) {
+		return fContext.addServlet(arg0, arg1);
+	}
+
+	@Override
+	public javax.servlet.ServletRegistration.Dynamic addServlet(String arg0,
+			Servlet arg1) {
+		return fContext.addServlet(arg0, arg1);
+	}
+
+	@Override
+	public javax.servlet.ServletRegistration.Dynamic addServlet(String arg0,
+			Class<? extends Servlet> arg1) {
+		return fContext.addServlet(arg0, arg1);
+	}
+
+	@Override
+	public <T extends Filter> T createFilter(Class<T> arg0)
+			throws ServletException {
+		return fContext.createFilter(arg0);
+	}
+
+	@Override
+	public <T extends EventListener> T createListener(Class<T> arg0)
+			throws ServletException {
+		return fContext.createListener(arg0);
+	}
+
+	@Override
+	public <T extends Servlet> T createServlet(Class<T> arg0)
+			throws ServletException {
+		return fContext.createServlet(arg0);
+	}
+
+	@Override
+	public void declareRoles(String... arg0) {
+		fContext.declareRoles(arg0);
+	}
+
+	@Override
+	public ClassLoader getClassLoader() {
+		return fContext.getClassLoader();
+	}
+
+	@Override
+	public String getContextPath() {
+		return fContext.getContextPath();
+	}
+
+	@Override
+	public Set<SessionTrackingMode> getDefaultSessionTrackingModes() {
+		return fContext.getDefaultSessionTrackingModes();
+	}
+
+	@Override
+	public int getEffectiveMajorVersion() {
+		return fContext.getEffectiveMajorVersion();
+	}
+
+	@Override
+	public int getEffectiveMinorVersion() {
+		return fContext.getEffectiveMinorVersion();
+	}
+
+	@Override
+	public Set<SessionTrackingMode> getEffectiveSessionTrackingModes() {
+		return fContext.getEffectiveSessionTrackingModes();
+	}
+
+	@Override
+	public FilterRegistration getFilterRegistration(String arg0) {
+		return fContext.getFilterRegistration(arg0);
+	}
+
+	@Override
+	public Map<String, ? extends FilterRegistration> getFilterRegistrations() {
+		return fContext.getFilterRegistrations();
+	}
+
+	@Override
+	public JspConfigDescriptor getJspConfigDescriptor() {
+		return fContext.getJspConfigDescriptor();
+	}
+
+	@Override
+	public ServletRegistration getServletRegistration(String name) {
+		ServletRegistration registration = fRequestProcessor.getServletRegistration(name);
+		if(registration == null) {
+			registration = fContext.getServletRegistration(name);
+		}
+		return registration;
+	}
+
+	@Override
+	public Map<String, ? extends ServletRegistration> getServletRegistrations() {
+		return fContext.getServletRegistrations();
+	}
+
+	@Override
+	public SessionCookieConfig getSessionCookieConfig() {
+		return fContext.getSessionCookieConfig();
+	}
+
+	@Override
+	public String getVirtualServerName() {
+		return fContext.getVirtualServerName();
+	}
+
+	@Override
+	public boolean setInitParameter(String arg0, String arg1) {
+		return fContext.setInitParameter(arg0, arg1);
+	}
+
+	@Override
+	public void setSessionTrackingModes(Set<SessionTrackingMode> arg0) {
+		fContext.setSessionTrackingModes(arg0);
 	}
 		
 }

@@ -18,9 +18,9 @@ package com.requea.dysoweb.servlet.jasper;
 
 import javax.servlet.ServletContext;
 
-import org.apache.jasper.JasperException;
-import org.apache.jasper.compiler.TldLocationsCache;
-
+import com.requea.dysoweb.jasper.JasperException;
+import com.requea.dysoweb.jasper.compiler.TldLocation;
+import com.requea.dysoweb.jasper.compiler.TldLocationsCache;
 import com.requea.dysoweb.processor.RequestProcessor;
 
 /**
@@ -56,26 +56,17 @@ import com.requea.dysoweb.processor.RequestProcessor;
  * @author Jan Luehe
  */
 
-public class TldCache extends TldLocationsCache {
+public class DysowebTldLocationCache extends TldLocationsCache {
 
     private ServletContext fServletContext;
-
-	public TldCache(ServletContext ctxt) {
-        this(ctxt, true);
-    }
 
     /** Constructor. 
      *
      * @param ctxt the servlet context of the web application in which Jasper 
      * is running
-     * @param redeployMode if true, then the compiler will allow redeploying 
-     * a tag library from the same jar, at the expense of slowing down the
-     * server a bit. Note that this may only work on JDK 1.3.1_01a and later,
-     * because of JDK bug 4211817 fixed in this release.
-     * If redeployMode is false, a faster but less capable mode will be used.
      */
-    public TldCache(ServletContext ctxt, boolean redeployMode) {
-    	super(ctxt, redeployMode);
+    public DysowebTldLocationCache(ServletContext ctxt) {
+    	super(ctxt);
     	fServletContext = ctxt;
     }
 
@@ -95,15 +86,15 @@ public class TldCache extends TldLocationsCache {
      * Returns null if the uri is not associated with any tag library 'exposed'
      * in the web application.
      */
-    public String[] getLocation(String uri) throws JasperException {
+    public TldLocation getLocation(String uri) throws JasperException {
 
     	// retrieve the RequestProcessor
     	Object processor = fServletContext.getAttribute("com.requea.dysoweb.processor");
     	if(processor instanceof RequestProcessor) {
     		String[] location = ((RequestProcessor)processor).getTaglibLocation(uri);
-    		return location;
+    		return new TldLocation(location[0]);
     	} else {
-    		return new String[0];
+    		return null;
     	}
     }
 

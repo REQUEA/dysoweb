@@ -15,10 +15,14 @@
 package com.requea.dysoweb.processor.definitions;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
@@ -47,11 +51,11 @@ public class ServletDefinition implements IServletDefinition {
 	private String fName;
 	private String fClassName;
 	private Servlet fInstance;
-	private Map    fParams;
+	private Map<String,String>    fParams;
 	private boolean fInitialized;
 	private int fLoadOnStartup;
 	private ServletContext fServletContext;
-
+	private List<String> fMappings = new ArrayList<String>();
 
 	private long fBundleId;
 
@@ -112,7 +116,7 @@ public class ServletDefinition implements IServletDefinition {
 			return;
 		}
 		if(fLoader == null) {
-			throw new WebAppException("Unable to retrieve class loader for filter definition");
+			throw new WebAppException("Unable to retrieve class loader for servlet definition");
 		}
 		
 		fLog.info("Loading Servlet " + fName);
@@ -219,6 +223,34 @@ public class ServletDefinition implements IServletDefinition {
 		}
 		fInstance = null;
 		fInitialized = false;
+	}
+
+	public String getClassName() {
+		return fClassName;
+	}
+
+	public String getInitParameter(String name) {
+		return fParams.get(name);
+	}
+
+	public Map<String, String> getInitParameters() {
+		return fParams;
+	}
+
+	public boolean setInitParameter(String arg0, String arg1) {
+		fParams.put(arg0,  arg1);
+		return false;
+	}
+
+	public Set<String> setInitParameters(Map<String, String> arg0) {
+		Set<String> params = new HashSet<String>();
+		// TODO
+		return params;
+	}
+
+	public String getRunAsRole() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

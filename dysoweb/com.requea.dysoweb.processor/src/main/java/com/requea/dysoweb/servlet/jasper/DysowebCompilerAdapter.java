@@ -20,15 +20,12 @@ import java.io.IOException;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.compilers.DefaultCompilerAdapter;
 import org.apache.tools.ant.types.Path;
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.janino.ClassLoaderIClassLoader;
-import org.codehaus.janino.CompileException;
 import org.codehaus.janino.Compiler;
-import org.codehaus.janino.DebuggingInformation;
 import org.codehaus.janino.FilterWarningHandler;
-import org.codehaus.janino.Location;
-import org.codehaus.janino.Parser;
-import org.codehaus.janino.Scanner;
-import org.codehaus.janino.WarningHandler;
 import org.codehaus.janino.util.ResourceFinderClassLoader;
 import org.codehaus.janino.util.resource.PathResourceFinder;
 import org.codehaus.janino.util.resource.ResourceFinder;
@@ -58,7 +55,6 @@ public class DysowebCompilerAdapter extends DefaultCompilerAdapter {
         boolean verbose = true;
 
         try {
-	        
 	        Compiler compiler = new Compiler (
 	        		ResourceFinder.EMPTY_RESOURCE_FINDER,
 	        		new ClassLoaderIClassLoader(cl),
@@ -66,19 +62,15 @@ public class DysowebCompilerAdapter extends DefaultCompilerAdapter {
 	        		Compiler.CREATE_NEXT_TO_SOURCE_FILE,
 	        		javaEncoding,                // optionalCharacterEncoding
 	                verbose,                     // verbose
-	                DebuggingInformation.ALL,    // debuggingInformation
+	                true,    // debuggingInformation
+	                true,   
+	                true,
 	                new FilterWarningHandler(                 // optionalWarningHandler
 	                    null,
 	                    new SimpleWarningHandler() // <= Anonymous class here is complicated because the enclosing instance is not fully initialized yet 
 	                )
 	        );
 	        compiler.compile(sourceFiles);
-        } catch (Scanner.ScanException e) {
-            System.out.println(e.getMessage());
-            return false;
-        } catch (Parser.ParseException e) {
-            System.out.println(e.getMessage());
-            return false;
         } catch (CompileException e) {
             System.out.println(e.getMessage());
             return false;
@@ -126,3 +118,4 @@ public class DysowebCompilerAdapter extends DefaultCompilerAdapter {
     }
 
 }
+

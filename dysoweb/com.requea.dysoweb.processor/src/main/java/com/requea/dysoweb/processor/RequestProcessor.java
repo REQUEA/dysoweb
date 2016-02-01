@@ -27,13 +27,17 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -48,6 +52,7 @@ import javax.servlet.ServletContextAttributeListener;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -59,8 +64,6 @@ import javax.servlet.http.HttpSessionListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.jasper.Constants;
-import org.apache.jasper.servlet.JspServlet;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
 import org.w3c.dom.Document;
@@ -68,13 +71,14 @@ import org.w3c.dom.Element;
 
 import com.requea.dysoweb.WebAppException;
 import com.requea.dysoweb.defaultservlet.DefaultServlet;
+import com.requea.dysoweb.jasper.servlet.JspServlet;
 import com.requea.dysoweb.processor.definitions.ContextParam;
 import com.requea.dysoweb.processor.definitions.FilterDefinition;
 import com.requea.dysoweb.processor.definitions.JasperLoader;
 import com.requea.dysoweb.processor.definitions.ListenerDefinition;
 import com.requea.dysoweb.processor.definitions.ServletDefinition;
 import com.requea.dysoweb.servlet.jasper.DysowebCompilerAdapter;
-import com.requea.dysoweb.servlet.jasper.EmbeddedServletOptions;
+import com.requea.dysoweb.servlet.jasper.DysowebEmbeddedServletOptions;
 import com.requea.dysoweb.servlet.wrapper.FilterMappingDefinition;
 import com.requea.dysoweb.servlet.wrapper.ServletMappingDefinition;
 import com.requea.dysoweb.servlet.wrapper.ServletWrapper;
@@ -82,8 +86,6 @@ import com.requea.dysoweb.util.xml.XMLException;
 import com.requea.dysoweb.util.xml.XMLUtils;
 import com.requea.webenv.IWebProcessor;
 
-import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
-import edu.emory.mathcs.backport.java.util.concurrent.CopyOnWriteArrayList;
 
 public class RequestProcessor implements IWebProcessor {
 
@@ -113,6 +115,7 @@ public class RequestProcessor implements IWebProcessor {
 	private Map  fContextParams = new ConcurrentHashMap();
 	private Map  fJspWrappers = new ConcurrentHashMap();
 	private Map  fServletContextWrappers = new ConcurrentHashMap();
+	private Map  fServletsDefinitionsByName = new ConcurrentHashMap();
 	private Map  fFiltersByName = new ConcurrentHashMap();
 
     private static Log fLog = LogFactory.getLog(RequestProcessor.class);
@@ -124,8 +127,9 @@ public class RequestProcessor implements IWebProcessor {
 	
 	public synchronized void activate(ServletContext context, String prefix) throws ServletException {
 		
-		fServletContext = context;
 		
+		fServletContext = context;
+
 		// create the default servlet and initialize it
 		fDefaultServlet = new DefaultServlet(this);
 		fDefaultServlet.init(new Config());
@@ -139,6 +143,8 @@ public class RequestProcessor implements IWebProcessor {
 		fServletContextWrappers.clear();
 		fFiltersByName.clear();
 		fWelcomeFiles.clear();
+		fServletsDefinitionsByName.clear();
+		fServletMappings.clear();
 		
 		// activate the bundles that have already been registered
 		List lst = new ArrayList();
@@ -388,7 +394,6 @@ public class RequestProcessor implements IWebProcessor {
 						elFile = XMLUtils.getNextSibling(elFile);
 					}
 				}
-				
 				// get the next element
 				el = XMLUtils.getNext(el);
 			}
@@ -426,10 +431,12 @@ public class RequestProcessor implements IWebProcessor {
 	public void process(ServletRequest request, ServletResponse response,
 			FilterChain chain) throws IOException, ServletException {
 		
+		
+		
 		// retrieve the incoming URI to determine the appropriate servlet
 		HttpServletRequest hsr = (HttpServletRequest)request;
-		
-        String uri = (String) request.getAttribute(Constants.INC_SERVLET_PATH);
+
+        String uri = (String) request.getAttribute(RequestDispatcher.INCLUDE_SERVLET_PATH);
         if (uri != null) {
             /*
              * Requested JSP has been target of
@@ -1182,6 +1189,7 @@ public class RequestProcessor implements IWebProcessor {
 	private Map fListeners = new ConcurrentHashMap();
 
 	private Map fServletWrappers = new ConcurrentHashMap();
+	private Map<IServletDefinition, List<String>> fServletMappings  = new ConcurrentHashMap();
 	
 	public IServletDefinition createServletDefinition(Bundle bundle, String name, Element el) throws WebAppException {
 		
@@ -1317,7 +1325,9 @@ public class RequestProcessor implements IWebProcessor {
 		List contextAttributeListeners = new ArrayList();
 		List sessionListeners = new ArrayList();
 		List sessionAttributeListeners = new ArrayList();
-
+		Map<IServletDefinition, List<String>> servletMappings = new HashMap<IServletDefinition, List<String>>();
+		
+		
 		Thread th = Thread.currentThread();
 		ClassLoader contextClassLoader = th.getContextClassLoader();
 		// Phase0: initialize the listeners if not already done
@@ -1356,6 +1366,7 @@ public class RequestProcessor implements IWebProcessor {
 				}
 			}
 		}
+		
 		// Phase1 : initialize the filters
 		Map filters = new HashMap();
 		for(int i=0; i<fActiveDefinitions.size(); i++) {
@@ -1380,16 +1391,17 @@ public class RequestProcessor implements IWebProcessor {
 		// create the jasper servlets (one per active service)
 		for(int i=0; i<fActiveBundleInfos.size(); i++) {
 			BundleInfo info = (BundleInfo)fActiveBundleInfos.get(i);
-			Long l = new Long(info.getBundle().getBundleId());
+			Bundle bundle = info.getBundle();
+			Long l = new Long(bundle.getBundleId());
 			ServletContextWrapper contextWrapper = (ServletContextWrapper)fServletContextWrappers.get(l);
 			if(fJspWrappers.get(l) == null && contextWrapper != null) {
 				try {
 					JspServlet jasperServlet = new JspServlet();
 					URL[] loaderURL = getLoaderURL(IWebProcessor.class.getClassLoader());
 					// set a URL class loader to make Jasper happy with dynamic class path compilation
-					ClassLoader jspLoader = new URLClassLoader(loaderURL, new JasperLoader(info.getBundle()));
+					ClassLoader jspLoader = new URLClassLoader(loaderURL, new JasperLoader(bundle));
 					th.setContextClassLoader(jspLoader);
-					jasperServlet.init(new JasperConfig(contextWrapper));
+					jasperServlet.init(new JasperConfig(contextWrapper, bundle));
 					ServletWrapper jasperWrapper = new ServletWrapper(l.longValue(), contextWrapper, jasperServlet, jspLoader);
 					fJspWrappers.put(l, jasperWrapper);
 				} catch(Throwable e) {
@@ -1402,10 +1414,18 @@ public class RequestProcessor implements IWebProcessor {
 		
 		// Phase2: initialize the other servlets and create the servlet wrappers
 		Map servletWrappers = new ConcurrentHashMap();
+		Map<String,IServletDefinition> servletDefinitions = new HashMap<String,IServletDefinition>();
 		for(int i=0; i<fActiveDefinitions.size(); i++) {
 			Object item = fActiveDefinitions.get(i); 
 			if(item instanceof IServletDefinition) {
 				IServletDefinition def = (IServletDefinition)item;
+				
+				List<String> mappings = servletMappings.get(def);
+				if(mappings == null) {
+					mappings = new ArrayList<String>();
+					servletMappings.put(def, mappings);
+				}
+				
 				ServletContextWrapper contextWrapper = (ServletContextWrapper)fServletContextWrappers.get(new Long(def.getBundleId()));
 				ServletWrapper w = new ServletWrapper(def.getBundleId(), contextWrapper, def);
 				try {
@@ -1414,6 +1434,7 @@ public class RequestProcessor implements IWebProcessor {
 					}
 					def.load();
 					servletWrappers.put(def.getName(), w);
+					servletDefinitions.put(def.getName(), def);
 				} catch(Exception e) {
 					fLog.error("Unable to initialize the servlet " + def.getName(), e);
 				} finally {
@@ -1421,6 +1442,7 @@ public class RequestProcessor implements IWebProcessor {
 				}
 			}
 		}
+		
 		// Phase3: map the servlet wrappers and the filters that are mapped to a servlet
 		for(int i=0; i<fActiveDefinitions.size(); i++) {
 			Object item = fActiveDefinitions.get(i); 
@@ -1438,9 +1460,25 @@ public class RequestProcessor implements IWebProcessor {
 							w.addFilter(flt);
 						}
 					}
+					
 				}
 			}
 		}
+		
+		// Phase4: map the servlet mappings
+		for(int i=0; i<fActiveDefinitions.size(); i++) {
+			Object item = fActiveDefinitions.get(i); 
+			if(item instanceof ServletMappingDefinition) { 
+				ServletMappingDefinition def = (ServletMappingDefinition) item;
+				// find the servlet
+				IServletDefinition defServlet = servletDefinitions.get(def.getServletName());
+				if(defServlet != null) {
+					List<String> mappings = servletMappings.get(defServlet);
+					mappings.add(def.getPattern());
+				}
+			}
+		}
+		
 		
 		// Phase5: initialize the filters
 		for(int i=0; i<fActiveDefinitions.size(); i++) {
@@ -1460,6 +1498,11 @@ public class RequestProcessor implements IWebProcessor {
 				}
 			}
 		}
+
+		// got the servlets and filters
+		fServletsDefinitionsByName = servletDefinitions;
+		fServletMappings = servletMappings;
+		fFiltersByName = filters;
 		
 		// Phase6: initialize the servlets
 		for(int i=0; i<fActiveDefinitions.size(); i++) {
@@ -1489,7 +1532,6 @@ public class RequestProcessor implements IWebProcessor {
 		fSessionAttributeListeners = sessionAttributeListeners;
 		
 		fServletWrappers = servletWrappers;
-		fFiltersByName = filters;
 	}
 
 
@@ -1573,14 +1615,19 @@ public class RequestProcessor implements IWebProcessor {
 		return (ServletWrapper)fJspWrappers.get(bundleId);
 	}
 	
-	class JasperConfig implements ServletConfig {
+	public class JasperConfig implements ServletConfig {
 		
 		// keep the servlet context wrapper at the JsaperConfig level for 
 		// servlet initialization
 		private ServletContextWrapper fServletContextWrapper;
+		private Bundle fBundle;
+		private boolean fWritableBundle;
 
-		public JasperConfig(ServletContextWrapper contextWrapper) {
+		public JasperConfig(ServletContextWrapper contextWrapper, Bundle bundle) {
 			fServletContextWrapper = contextWrapper;
+			fBundle = bundle;
+			String location = bundle.getLocation();
+			fWritableBundle = location != null && location.startsWith("reference:file");
 		}
 		
 		
@@ -1590,9 +1637,11 @@ public class RequestProcessor implements IWebProcessor {
 		
 		public String getInitParameter(String param) {
 			if("engineOptionsClass".equals(param)) {
-				return EmbeddedServletOptions.class.getName();
+				return DysowebEmbeddedServletOptions.class.getName();
 			} else if("compiler".equals(param)) {
 				return DysowebCompilerAdapter.class.getName();
+			} else if("development".equals(param)) {
+				return fWritableBundle ? "true" : "false";
 			} else {
 				return null;
 			}
@@ -1606,6 +1655,11 @@ public class RequestProcessor implements IWebProcessor {
 			return fServletContextWrapper;
 		}
 
+
+		public Bundle getBundle() {
+			return fBundle;
+		}
+
 	}
 
 	public IFilterDefinition getFilterByName(String name) {
@@ -1614,6 +1668,77 @@ public class RequestProcessor implements IWebProcessor {
 	
 	public ServletWrapper getServletWrapper(String name) {
 		return (ServletWrapper)fServletWrappers.get(name);	
+	}
+
+
+	private class DysowebServletRegistration implements ServletRegistration {
+
+		private ServletDefinition fDefinition;
+
+		public DysowebServletRegistration(ServletDefinition def) {
+			fDefinition = def;
+		}
+
+		@Override
+		public String getClassName() {
+			return fDefinition.getClassName();
+		}
+
+		@Override
+		public String getInitParameter(String arg0) {
+			return fDefinition.getInitParameter(arg0);
+		}
+
+		@Override
+		public Map<String, String> getInitParameters() {
+			return fDefinition.getInitParameters();
+		}
+
+		@Override
+		public String getName() {
+			return fDefinition.getName();
+		}
+
+		@Override
+		public boolean setInitParameter(String arg0, String arg1) {
+			return fDefinition.setInitParameter(arg0, arg1);
+		}
+
+		@Override
+		public Set<String> setInitParameters(Map<String, String> arg0) {
+			return fDefinition.setInitParameters(arg0);
+		}
+
+		@Override
+		public Set<String> addMapping(String... arg0) {
+			// TODO
+			return null;
+		}
+
+		@Override
+		public Collection<String> getMappings() {
+			return fServletMappings.get(fDefinition);
+		}
+
+		@Override
+		public String getRunAsRole() {
+			return fDefinition.getRunAsRole();
+		}
+		
+	}
+	
+	public ServletRegistration getServletRegistration(String name) {
+		// retreieve the servlet definition
+		ServletDefinition def = (ServletDefinition) fServletsDefinitionsByName.get(name);
+		if(def == null) {
+			// none found
+			return null;
+		} else {
+			return new DysowebServletRegistration(def);
+		}
+		
+		
+		
 	}
 }
 
