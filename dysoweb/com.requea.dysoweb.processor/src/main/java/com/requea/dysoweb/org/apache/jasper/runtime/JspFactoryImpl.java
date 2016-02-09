@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.jasper.runtime;
+package com.requea.dysoweb.org.apache.jasper.runtime;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -45,9 +45,9 @@ public class JspFactoryImpl extends JspFactory {
 
     private static final String SPEC_VERSION = "2.2";
     private static final boolean USE_POOL = 
-        Boolean.valueOf(System.getProperty("org.apache.jasper.runtime.JspFactoryImpl.USE_POOL", "true")).booleanValue();
+        Boolean.valueOf(System.getProperty("com.requea.dysoweb.org.apache.jasper.runtime.JspFactoryImpl.USE_POOL", "true")).booleanValue();
     private static final int POOL_SIZE = 
-        Integer.valueOf(System.getProperty("org.apache.jasper.runtime.JspFactoryImpl.POOL_SIZE", "8")).intValue();
+        Integer.valueOf(System.getProperty("com.requea.dysoweb.org.apache.jasper.runtime.JspFactoryImpl.POOL_SIZE", "8")).intValue();
 
     private ThreadLocal<PageContextPool> localPool = new ThreadLocal<PageContextPool>();
 

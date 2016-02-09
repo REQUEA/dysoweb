@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.jasper.runtime;
+package com.requea.dysoweb.org.apache.jasper.runtime;
 
 import java.io.CharArrayReader;
 import java.io.IOException;
@@ -42,7 +42,7 @@ public class BodyContentImpl extends BodyContent {
     private static final String LINE_SEPARATOR = 
         System.getProperty("line.separator");
     private static final boolean LIMIT_BUFFER = 
-        Boolean.valueOf(System.getProperty("org.apache.jasper.runtime.BodyContentImpl.LIMIT_BUFFER", "false")).booleanValue();
+        Boolean.valueOf(System.getProperty("com.requea.dysoweb.org.apache.jasper.runtime.BodyContentImpl.LIMIT_BUFFER", "false")).booleanValue();
     
     private char[] cb;
     private int nextChar;

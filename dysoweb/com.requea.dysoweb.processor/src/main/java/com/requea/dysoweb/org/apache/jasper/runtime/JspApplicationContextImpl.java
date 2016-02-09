@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.jasper.runtime;
+package com.requea.dysoweb.org.apache.jasper.runtime;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -70,13 +70,12 @@ public class JspApplicationContextImpl implements JspApplicationContext {
         if (context == null) {
             throw new IllegalArgumentException("ServletContext was null");
         }
-        JspApplicationContextImpl impl = (JspApplicationContextImpl) context
-                .getAttribute(KEY);
-        if (impl == null) {
+        Object impl = context.getAttribute(KEY);
+        if (!(impl instanceof JspApplicationContextImpl)) {
             impl = new JspApplicationContextImpl();
             context.setAttribute(KEY, impl);
         }
-        return impl;
+        return (JspApplicationContextImpl) impl;
     }
 
     public ELContextImpl createELContext(JspContext context) {
