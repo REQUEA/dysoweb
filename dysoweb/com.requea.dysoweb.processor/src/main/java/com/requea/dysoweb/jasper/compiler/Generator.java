@@ -51,8 +51,8 @@ import com.requea.dysoweb.jasper.Constants;
 import com.requea.dysoweb.jasper.JasperException;
 import com.requea.dysoweb.jasper.JspCompilationContext;
 import com.requea.dysoweb.jasper.compiler.Node.NamedAttribute;
+import com.requea.dysoweb.org.apache.jasper.runtime.JspRuntimeLibrary;
 
-import org.apache.jasper.runtime.JspRuntimeLibrary;
 import org.xml.sax.Attributes;
 
 /**
@@ -439,7 +439,7 @@ class Generator {
         if (isPoolingEnabled) {
             for (int i = 0; i < tagHandlerPoolNames.size(); i++) {
                 out.printin(tagHandlerPoolNames.elementAt(i));
-                out.print(" = org.apache.jasper.runtime.TagHandlerPool.getTagHandlerPool(");
+                out.print(" = com.requea.dysoweb.org.apache.jasper.runtime.TagHandlerPool.getTagHandlerPool(");
                 if (ctxt.isTagFile()) {
                     out.print("config");
                 } else {
@@ -459,7 +459,7 @@ class Generator {
         out.println(".getServletContext()).getExpressionFactory();");
 
         out.printin(VAR_INSTANCEMANAGER);
-        out.print(" = org.apache.jasper.runtime.InstanceManagerFactory.getInstanceManager(");
+        out.print(" = com.requea.dysoweb.org.apache.jasper.runtime.InstanceManagerFactory.getInstanceManager(");
         if (ctxt.isTagFile()) {
             out.print("config");
         } else {
@@ -564,7 +564,7 @@ class Generator {
     private void genPreambleClassVariableDeclarations() {
         if (isPoolingEnabled && !tagHandlerPoolNames.isEmpty()) {
             for (int i = 0; i < tagHandlerPoolNames.size(); i++) {
-                out.printil("private org.apache.jasper.runtime.TagHandlerPool "
+                out.printil("private com.requea.dysoweb.org.apache.jasper.runtime.TagHandlerPool "
                         + tagHandlerPoolNames.elementAt(i) + ";");
             }
             out.println();
@@ -615,7 +615,7 @@ class Generator {
         out.print(servletClassName);
         out.print(" extends ");
         out.println(pageInfo.getExtends());
-        out.printin("    implements org.apache.jasper.runtime.JspSourceDependent");
+        out.printin("    implements com.requea.dysoweb.org.apache.jasper.runtime.JspSourceDependent");
         if (!pageInfo.isThreadSafe()) {
             out.println(",");
             out.printin("                 javax.servlet.SingleThreadModel");
@@ -651,7 +651,7 @@ class Generator {
             out.printil("javax.servlet.http.HttpSession session = null;");
 
         if (pageInfo.isErrorPage()) {
-            out.printil("java.lang.Throwable exception = org.apache.jasper.runtime.JspRuntimeLibrary.getThrowable(request);");
+            out.printil("java.lang.Throwable exception = com.requea.dysoweb.org.apache.jasper.runtime.JspRuntimeLibrary.getThrowable(request);");
             out.printil("if (exception != null) {");
             out.pushIndent();
             out.printil("response.setStatus(javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR);");
@@ -829,7 +829,7 @@ class Generator {
 
             if (attr.isExpression()) {
                 if (encode) {
-                    return "org.apache.jasper.runtime.JspRuntimeLibrary.URLEncode(String.valueOf("
+                    return "com.requea.dysoweb.org.apache.jasper.runtime.JspRuntimeLibrary.URLEncode(String.valueOf("
                             + v + "), request.getCharacterEncoding())";
                 }
                 return v;
@@ -837,7 +837,7 @@ class Generator {
                 v = elInterpreter.interpreterCall(ctxt, this.isTagFile, v,
                         expectedType, attr.getEL().getMapName(), isXml);
                 if (encode) {
-                    return "org.apache.jasper.runtime.JspRuntimeLibrary.URLEncode("
+                    return "com.requea.dysoweb.org.apache.jasper.runtime.JspRuntimeLibrary.URLEncode("
                             + v + ", request.getCharacterEncoding())";
                 }
                 return v;
@@ -845,7 +845,7 @@ class Generator {
                 return attr.getNamedAttributeNode().getTemporaryVariableName();
             } else {
                 if (encode) {
-                    return "org.apache.jasper.runtime.JspRuntimeLibrary.URLEncode("
+                    return "com.requea.dysoweb.org.apache.jasper.runtime.JspRuntimeLibrary.URLEncode("
                             + quote(v) + ", request.getCharacterEncoding())";
                 }
                 return quote(v);
@@ -876,7 +876,7 @@ class Generator {
                     out.print(" + ");
                     out.print(separator);
                     out.print(" + ");
-                    out.print("org.apache.jasper.runtime.JspRuntimeLibrary."
+                    out.print("com.requea.dysoweb.org.apache.jasper.runtime.JspRuntimeLibrary."
                             + "URLEncode(" + quote(n.getTextAttribute("name"))
                             + ", request.getCharacterEncoding())");
                     out.print("+ \"=\" + ");
@@ -965,7 +965,7 @@ class Generator {
                 prepareParams(n);
             }
 
-            out.printin("org.apache.jasper.runtime.JspRuntimeLibrary.include(request, response, "
+            out.printin("com.requea.dysoweb.org.apache.jasper.runtime.JspRuntimeLibrary.include(request, response, "
                     + pageParam);
             printParams(n, pageParam, page.isLiteral());
             out.println(", out, " + isFlush + ");");
@@ -1082,7 +1082,7 @@ class Generator {
                 java.lang.reflect.Method meth = JspRuntimeLibrary
                         .getReadMethod(bean, property);
                 String methodName = meth.getName();
-                out.printil("out.write(org.apache.jasper.runtime.JspRuntimeLibrary.toString("
+                out.printil("out.write(com.requea.dysoweb.org.apache.jasper.runtime.JspRuntimeLibrary.toString("
                         + "((("
                         + beanName
                         + ")_jspx_page_context.findAttribute("
@@ -1092,8 +1092,8 @@ class Generator {
                 // The object is a custom action with an associated
                 // VariableInfo entry for this name.
                 // Get the class name and then introspect at runtime.
-                out.printil("out.write(org.apache.jasper.runtime.JspRuntimeLibrary.toString"
-                        + "(org.apache.jasper.runtime.JspRuntimeLibrary.handleGetProperty"
+                out.printil("out.write(com.requea.dysoweb.org.apache.jasper.runtime.JspRuntimeLibrary.toString"
+                        + "(com.requea.dysoweb.org.apache.jasper.runtime.JspRuntimeLibrary.handleGetProperty"
                         + "(_jspx_page_context.findAttribute(\""
                         + name
                         + "\"), \""
@@ -1124,14 +1124,14 @@ class Generator {
             n.setBeginJavaLine(out.getJavaLine());
 
             if ("*".equals(property)) {
-                out.printil("org.apache.jasper.runtime.JspRuntimeLibrary.introspect("
+                out.printil("com.requea.dysoweb.org.apache.jasper.runtime.JspRuntimeLibrary.introspect("
                         + "_jspx_page_context.findAttribute("
                         + "\""
                         + name + "\"), request);");
             } else if (value == null) {
                 if (param == null)
                     param = property; // default to same as property
-                out.printil("org.apache.jasper.runtime.JspRuntimeLibrary.introspecthelper("
+                out.printil("com.requea.dysoweb.org.apache.jasper.runtime.JspRuntimeLibrary.introspecthelper("
                         + "_jspx_page_context.findAttribute(\""
                         + name
                         + "\"), \""
@@ -1143,7 +1143,7 @@ class Generator {
                         + param
                         + "\", false);");
             } else if (value.isExpression()) {
-                out.printil("org.apache.jasper.runtime.JspRuntimeLibrary.handleSetProperty("
+                out.printil("com.requea.dysoweb.org.apache.jasper.runtime.JspRuntimeLibrary.handleSetProperty("
                         + "_jspx_page_context.findAttribute(\""
                         + name
                         + "\"), \"" + property + "\",");
@@ -1164,7 +1164,7 @@ class Generator {
                 // - 'pageContext' is a VariableResolver.
                 // - 'this' (either the generated Servlet or the generated tag
                 // handler for Tag files) is a FunctionMapper.
-                out.printil("org.apache.jasper.runtime.JspRuntimeLibrary.handleSetPropertyExpression("
+                out.printil("com.requea.dysoweb.org.apache.jasper.runtime.JspRuntimeLibrary.handleSetPropertyExpression("
                         + "_jspx_page_context.findAttribute(\""
                         + name
                         + "\"), \""
@@ -1180,7 +1180,7 @@ class Generator {
                 // that body.
                 String valueVarName = generateNamedAttributeValue(value
                         .getNamedAttributeNode());
-                out.printil("org.apache.jasper.runtime.JspRuntimeLibrary.introspecthelper("
+                out.printil("com.requea.dysoweb.org.apache.jasper.runtime.JspRuntimeLibrary.introspecthelper("
                         + "_jspx_page_context.findAttribute(\""
                         + name
                         + "\"), \""
@@ -1189,7 +1189,7 @@ class Generator {
                         + valueVarName
                         + ", null, null, false);");
             } else {
-                out.printin("org.apache.jasper.runtime.JspRuntimeLibrary.introspecthelper("
+                out.printin("com.requea.dysoweb.org.apache.jasper.runtime.JspRuntimeLibrary.introspecthelper("
                         + "_jspx_page_context.findAttribute(\""
                         + name
                         + "\"), \"" + property + "\", ");
@@ -2113,7 +2113,7 @@ class Generator {
 
             // Copy virtual page scope of tag file to page scope of invoking
             // page
-            out.printil("((org.apache.jasper.runtime.JspContextWrapper) this.jspContext).syncBeforeInvoke();");
+            out.printil("((com.requea.dysoweb.org.apache.jasper.runtime.JspContextWrapper) this.jspContext).syncBeforeInvoke();");
             String varReaderAttr = n.getTextAttribute("varReader");
             String varAttr = n.getTextAttribute("var");
             if (varReaderAttr != null || varAttr != null) {
@@ -2160,7 +2160,7 @@ class Generator {
 
             // Copy virtual page scope of tag file to page scope of invoking
             // page
-            out.printil("((org.apache.jasper.runtime.JspContextWrapper) this.jspContext).syncBeforeInvoke();");
+            out.printil("((com.requea.dysoweb.org.apache.jasper.runtime.JspContextWrapper) this.jspContext).syncBeforeInvoke();");
 
             // Invoke body
             String varReaderAttr = n.getTextAttribute("varReader");
@@ -3156,7 +3156,7 @@ class Generator {
                 String className = c.getCanonicalName();
                 return "("
                         + className
-                        + ")org.apache.jasper.runtime.JspRuntimeLibrary.getValueFromBeanInfoPropertyEditor("
+                        + ")com.requea.dysoweb.org.apache.jasper.runtime.JspRuntimeLibrary.getValueFromBeanInfoPropertyEditor("
                         + className + ".class, \"" + attrName + "\", " + quoted
                         + ", " + propEditorClass.getCanonicalName() + ".class)";
             } else if (c == String.class) {
@@ -3199,7 +3199,7 @@ class Generator {
                 String className = c.getCanonicalName();
                 return "("
                         + className
-                        + ")org.apache.jasper.runtime.JspRuntimeLibrary.getValueFromPropertyEditorManager("
+                        + ")com.requea.dysoweb.org.apache.jasper.runtime.JspRuntimeLibrary.getValueFromPropertyEditorManager("
                         + className + ".class, \"" + attrName + "\", " + quoted
                         + ")";
             }
@@ -3567,7 +3567,7 @@ class Generator {
         out.printin("public final class ");
         out.println(className);
         out.printil("    extends javax.servlet.jsp.tagext.SimpleTagSupport");
-        out.printin("    implements org.apache.jasper.runtime.JspSourceDependent");
+        out.printin("    implements com.requea.dysoweb.org.apache.jasper.runtime.JspSourceDependent");
         if (tagInfo.hasDynamicAttributes()) {
             out.println(",");
             out.printin("               javax.servlet.jsp.tagext.DynamicAttributes");
@@ -3680,7 +3680,7 @@ class Generator {
         // restore nested JspContext on ELContext
         out.printil("jspContext.getELContext().putContext(javax.servlet.jsp.JspContext.class,super.getJspContext());");
 
-        out.printil("((org.apache.jasper.runtime.JspContextWrapper) jspContext).syncEndTagFile();");
+        out.printil("((com.requea.dysoweb.org.apache.jasper.runtime.JspContextWrapper) jspContext).syncEndTagFile();");
         if (isPoolingEnabled && !tagHandlerPoolNames.isEmpty()) {
             out.printil("_jspDestroy();");
         }
@@ -3842,9 +3842,9 @@ class Generator {
             out.println(");");
         }
         if (aliasSeen) {
-            out.printil("this.jspContext = new org.apache.jasper.runtime.JspContextWrapper(ctx, _jspx_nested, _jspx_at_begin, _jspx_at_end, aliasMap);");
+            out.printil("this.jspContext = new com.requea.dysoweb.org.apache.jasper.runtime.JspContextWrapper(ctx, _jspx_nested, _jspx_at_begin, _jspx_at_end, aliasMap);");
         } else {
-            out.printil("this.jspContext = new org.apache.jasper.runtime.JspContextWrapper(ctx, _jspx_nested, _jspx_at_begin, _jspx_at_end, null);");
+            out.printil("this.jspContext = new com.requea.dysoweb.org.apache.jasper.runtime.JspContextWrapper(ctx, _jspx_nested, _jspx_at_begin, _jspx_at_end, null);");
         }
         out.popIndent();
         out.printil("}");
@@ -4167,7 +4167,7 @@ class Generator {
             // _jspx_meth_*
             out.printil("private class " + className);
             out.printil("    extends "
-                    + "org.apache.jasper.runtime.JspFragmentHelper");
+                    + "com.requea.dysoweb.org.apache.jasper.runtime.JspFragmentHelper");
             out.printil("{");
             out.pushIndent();
             out.printil("private javax.servlet.jsp.tagext.JspTag _jspx_parent;");

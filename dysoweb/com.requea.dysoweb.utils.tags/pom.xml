@@ -72,7 +72,7 @@
                             com.requea.dysoweb.utils.impl.Activator
                         </Bundle-Activator>
                         <Include-Resource>webapp=src/main/webapp</Include-Resource>
-			            <Export-Package>com.requea.dysoweb.utils.tags</Export-Package>
+			            <Export-Package>com.requea.dysoweb.utils.tags;version="${dysowebVersion}"</Export-Package>
                     </instructions>
                 </configuration>
             </plugin>

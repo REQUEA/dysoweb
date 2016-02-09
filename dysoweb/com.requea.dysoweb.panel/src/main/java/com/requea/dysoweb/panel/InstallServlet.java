@@ -1635,7 +1635,13 @@ public class InstallServlet extends HttpServlet {
         m_httpClient = builder.build();
 		
         // target host is hard coded
-        m_targetHost = new HttpHost("repo.requea.com", 443, "https");
+		String repoURL = XMLUtils.getChildText(elConfig, "RepoURL");
+		if(repoURL == null || repoURL.equals("")) {
+			repoURL = DEFAULT_REPO;
+		}
+		URL targetURL = new URL(repoURL);
+		
+        m_targetHost = new HttpHost(targetURL.getHost(), targetURL.getPort(), targetURL.getProtocol());
 	}
 	
 	

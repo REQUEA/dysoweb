@@ -125,7 +125,7 @@
 			            <Bundle-Activator>com.requea.dysoweb.bundlerepository.Activator</Bundle-Activator>
                         <Bundle-ClassPath>.,lib/kxml2-2.2.2.jar</Bundle-ClassPath>
                         <Import-Package>
-                            com.requea.dysoweb.service.obr;version="2.2.23",
+                            com.requea.dysoweb.service.obr;version="${dysowebVersion}",
                         	!sun.*,!com.sun.*,*
                         </Import-Package>
                         <Include-Resource>lib=target/lib</Include-Resource>

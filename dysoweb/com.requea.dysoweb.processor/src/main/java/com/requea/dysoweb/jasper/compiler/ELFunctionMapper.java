@@ -199,10 +199,10 @@ public class ELFunctionMapper {
         
             // Generate declaration for the map statically
             decName = getMapName();
-            ss.append("private static org.apache.jasper.runtime.ProtectedFunctionMapper " + decName + ";\n");
+            ss.append("private static com.requea.dysoweb.org.apache.jasper.runtime.ProtectedFunctionMapper " + decName + ";\n");
 
             ds.append("  " + decName + "= ");
-            ds.append("org.apache.jasper.runtime.ProtectedFunctionMapper");
+            ds.append("com.requea.dysoweb.org.apache.jasper.runtime.ProtectedFunctionMapper");
 
             // Special case if there is only one function in the map
             String funcMethod = null;

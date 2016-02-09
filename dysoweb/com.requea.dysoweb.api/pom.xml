@@ -51,7 +51,7 @@
                         <Bundle-Name>Requea Dysoweb API</Bundle-Name>                    
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Vendor>Requea.com</Bundle-Vendor>
-			            <Export-Package>com.requea.dysoweb</Export-Package>
+			            <Export-Package>com.requea.dysoweb;version="${dysowebVersion}"</Export-Package>
                         <Private-Package>com.requea.dysoweb.impl,com.requea.dysoweb.xml.impl</Private-Package>
 					</instructions>
 				</configuration>

@@ -34,11 +34,10 @@ import javax.servlet.jsp.tagext.TagLibraryInfo;
 import javax.servlet.jsp.tagext.TagVariableInfo;
 import javax.servlet.jsp.tagext.VariableInfo;
 
-import org.apache.jasper.runtime.JspSourceDependent;
-
 import com.requea.dysoweb.jasper.JasperException;
 import com.requea.dysoweb.jasper.JspCompilationContext;
 import com.requea.dysoweb.jasper.servlet.JspServletWrapper;
+import com.requea.dysoweb.org.apache.jasper.runtime.JspSourceDependent;
 
 /**
  * 1. Processes and extracts the directive info in a tag file. 2. Compiles and

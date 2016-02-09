@@ -109,7 +109,7 @@ public class JasperLoader extends URLClassLoader {
             if (dot >= 0) {                
                 try {        
                     // Do not call the security manager since by default, we grant that package.
-                    if (!"org.apache.jasper.runtime".equalsIgnoreCase(name.substring(0,dot))){
+                    if (!"com.requea.dysoweb.org.apache.jasper.runtime".equalsIgnoreCase(name.substring(0,dot))){
                         securityManager.checkPackageAccess(name.substring(0,dot));
                     }
                 } catch (SecurityException se) {

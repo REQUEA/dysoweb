@@ -81,9 +81,9 @@
                         	javax.xml.parsers,
                         	javax.servlet.resources,
                         	javax.servlet.http,
-                        	javax.servlet.jsp,
-							javax.servlet.jsp.el,
-							javax.servlet.jsp.tagext,
+							javax.servlet.jsp;version="3.2.3",
+							javax.servlet.jsp.resources;version="3.2.3",
+							javax.servlet.jsp.tagext;version="3.2.3",
                         	!sun.*,!com.sun.*,*
                         </Import-Package>
 					</instructions>

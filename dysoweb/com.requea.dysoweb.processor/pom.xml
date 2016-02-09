@@ -38,6 +38,7 @@
 			<groupId>javax.servlet.jsp</groupId>
 			<artifactId>javax.servlet.jsp-api</artifactId>
 			<version>2.3.1</version>
+			<scope>provided</scope>
 		</dependency>
         <dependency>
 			<groupId>org.osgi</groupId>
@@ -133,19 +134,19 @@
                         <Bundle-Vendor>Requea.com</Bundle-Vendor>
                         <Bundle-Activator>com.requea.dysoweb.bundle.Activator</Bundle-Activator>
                         <Export-Package>
+							com.requea.dysoweb.util.xml;version="${dysowebVersion}"
+                        </Export-Package>
+                        <Import-Package>
+                        	com.requea.webenv,
+                        	com.requea.dysoweb;version="${dysowebVersion}",
+							javax.servlet,
+							javax.servlet.descriptor,
+							javax.servlet.http,
 							javax.servlet.jsp;version="3.2.3",
 							javax.servlet.jsp.resources;version="3.2.3",
 							javax.servlet.jsp.tagext;version="3.2.3",
 							javax.servlet.jsp.el;version="3.3.0",
 							javax.el;version="3.3.0",
-							com.requea.dysoweb.util.xml;version="3.0.0"
-                        </Export-Package>
-                        <Import-Package>
-                        	com.requea.webenv,
-                        	com.requea.dysoweb,
-							javax.servlet,
-							javax.servlet.descriptor,
-							javax.servlet.http,
 							javax.naming.*,
                         	javax.xml.*,
                         	javax.el.*,

@@ -29,9 +29,9 @@ public interface ELInterpreter {
     /**
      * Returns the string representing the code that will be inserted into the
      * servlet generated for JSP. The default implementation creates a call to
-     * {@link org.apache.jasper.runtime.PageContextImpl#proprietaryEvaluate(
+     * {@link com.requea.dysoweb.org.apache.jasper.runtime.PageContextImpl#proprietaryEvaluate(
      * String, Class, javax.servlet.jsp.PageContext,
-     * org.apache.jasper.runtime.ProtectedFunctionMapper, boolean)} but other
+     * com.requea.dysoweb.org.apache.jasper.runtime.ProtectedFunctionMapper, boolean)} but other
      * implementations may produce more optimised code.
      *
      * @param expression a String containing zero or more "${}" expressions

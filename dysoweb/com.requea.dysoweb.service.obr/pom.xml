@@ -51,7 +51,7 @@
                         <Bundle-Name>Requea Dysoweb OBR API</Bundle-Name>                    
                         <Bundle-Vendor>Requea.com</Bundle-Vendor>
 			            <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-                        <Export-Package>com.requea.dysoweb.service.obr;version="2.2.23"</Export-Package>
+                        <Export-Package>com.requea.dysoweb.service.obr;version="${dysowebVersion}"</Export-Package>
 					</instructions>
 				</configuration>
 			</plugin>
