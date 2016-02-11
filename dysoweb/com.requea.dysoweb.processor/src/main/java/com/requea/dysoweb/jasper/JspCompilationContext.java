@@ -27,6 +27,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLConnection;
+import java.text.Normalizer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -127,11 +128,33 @@ public class JspCompilationContext {
 
         this.rctxt = rctxt;
         this.tagFileJarUrls = new HashMap<String, JarResource>();
+        
         if(options instanceof DysowebEmbeddedServletOptions) {
-        	this.basePackageName = ((DysowebEmbeddedServletOptions)options).getBundle().getSymbolicName()+".gen.jsp";
+        	String basePackageName = ((DysowebEmbeddedServletOptions)options).getBundle().getSymbolicName();
+        	basePackageName = flattenToAscii(basePackageName);
+        	// cleanup
+        	basePackageName = basePackageName.replace("/", "");
+        	basePackageName = basePackageName.replace("\\", "");
+        	basePackageName = basePackageName.replace(":", "");
+        	basePackageName = basePackageName.replace(".", "");
+        	basePackageName = basePackageName.replace("'", "");
+        	basePackageName = basePackageName.replace("ￕ", "");
+        	basePackageName = basePackageName.replace("&", "");
+        	// remove dashes
+        	basePackageName = basePackageName.replace('-', '_');
+			this.basePackageName = basePackageName+".gen.jsp";
         } else {
         	this.basePackageName = Constants.JSP_PACKAGE_NAME;
         }
+    }
+    
+    public static String flattenToAscii(String string) {
+        StringBuilder sb = new StringBuilder(string.length());
+        string = Normalizer.normalize(string, Normalizer.Form.NFD);
+        for (char c : string.toCharArray()) {
+            if (c <= '\u007F') sb.append(c);
+        }
+        return sb.toString();
     }
 
     public JspCompilationContext(String tagfile,
