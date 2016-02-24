@@ -1,0 +1,106 @@
+{
+    "basePath": "/dysoweb/rest",
+    "definitions": {
+        "Bundle": {"properties": {
+            "Name": {"type": "string"},
+            "Status": {"type": "string"},
+            "SymbolicName": {"type": "string"},
+            "Version": {"type": "string"}
+        }},
+        "Command-Param": {"properties": {
+            "command": {"type": "string"}
+        }},
+		"Command-Result": {"properties": {
+            "code": {"type": "integer"},
+            "message": {"type": "string"}
+        }},
+		"Result": {"properties": {
+            "code": {"type": "integer"},
+            "out": {"type": "string"},
+            "err": {"type": "string"}
+        }},
+        "Installlable": {"properties": {
+            "Name": {"type": "string"},
+            "SymbolicName": {"type": "string"},
+            "Type": {"type": "string"},
+            "Version": {"type": "string"}
+        }},
+        "Dysoweb": {"properties": {}},
+        "Dysoweb-Param": {"properties": {}}
+    },
+    "info": {
+        "contact": {"email": "admin@requea.com"},
+        "description": "This is the dysoweb REST Server.",
+        "title": "dysoweb REST Server",
+        "version": "1.0.1"
+    },
+    "paths": {
+        "/ExecuteCommand": {"post": {
+            "parameters": [{
+                "in": "body",
+                "name": "body",
+                "required": true,
+                "schema": {"$ref": "#/definitions/Command-Param"}
+            }],
+            "produces": ["application/json"],
+            "responses": {
+                "200": {
+                	"description": "dysoweb response",
+                	"schema": {"$ref": "#/definitions/Result"}
+            	},
+                "404": {"description": "Resource not found"}
+            },
+            "summary": "Operation ExcuteCommand on dysoweb",
+            "tags": ["dysoweb"]
+        }},
+        "/GetInstallables": {"get": {
+            "produces": ["application/json"],
+            "responses": {
+                "200": {
+                    "description": "dysoweb response",
+                    "schema": {
+                        "items": {"$ref": "#/definitions/Installlable"},
+                        "type": "array"
+                    }
+                },
+                "404": {"description": "Resource not found"}
+            },
+            "summary": "Operation GetInstallables on dysoweb",
+            "tags": ["dysoweb"]
+        }},
+        "/GetInstalledBundles": {"get": {
+            "produces": ["application/json"],
+            "responses": {
+                "200": {
+                    "description": "dysoweb response",
+                    "schema": {
+                        "items": {"$ref": "#/definitions/Bundle"},
+                        "type": "array"
+                    }
+                },
+                "404": {"description": "Resource not found"}
+            },
+            "summary": "Operation GetInstalledBundles on dysoweb",
+            "tags": ["dysoweb"]
+        }},
+        "/Install/{version}": {"get": {
+        	"parameters": [{
+                "in": "path",
+                "name": "version",
+                "required": false,
+                "type": "string"
+            }],
+            "produces": ["application/json"],
+            "responses": {
+                "200": {
+                	"description": "dysoweb response",
+                	"schema": {"$ref": "#/definitions/Command-Result"}
+            	},
+                "404": {"description": "Resource not found"}
+            },
+            "summary": "Operation Install on dysoweb",
+            "tags": ["dysoweb"]
+        }}
+    },
+    "swagger": "2.0"
+}

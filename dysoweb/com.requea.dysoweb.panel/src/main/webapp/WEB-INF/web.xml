@@ -35,6 +35,11 @@
         <servlet-class>com.requea.dysoweb.panel.InstallServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
+    <servlet>
+        <servlet-name>dysowebRestServlet</servlet-name>
+        <servlet-class>com.requea.dysoweb.panel.RestServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
 
     <servlet-mapping>
         <servlet-name>dysowebInstallServlet</servlet-name>
@@ -43,6 +48,10 @@
     <servlet-mapping>
         <servlet-name>dysowebSecurityServlet</servlet-name>
         <url-pattern>/dysoweb/panel/auth</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>dysowebRestServlet</servlet-name>
+        <url-pattern>/dysoweb/rest/*</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>bundleServlet</servlet-name>

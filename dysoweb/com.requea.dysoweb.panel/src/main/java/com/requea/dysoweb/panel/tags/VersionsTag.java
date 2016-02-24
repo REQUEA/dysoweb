@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
+import com.requea.dysoweb.panel.InstallManager;
 import com.requea.dysoweb.panel.InstallServlet;
 
 
@@ -18,12 +19,12 @@ public class VersionsTag extends BodyTagSupport {
         HttpServletRequest request = (HttpServletRequest)pageContext.getRequest();
 		
 		// retrieve the list of versions
-		String[] versions = (String[])request.getAttribute(InstallServlet.VERSIONS);
+		String[] versions = (String[])request.getAttribute(InstallManager.VERSIONS);
 		if(versions == null || versions.length == 0) {
 			return SKIP_BODY;
 		}
 
-		String currentVersion = (String) request.getAttribute(InstallServlet.CURRENTVERSION);
+		String currentVersion = (String) request.getAttribute(InstallManager.CURRENTVERSION);
 
 		// render the list of versions
         TagWriter tw = new TagWriter();

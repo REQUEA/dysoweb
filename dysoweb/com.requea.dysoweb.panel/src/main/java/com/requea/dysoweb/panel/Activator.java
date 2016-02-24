@@ -1,5 +1,6 @@
 package com.requea.dysoweb.panel;
 
+import org.apache.felix.shell.ShellService;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.InvalidSyntaxException;
@@ -13,12 +14,16 @@ public class Activator implements BundleActivator {
 
 	private BundleContext 		fContext;
 	private static Activator 	fDefault;
+	private static Activator fInstance;
 	private ServiceReference    fOBRRef;
 	private RepositoryAdmin     fRepo;
+	private ShellService fShell;
+	private ServiceReference<?> fShellRef;
 
 	
 	public void start(BundleContext context) throws Exception {
 		fContext = context;
+		
         // Listen for registering/unregistering impl service.
         ServiceListener sl = new ServiceListener() {
             public void serviceChanged(ServiceEvent event)
@@ -55,7 +60,58 @@ public class Activator implements BundleActivator {
 
         // Now try to manually initialize the impl service
         // since one might already be available.
-        initRepoService();		
+        initRepoService();
+        
+        
+		// register the shell service
+        // Listen for registering/unregistering impl service.
+        ServiceListener slShell = new ServiceListener() {
+            public void serviceChanged(ServiceEvent event)
+            {
+                synchronized (Activator.this)
+                {
+                    // Ignore additional services if we already have one.
+                    if ((event.getType() == ServiceEvent.REGISTERED)
+                        && (fShellRef != null))
+                    {
+                        return;
+                    }
+                    // Initialize the service if we don't have one.
+                    else if ((event.getType() == ServiceEvent.REGISTERED)
+                        && (fShellRef == null))
+                    {
+                    	initializeShellService();
+                    }
+                    // Unget the service if it is unregistering.
+                    else if ((event.getType() == ServiceEvent.UNREGISTERING)
+                        && event.getServiceReference().equals(fShellRef))
+                    {
+                    	fContext.ungetService(fShellRef);
+                    	fShellRef = null;
+                    	fShell = null;
+                        // Try to get another service.
+                    	initializeShellService();
+                    }
+                }
+            }
+        };
+        try
+        {
+        	fContext.addServiceListener(slShell,
+                "(objectClass="
+                + org.apache.felix.shell.ShellService.class.getName()
+                + ")");
+        }
+        catch (InvalidSyntaxException ex)
+        {
+            System.err.println("ShellTui: Cannot add service listener.");
+            System.err.println("ShellTui: " + ex);
+        }
+
+        // Now try to manually initialize the impl service
+        // since one might already be available.
+        initializeShellService();		
+        
 		
 		fDefault = this;
 	}
@@ -113,4 +169,26 @@ public class Activator implements BundleActivator {
 	public RepositoryAdmin getRepo() {
 		return fRepo;
 	}
+	
+	
+	public ShellService getShell() {
+		return fShell;
+	}
+	
+    private synchronized void initializeShellService()
+    {
+        if (fShell != null)
+        {
+            return;
+        }
+        fShellRef = fContext.getServiceReference(
+            org.apache.felix.shell.ShellService.class.getName());
+        if (fShellRef == null)
+        {
+            return;
+        }
+        fShell = (ShellService) fContext.getService(fShellRef);
+    }
+
+	
 }

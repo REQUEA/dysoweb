@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
+import com.requea.dysoweb.panel.InstallManager;
 import com.requea.dysoweb.panel.Installable;
 import com.requea.dysoweb.panel.InstallServlet;
 
@@ -24,7 +25,7 @@ public class CategoriesTag extends BodyTagSupport {
         HttpServletRequest request = (HttpServletRequest)pageContext.getRequest();
 		
 		// retrieve the list of features
-		Map categories = (Map)request.getAttribute(InstallServlet.CATEGORIES);
+		Map categories = (Map)request.getAttribute(InstallManager.CATEGORIES);
 		if(categories == null) {
 			return SKIP_BODY;
 		}

@@ -5,6 +5,7 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
+import com.requea.dysoweb.panel.InstallManager;
 import com.requea.dysoweb.panel.InstallServlet;
 import com.requea.dysoweb.panel.utils.Util;
 
@@ -132,7 +133,7 @@ public class InputTag extends BodyTagSupport {
 			tw.append("\" />");
         } else {
         	if("RepoURL".equals(fName) && (value == null || value.length() == 0)) {
-        		value = InstallServlet.DEFAULT_REPO;
+        		value = InstallManager.DEFAULT_REPO;
         	}
 	        tw.append("<input");
 	        if(fName != null) {

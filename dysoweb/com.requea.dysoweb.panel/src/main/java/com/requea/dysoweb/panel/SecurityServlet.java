@@ -63,7 +63,7 @@ public class SecurityServlet extends HttpServlet {
 			// get the config element
 			Element elConfig = null;
 			try {
-				elConfig = InstallServlet.getServerConfig(fConfigDir);
+				elConfig = InstallManager.getServerConfig(fConfigDir);
 			} catch (Exception e) {
 				// show the error
 				request.setAttribute(ErrorTag.ERROR,

@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
+import com.requea.dysoweb.panel.InstallManager;
 import com.requea.dysoweb.panel.Installable;
 import com.requea.dysoweb.panel.InstallServlet;
 
@@ -23,7 +24,7 @@ public class InstallablesTag extends BodyTagSupport {
         HttpServletRequest request = (HttpServletRequest)pageContext.getRequest();
 		
 		// retrieve the list of features
-		Installable[] installables = (Installable[])request.getAttribute(InstallServlet.INSTALLABLES);
+		Installable[] installables = (Installable[])request.getAttribute(InstallManager.INSTALLABLES);
 		if(installables == null) {
 			return SKIP_BODY;
 		}
