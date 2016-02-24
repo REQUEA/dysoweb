@@ -1,3 +1,25 @@
+1.0.45 VERSION
+- Rest servlet implementation of the panel with swagger documentation (/dyspweb/panel/swagger/index.html) 
+
+1.0.44 VERSION
+- removed non java compliant chars in jasper generated package names (inherited fromm bundle names)
+- IE automatic proxy settings better support on some Windows platforms (Win2K8)
+
+1.0.43 VERSION
+- jasper and tomcat inner compiler api renamed to avoid conflicts with some enviroenemts (old tomcats) 
+
+1.0.39 VERSION
+- servlet spec 3.1
+- upgrade to jasper v7
+
+1.0.36 VERSION
+- servlet 3.0 spec support
+- path info and filter pb on some environement (tomcat8)
+
+1.0.34 VERSION
+- support for proxies with a PAC url
+- updates system javax package list for support of newer version
+
 1.0.32 VERSION
 - added javax imports for support of Apache CXF
 - save username and password for proxy
