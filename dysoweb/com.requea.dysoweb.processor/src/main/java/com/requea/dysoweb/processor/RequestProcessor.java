@@ -350,7 +350,7 @@ public class RequestProcessor implements IWebProcessor {
 							IServletDefinition def = createServletDefinition(bundleInfo.getBundle(), name, el);
 							fActiveDefinitions.add(def);
 						} catch(WebAppException e) {
-							fLog.error("Unable to load servlet "+name, e);
+							fLog.error("\n\n!!! Unable to load servlet '"+name+"'. Some functionality may be missing!!!", e);
 						}
 					}
 				} else if("servlet-mapping".equals(tagName)) {

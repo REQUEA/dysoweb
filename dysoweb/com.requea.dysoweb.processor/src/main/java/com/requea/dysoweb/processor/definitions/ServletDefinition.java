@@ -84,6 +84,10 @@ public class ServletDefinition implements IServletDefinition {
 				cls = bundle.loadClass(fClassName);
 			} catch (ClassNotFoundException e) {
 				throw new WebAppException(e);
+			} catch (Exception e) {
+				throw new WebAppException(e);
+			} catch (Throwable t) {
+				throw new WebAppException(t.getMessage());
 			}
 			fLoader = new LoaderWrapper(cls.getClassLoader());
 		}
