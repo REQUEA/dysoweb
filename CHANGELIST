@@ -1,3 +1,6 @@
+1.0.46 VERSION
+- more tolerant to servlet errors (class error pb)
+
 1.0.45 VERSION
 - Rest servlet implementation of the panel with swagger documentation (/dyspweb/panel/swagger/index.html) 
 
