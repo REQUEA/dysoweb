@@ -1006,8 +1006,12 @@ public class InstallManager {
 		} catch(Exception e) {
 			elServer = null;
 		}
-
-		formparams.add(new BasicNameValuePair("LocalIP", InetAddress.getLocalHost().getHostAddress()));
+		try {
+			String hostAddress = InetAddress.getLocalHost().getHostAddress();
+			formparams.add(new BasicNameValuePair("LocalIP", hostAddress));
+		} catch(Exception ex) {
+			// ignore
+		}
 		formparams.add(new BasicNameValuePair("java.version", System.getProperty("java.version")));
 		formparams.add(new BasicNameValuePair("java.version", System.getProperty("java.version")));
 		formparams.add(new BasicNameValuePair("java.vendor", System.getProperty("java.vendor")));
