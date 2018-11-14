@@ -708,10 +708,10 @@ public class RequestProcessor implements IWebProcessor {
 				if(obj != null) {
 					return obj == RequestProcessor.NULL ? null : (EntryInfo)obj;
 				}
-				if(name.endsWith("/")) {
+				//if(name.endsWith("/")) {
 					// TODO: handle index file lists
-					return null;
-				} else {
+				//	return null;
+				//} else {
 					// lookup into the bundles
 					for(int i=0; i<fActiveBundleInfos.size(); i++) {
 						BundleInfo info = (BundleInfo)fActiveBundleInfos.get(i);
@@ -769,7 +769,7 @@ public class RequestProcessor implements IWebProcessor {
 					// nothing found
 					fEntries.put(name, RequestProcessor.NULL);
 					return null;
-				}
+				//}
 			}
 		}
 	}

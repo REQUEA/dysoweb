@@ -43,7 +43,7 @@ function pb(elt) {
 							<input name="ru" type="hidden" value="<%=request.getAttribute("com.requea.dysoweb.panel.ru") %>" />
 							<input name="op" type="hidden" value="register" />
 							<table width="100%">
-                                <tr><td class="lbl">Authorization Key:</td><td class="val"><panel:input name="AuthKey" size="34"/>&nbsp;<a href="https://www.requea.com/do/rqRepoKeyRequest:new" target="_blank">Request an authorization key</a></td></tr>
+                                <tr><td class="lbl">Authorization Key:</td><td class="val"><panel:input name="AuthKey" size="34"/>&nbsp;<a href="https://my.requea.com/do/rqRepoKeyRequest:new" target="_blank">Request an authorization key</a></td></tr>
 								<tr><td class="lbl"><span class="req">*</span>Password for this platform:</td><td class="val"><panel:input name="Password" type="password"/></td></tr>
 								<tr><td class="lbl"><span class="req">*</span>Confirm Password:</td><td class="val"><panel:input name="Password2" type="password"/></td></tr>
 								<tr><td colspan="2" align="center"><input type="submit" name="btnSubmit" value="Secure this Dysoweb Platform"/></td></tr>

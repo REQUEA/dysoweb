@@ -151,7 +151,7 @@ public class ServletContextWrapper implements ServletContext {
 			if(info != null) {
 				return info.getLocalURL();
 			} else {
-				return null;
+				return fContext.getResource(path);
 			}
 		}
 	}

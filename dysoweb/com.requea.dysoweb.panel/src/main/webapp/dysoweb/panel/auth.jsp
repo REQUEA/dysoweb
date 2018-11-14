@@ -34,7 +34,6 @@
 								<tr><td class="lbl"><span class="req">*</span>Password:</td><td class="val"><panel:input name="Password" type="password"/></td></tr>
 								<tr><td colspan="2" align="center"><input type="submit" name="submit" value="Login"/></td></tr>
 							</table>
-							<a href="http://dysoweb.requea.com/resetpass" target="_blank">How to reset the platform password?</a>						
 							</form>  
 						</div>
 					</div>
