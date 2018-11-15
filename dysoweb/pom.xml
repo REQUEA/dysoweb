@@ -25,6 +25,23 @@
 		<module>com.requea.dysoweb.log4j</module>
 	</modules>
 	<build>
+	    <plugins>
+	        <plugin>
+	            <groupId>external.atlassian.jgitflow</groupId>
+	            <artifactId>jgitflow-maven-plugin</artifactId>
+	            <version>1.0-m5.1</version>
+	            <configuration>
+			      <flowInitContext>
+			         <masterBranchName>master</masterBranchName>
+			         <developBranchName>development</developBranchName>
+			         <featureBranchPrefix>feature-</featureBranchPrefix>
+			         <releaseBranchPrefix>release-</releaseBranchPrefix>
+			         <hotfixBranchPrefix>hotfix-</hotfixBranchPrefix>
+			         <versionTagPrefix>tag-</versionTagPrefix>
+			       </flowInitContext>
+	            </configuration>
+	        </plugin>
+	    </plugins>
 		<pluginManagement>
 			<plugins>
 				<plugin>
