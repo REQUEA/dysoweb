@@ -18,14 +18,14 @@
     <parent>
         <artifactId>demo</artifactId>
         <groupId>com.requea.dysoweb</groupId>
-		<version>1.0.50-SNAPSHOT</version>
+		<version>1.0.51-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.requea.dysoweb</groupId>
     <artifactId>com.requea.dysoweb.demo2</artifactId>
     <packaging>bundle</packaging>
     <name>Requea Dysoweb Demo2 CSS Relooking</name>
-    <version>1.0.50-SNAPSHOT</version>
+    <version>1.0.51-SNAPSHOT</version>
     <url>http://www.requea.com</url>
     <dependencies>
         <dependency>
