@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<parent>
+		<artifactId>main</artifactId>
+		<groupId>com.requea.dysoweb.portlet</groupId>
+		<version>1.0.51-SNAPSHOT</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.requea.dysoweb.portlet</groupId>
+	<artifactId>portlet-core</artifactId>
+	<name>Requea Dysoweb Portlet Bootstrap</name>
+	<version>1.0.51-SNAPSHOT</version>
+	<url>http://www.requea.com</url><dependencies>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet.jsp</groupId>
+			<artifactId>javax.servlet.jsp-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+		    <groupId>portlet-api</groupId>
+		    <artifactId>portlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+        <dependency>
+            <groupId>com.requea.dysoweb</groupId>
+            <artifactId>dysoweb-core</artifactId>
+			<scope>provided</scope>
+        </dependency>
+	</dependencies>
+</project>
