@@ -9,7 +9,7 @@
 	<properties>
 		<!-- dysowebVersion sould be the same number as dysoweb Version, 
 			but without the -SNAPSHOT if there is one -->
-		<dysowebVersion>1.0.50</dysowebVersion>
+		<dysowebVersion>1.0.51</dysowebVersion>
 	</properties>
 
 	<modules>
