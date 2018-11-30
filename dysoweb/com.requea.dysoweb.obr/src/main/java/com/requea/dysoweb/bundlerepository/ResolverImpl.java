@@ -449,8 +449,6 @@ public class ResolverImpl implements MonitoredResolver
             return;
         }
 
-        int bundleLength = m_context.getBundles().length;
-
     	// Check to make sure that our local state cache is up-to-date
         // and error if it is not. This is not completely safe, because
         // the state can still change during the operation, but we will
@@ -462,7 +460,7 @@ public class ResolverImpl implements MonitoredResolver
         }
 
         // Eliminate duplicates from target, required, optional resources.
-        Map deployMap = new HashMap();
+        Map<Resource, Resource> deployMap = new HashMap<Resource, Resource>();
         Resource[] resources = getAddedResources();
         for (int i = 0; (resources != null) && (i < resources.length); i++)
         {
@@ -474,8 +472,56 @@ public class ResolverImpl implements MonitoredResolver
             deployMap.put(resources[i], resources[i]);
         }
 
+        List<Resource> deployList = new ArrayList<Resource>(deployMap.keySet());
+        
+        Collections.sort(deployList, new Comparator<Resource>() {
+
+			@Override
+			public int compare(Resource o1, Resource o2) {
+				String str1 = o1.getSymbolicName();
+				String str2 = o2.getSymbolicName();
+				if (str1 == null || str2 == null)
+					return 0;
+				
+				if (str1.indexOf(".") == -1 && str2.indexOf(".") > -1)
+					return -1;
+
+				if (str1.indexOf(".") > -1 && str2.indexOf(".") == -1)
+					return 1;
+
+				if (str1.startsWith("com.requea.dynapage") && !str2.startsWith("com.requea.dynapage"))
+					return -1;
+
+				if (!str1.startsWith("com.requea.dynapage") && str2.startsWith("com.requea.dynapage"))
+					return 1;
+
+				if (str1.startsWith("com.requea.dynapage.ext") && str2.startsWith("com.requea.dynapage.ext"))
+					return str1.compareTo(str2);
+
+				if (str1.startsWith("com.requea.dynapage") && str2.startsWith("com.requea.dynapage.ext"))
+					return -1;
+
+				if (str1.startsWith("com.requea.dynapage.ext") && str2.startsWith("com.requea.dynapage"))
+					return 1;
+
+				if (str1.startsWith("com.requea.app") && !str2.startsWith("com.requea.app"))
+					return -1;
+
+				if (!str1.startsWith("com.requea.app") && str2.startsWith("com.requea.app"))
+					return 1;
+
+				if (str1.startsWith("com.requea.") && !str2.startsWith("com.requea."))
+					return -1;
+
+				if (!str1.startsWith("com.requea.") && str2.startsWith("com.requea."))
+					return 1;
+
+				return str1.compareTo(str2);
+			}
+		});
+        
         Resource[] deployResources = (Resource[])
-            deployMap.keySet().toArray(new Resource[deployMap.size()]);
+        		deployList.toArray(new Resource[deployMap.size()]);
 
         // List to hold all resources to be started.
         List startList = new ArrayList();
@@ -485,7 +531,7 @@ public class ResolverImpl implements MonitoredResolver
         // installed resource to update or the installation of a new version
         // of the resource to be deployed.
         int size = 0;
-        
+       
         for (int i = 0; i < deployResources.length; i++)
         {
             // For the resource being deployed, see if there is an older
@@ -895,6 +941,7 @@ public class ResolverImpl implements MonitoredResolver
     private boolean isResourceUpdatable(
         Resource oldVersion, Resource newVersion, Resource[] resources)
     {
+    	/*
         // Get all of the local resolvable requirements for the old
         // version of the resource from the specified resource array.
         Requirement[] reqs = getResolvableRequirements(oldVersion, resources);
@@ -929,7 +976,7 @@ public class ResolverImpl implements MonitoredResolver
                 return false;
             }
         }
-
+		*/
         return true;
     }
 
