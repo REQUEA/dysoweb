@@ -117,7 +117,7 @@
         <repository>
             <id>requea-maven-repository</id>
             <name>Requea repository</name>
-            <url>file:/home/maven/repo</url>
+            <url>file:/Users/mgasco/.m2/repository</url>
         </repository>
     </distributionManagement>
 
