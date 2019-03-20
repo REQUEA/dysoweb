@@ -95,6 +95,9 @@ public class BundleTag extends TagSupport {
 			sb.append(Long.toString(bundle.getBundleId()));
 			sb.append("&op=");
 			sb.append(op);
+			sb.append("&ru=");
+			sb.append(request.getContextPath());
+			sb.append("/dysoweb/panel/secure/bundles.jsp");
 			HttpServletResponse response = (HttpServletResponse)pageContext.getResponse();
 			tw.append(response.encodeURL(sb.toString()));
 			tw.append("\"");

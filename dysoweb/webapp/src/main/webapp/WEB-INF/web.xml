@@ -55,6 +55,7 @@
         <env-entry-value>dysoweb.home</env-entry-value>
     </env-entry>
 
-
+	<welcome-file-list>
+	</welcome-file-list>
     <!--  end of servlet implementation -->
 </web-app>
