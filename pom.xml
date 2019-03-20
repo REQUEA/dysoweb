@@ -3,13 +3,13 @@
 	<groupId>com.requea.dysoweb</groupId>
 	<artifactId>main</artifactId>
 	<packaging>pom</packaging>
-	<version>1.0.51</version>
+	<version>1.0.52-SNAPSHOT</version>
 	<name>Requea Dysoweb</name>
 	<url>http://www.requea.com</url>
 	<properties>
 		<!-- dysowebVersion sould be the same number as dysoweb Version, 
 			but without the -SNAPSHOT if there is one -->
-		<dysowebVersion>1.0.51</dysowebVersion>
+		<dysowebVersion>1.0.52</dysowebVersion>
 	</properties>
 
 	<modules>
@@ -40,7 +40,7 @@
 			<dependency>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>org.apache.felix.framework</artifactId>
-				<version>6.0.1</version>
+				<version>6.0.2.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.osgi</groupId>

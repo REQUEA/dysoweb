@@ -7,5 +7,10 @@
         <servlet-class>com.requea.dysoweb.utils.impl.BundleServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
+
+    <servlet-mapping>
+        <servlet-name>bundleServlet</servlet-name>
+        <url-pattern>/dwbndl</url-pattern>
+    </servlet-mapping>
     
 </web-app>

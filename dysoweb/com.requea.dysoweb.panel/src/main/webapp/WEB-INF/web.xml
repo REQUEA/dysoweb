@@ -24,7 +24,6 @@
         <url-pattern>/dwbndl</url-pattern>
     </filter-mapping>
 
-
     <servlet>
         <servlet-name>dysowebSecurityServlet</servlet-name>
         <servlet-class>com.requea.dysoweb.panel.SecurityServlet</servlet-class>
@@ -53,11 +52,6 @@
         <servlet-name>dysowebRestServlet</servlet-name>
         <url-pattern>/dysoweb/rest/*</url-pattern>
     </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>bundleServlet</servlet-name>
-        <url-pattern>/dwbndl</url-pattern>
-    </servlet-mapping>
-    
 
 </web-app>
 
