@@ -3,7 +3,7 @@
 	<groupId>com.requea.dysoweb</groupId>
 	<artifactId>main</artifactId>
 	<packaging>pom</packaging>
-	<version>1.0.52-SNAPSHOT</version>
+	<version>1.0.52</version>
 	<name>Requea Dysoweb</name>
 	<url>http://www.requea.com</url>
 	<properties>
@@ -124,7 +124,8 @@
 	    <url>https://github.com/REQUEA/dysoweb</url>
 	    <connection>scm:git:git://github.com/REQUEA/dysoweb.git</connection>
 	    <developerConnection>scm:git:git@github.com:REQUEA/dysoweb.git</developerConnection>
-	</scm>
+	  <tag>main-1.0.52</tag>
+  </scm>
 	<build>
 		<plugins>
 			<plugin>
