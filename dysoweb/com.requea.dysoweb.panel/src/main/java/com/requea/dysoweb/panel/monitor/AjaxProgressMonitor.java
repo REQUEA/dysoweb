@@ -1,5 +1,6 @@
 package com.requea.dysoweb.panel.monitor;
 
+import java.io.Serializable;
 import java.text.NumberFormat;
 import java.util.Locale;
 
@@ -11,7 +12,8 @@ import com.requea.dysoweb.util.xml.XMLUtils;
 /**
  * This progress monitor directs all task information to std.out.
  */
-public class AjaxProgressMonitor implements IProgressMonitor {
+public class AjaxProgressMonitor implements IProgressMonitor, Serializable{
+	private static final long serialVersionUID = 1L;
 	private int _totalWork = 0;
 	private int _workDoneSoFar = 0;
 	private boolean _cancelRequested = false;
