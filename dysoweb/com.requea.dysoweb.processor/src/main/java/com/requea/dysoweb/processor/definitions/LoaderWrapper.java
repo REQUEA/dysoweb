@@ -12,9 +12,12 @@ public class LoaderWrapper extends ClassLoader {
 //    private static Log fLog = LogFactory.getLog(LoaderWrapper.class);
 	
 	private ClassLoader fLoader;
+	private ClassLoader fWebLoader;
+
 
 	public LoaderWrapper(ClassLoader classLoader) {
 		super(IWebProcessor.class.getClassLoader());
+		fWebLoader = IWebProcessor.class.getClassLoader();
 		fLoader = classLoader;
 	}
 
@@ -36,18 +39,27 @@ public class LoaderWrapper extends ClassLoader {
 		// First, check if the class has already been loaded
 		Class c = findLoadedClass(name);
 		if (c == null) {
-		    try {
-			    c = fLoader.loadClass(name);
-		    } catch (ClassNotFoundException e) {
-		        // If still not found, then invoke findClass in order
-		        // to find the class.
-		        c = findClass(name);
-		    }
+			if (name != null && name.startsWith("com.requea.webenv")){
+				try {
+					c = fWebLoader.loadClass(name);
+				} catch (ClassNotFoundException e) {
+				}
+			}
+		}
+		if (c == null) {
+
+			try {
+				c = fLoader.loadClass(name);
+			} catch (ClassNotFoundException e) {
+				// If still not found, then invoke findClass in order
+				// to find the class.
+				c = findClass(name);
+			}
 		}
 		if (resolve) {
-		    resolveClass(c);
+			resolveClass(c);
 		}
 		return c;
 	}
-	
+
 }
