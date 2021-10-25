@@ -14,7 +14,6 @@ import java.io.OutputStream;
 import java.io.Serializable;
 
 import org.apache.felix.framework.BundleWiringImpl;
-
 //import org.apache.felix.framework. .searchpolicy. .ModuleImpl;
 //import org.apache.felix.moduleloader.IModule;
 import org.osgi.framework.Bundle;
@@ -82,7 +81,7 @@ public class DysowebSessionSerializer implements Externalizable {
 	}
 	
 	public synchronized void writeExternal(ObjectOutput out) throws IOException {
-		if (out instanceof OutputStream && fObject != null) {
+		if (fObject != null) {
 			try {
 				if(fData == null) {
 					ByteArrayOutputStream bos = new ByteArrayOutputStream();
