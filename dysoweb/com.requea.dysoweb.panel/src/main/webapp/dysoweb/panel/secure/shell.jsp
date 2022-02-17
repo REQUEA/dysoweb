@@ -7,11 +7,11 @@
 <head>
 	<title>Dysoweb Control Panel</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <link href="<%= request.getContextPath() %>/dysoweb/panel/css/style-1.0.9.css" rel="stylesheet" type="text/css" />
+    <link href="<%= request.getContextPath() %>/dysoweb/panel/css/style-1.0.10.css" rel="stylesheet" type="text/css" />
 	<dw:insert bundle="com.requea.dysoweb.demo2">
     <link href="<%= request.getContextPath() %>/dysoweb/demo/style2.css" rel="stylesheet" type="text/css" />
 	</dw:insert>
-	<script src="<%=request.getContextPath()%>/dysoweb/panel/js/prototype-1.5.1.js" type="text/javascript"></script>	
+	<script src="<%=request.getContextPath()%>/dysoweb/panel/js/prototype-1.7.3.js" type="text/javascript"></script>
 	<script type="text/javascript">
 function dysowebExecuteCommand() {
 	// send the ajax request command

@@ -41,13 +41,14 @@ public final class Cookies {
 
     private static final UserDataHelper userDataLog = new UserDataHelper(log);
 
-    protected static final StringManager sm =
+    static final StringManager sm =
             StringManager.getManager("org.apache.tomcat.util.http");
 
     // expected average number of cookies per request
     public static final int INITIAL_SIZE=4;
     ServerCookie scookies[]=new ServerCookie[INITIAL_SIZE];
     int cookieCount=0;
+    private int limit = 200;
     boolean unprocessed=true;
 
     MimeHeaders headers;
@@ -62,6 +63,18 @@ public final class Cookies {
     public Cookies(MimeHeaders headers) {
         this.headers=headers;
     }
+
+
+    public void setLimit(int limit) {
+        this.limit = limit;
+        if (limit > -1 && scookies.length > limit && cookieCount <= limit) {
+            // shrink cookie list array
+            ServerCookie scookiesTmp[] = new ServerCookie[limit];
+            System.arraycopy(scookies, 0, scookiesTmp, 0, cookieCount);
+            scookies = scookiesTmp;
+        }
+    }
+
 
     /**
      * Recycle.
@@ -115,8 +128,14 @@ public final class Cookies {
      *  The caller can set the name/value and attributes for the cookie
      */
     private ServerCookie addCookie() {
-        if( cookieCount >= scookies.length  ) {
-            ServerCookie scookiesTmp[]=new ServerCookie[2*cookieCount];
+        if (limit > -1 && cookieCount >= limit) {
+            throw new IllegalArgumentException(
+                    sm.getString("cookies.maxCountFail", Integer.valueOf(limit)));
+        }
+
+        if (cookieCount >= scookies.length) {
+            int newSize = limit > -1 ? Math.min(2*cookieCount, limit) : 2*cookieCount;
+            ServerCookie scookiesTmp[] = new ServerCookie[newSize];
             System.arraycopy( scookies, 0, scookiesTmp, 0, cookieCount);
             scookies=scookiesTmp;
         }

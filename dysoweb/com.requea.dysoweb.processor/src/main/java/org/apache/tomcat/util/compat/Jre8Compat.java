@@ -23,7 +23,16 @@ import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLServerSocket;
 
+import org.apache.juli.logging.Log;
+import org.apache.juli.logging.LogFactory;
+import org.apache.tomcat.util.res.StringManager;
+
 class Jre8Compat extends Jre7Compat {
+
+    private static final Log log = LogFactory.getLog(Jre8Compat.class);
+    private static final StringManager sm = StringManager.getManager(Jre8Compat.class);
+
+    private static final int RUNTIME_MAJOR_VERSION = 8;
 
     private static final Method getSSLParametersMethod;
     private static final Method setUseCipherSuitesOrderMethod;
@@ -35,20 +44,32 @@ class Jre8Compat extends Jre7Compat {
         Method m2 = null;
         Method m3 = null;
         try {
-            // Get this class first since it is Java 8+ only
+            // Order is important for the error handling below.
+            // Must look up m1 first.
+
+            // The class is Java6+...
             Class<?> c2 = Class.forName("javax.net.ssl.SSLParameters");
-            m1 = SSLServerSocket.class.getMethod("getSSLParameters");
-            m2 = c2.getMethod("setUseCipherSuitesOrder", boolean.class);
+            // ...but this method is Java8+
+            m1 = c2.getMethod("setUseCipherSuitesOrder", boolean.class);
+            m2 = SSLServerSocket.class.getMethod("getSSLParameters");
             m3 = SSLServerSocket.class.getMethod("setSSLParameters", c2);
         } catch (SecurityException e) {
             // Should never happen
+            log.error(sm.getString("jre8Compat.unexpected"), e);
         } catch (NoSuchMethodException e) {
-            // Expected on Java < 8
+            if (m1 == null) {
+                // Must be pre-Java 8
+                log.debug(sm.getString("jre8Compat.javaPre8"), e);
+            } else {
+                // Should never happen - signature error in lookup?
+                log.error(sm.getString("jre8Compat.unexpected"), e);
+            }
         } catch (ClassNotFoundException e) {
-            // Expected on Java < 7
+            // Must be pre-Java 7
+            log.debug(sm.getString("jre8Compat.javaPre7"), e);
         }
-        getSSLParametersMethod = m1;
-        setUseCipherSuitesOrderMethod = m2;
+        setUseCipherSuitesOrderMethod = m1;
+        getSSLParametersMethod = m2;
         setSSLParametersMethod = m3;
     }
 
@@ -91,5 +112,11 @@ class Jre8Compat extends Jre7Compat {
         } catch (InvocationTargetException e) {
             throw new UnsupportedOperationException(e);
         }
+    }
+
+
+    @Override
+    public int jarFileRuntimeMajorVersion() {
+        return RUNTIME_MAJOR_VERSION;
     }
 }

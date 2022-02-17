@@ -1,19 +1,11 @@
 package com.requea.dysoweb.panel;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Serializable;
-import java.io.Writer;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.ProxySelector;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.text.DateFormat;
@@ -24,6 +16,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -31,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.requea.dysoweb.panel.utils.Util;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -51,6 +46,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Version;
@@ -81,14 +77,20 @@ import com.requea.dysoweb.util.xml.XMLUtils;
 
 public class InstallManager {
 
+	private static final Logger fLog = Logger.getLogger( InstallManager.class.getName() );
+
 	private static final int TIMEOUT = 60;
-	public static final String DEFAULT_REPO = "https://repo.requea.com/dysoweb/repo/contents/repository.xml";
+	public static final String DEFAULT_REPO = "https://repo.requea.com/repo/contents/repository.xml";
     public static final String VERSIONS = "com.requea.dysoweb.versions";
     public static final String CURRENTVERSION = "com.requea.dysoweb.currentversion";
 	public static final String CATEGORIES = "com.requea.dysoweb.categories";
     public static final String INSTALLABLES = "com.requea.dysoweb.installables";
-	
+	public static final String RESTART_OPTION = "com.requea.dysoweb.restart_option";
+	public static final String PROJECT = "com.requea.dysoweb.project";
+	public static final String CONFIG = "com.requea.dysoweb.config";
+
 	private File fConfigDir;
+	private File fBinDir;
 
 	private CloseableHttpClient m_httpClient;
 
@@ -97,8 +99,9 @@ public class InstallManager {
     protected static final DateFormat format = new ISO8601DateTimeFormat();
 	
 
-	public InstallManager(File configDir) {
+	public InstallManager(File configDir, File binDir) {
 		fConfigDir = configDir;
+		fBinDir = binDir;
 	}
 
 	public RepositoryAdmin initRepo(File configDir, Element elConfig, String ver) throws Exception {
@@ -170,7 +173,7 @@ public class InstallManager {
         // Allow client cert
         SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
                 sslcontext,
-                SSLConnectionSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
+                SSLConnectionSocketFactory.getDefaultHostnameVerifier());
 
         // setup timeouts
         RequestConfig requestConfig = RequestConfig.custom()
@@ -290,6 +293,7 @@ public class InstallManager {
 	            return context;
     		}
         } catch(Exception e) {
+			fLog.log(Level.WARNING, "Error creating SSL Context", e);
             throw new IOException(e);
         }
     }
@@ -336,14 +340,14 @@ public class InstallManager {
 	            elResource.removeChild(elImage);
 	            XMLUtils.addElement(elResource, "image", sysId+".jpg");
 			} catch(Exception e) {
-				
+				fLog.log(Level.WARNING, "Error retreiving images", e);
 			}
 		}
 		
 		// store the content as XML
         String xml = XMLUtils.ElementToString(elResource, true);
         // then write the content as utf-8: zip it if the requests accept zip, since xml compresses VERY well
-        Writer w = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
+        Writer w = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8);
         w.write(xml);
         w.close();
 
@@ -367,7 +371,7 @@ public class InstallManager {
 			// send name and some platform info for support and OBR repository
 			
 			// bundles
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
 			Element elBundles = XMLUtils.getChild(elResource, "bundles");
 			if(elBundles != null) {
 				Element elBundle = XMLUtils.getChild(elBundles, "bundle");
@@ -438,6 +442,7 @@ public class InstallManager {
 		
 		private Exception fException;
 		private int fStatus = NEW;
+		private String fId = null;
 		
 		public void setError(Exception e) {
 			fException = e;
@@ -460,6 +465,12 @@ public class InstallManager {
 		public void setStatus(int status) {
 			fStatus = status;
 		}
+
+		public String getId() {
+			if (fId == null)
+				fId = GuidGenerator.generate();
+			return fId;
+		}
 		
 	}
 	
@@ -473,8 +484,9 @@ public class InstallManager {
 		private Status fStatus;
 		private PackageAdmin fPackageAdmin;
 		private Element fConfig;
+		private boolean fRestart;
 		
-		Installer(Element elConfig, BundleContext context, PackageAdmin packageAdmin, RepositoryAdmin repo, Installable[] resources, IProgressMonitor monitor, Status status) {
+		Installer(Element elConfig, BundleContext context, PackageAdmin packageAdmin, RepositoryAdmin repo, Installable[] resources, IProgressMonitor monitor, Status status, boolean restart) {
 			fContext = context;
 			fResources = resources;
 			fRepo = repo;
@@ -482,6 +494,7 @@ public class InstallManager {
 			fProgressMonitor = monitor;
 			fStatus = status;
 			fConfig = elConfig;
+			fRestart = restart;
 		}
 		
 		public void run() {
@@ -490,7 +503,17 @@ public class InstallManager {
 				fStatus.setStatus(Status.STARTED);
 				try {
 					installResources(fContext, fRepo, fResources);
-					fPackageAdmin.refreshPackages(null);
+					if(fRestart) {
+						String restartCommand = getRestartCommand();
+						if (restartCommand != null) {
+							ProcessBuilder pb = new ProcessBuilder(restartCommand);
+							pb.start();
+						} else {
+							throw new Exception("restart asked but Restart command not defined in server.xml");
+						}
+					//} else {
+					//	fPackageAdmin.refreshPackages(null);
+					}
 				} catch(Exception e) {
 					fStatus.setError(e);
 	        		// abort
@@ -581,11 +604,12 @@ public class InstallManager {
 						fProgressMonitor.beginTask("Installing selected resources ", lSize == 0 ? IProgressMonitor.UNKNOWN : (int)lSize);
 		                try
 		                {
+							boolean start = !fRestart || "true".equals(System.getProperty("com.requea.dysoweb.bundles.forcestart"));
 		            		if(resolver instanceof MonitoredResolver) {
 			            		SubProgressMonitor subMonitor = new SubProgressMonitor(fProgressMonitor, (int)lSize);
-		            			((MonitoredResolver)resolver).deploy(true, subMonitor);
+		            			((MonitoredResolver)resolver).deploy(start, subMonitor);
 		            		} else {
-		            			resolver.deploy(true);
+		            			resolver.deploy(start);
 		            		}
 		                }
 		                catch (IllegalStateException ex)
@@ -665,7 +689,7 @@ public class InstallManager {
 
         // The targetId may be a bundle name or a bundle symbolic name,
         // so create the appropriate LDAP query.
-        StringBuffer sb = new StringBuffer("(|(symbolicname=");
+        StringBuilder sb = new StringBuilder("(|(symbolicname=");
         sb.append(targetId);
         sb.append(")(symbolicname=");
         sb.append(targetId);
@@ -709,8 +733,8 @@ public class InstallManager {
 
 	public Installer newInstaller(Element elConfig, BundleContext context,
 			PackageAdmin pa, RepositoryAdmin repo, Installable[] installables,
-			AjaxProgressMonitor monitor, Status status) {
-		return new Installer(elConfig, context, pa, repo, installables, monitor, status);
+			AjaxProgressMonitor monitor, Status status, boolean restart) {
+		return new Installer(elConfig, context, pa, repo, installables, monitor, status, restart);
 	}
 	
 	private void loadInstallables(HttpServletRequest req, HttpServletResponse resp, Element elConfig) throws Exception {
@@ -720,9 +744,10 @@ public class InstallManager {
 		if(repoURL == null || repoURL.length() == 0) {
 			repoURL = InstallManager.DEFAULT_REPO;
 		}
-		
-		
-		InputStream is = null;
+
+
+		Document doc = null;
+		String responseString = null;
 		if(repoURL.startsWith("http")) {
 			String ver = (String) session.getAttribute(CURRENTVERSION);
 			if(ver != null && !"".equals(ver) && !"base".equals(ver)) {
@@ -735,23 +760,24 @@ public class InstallManager {
 			HttpResponse response = m_httpClient.execute(m_targetHost, httpget);
 			HttpEntity entity = response.getEntity();
 			if (entity != null) {
-	            is = entity.getContent();
+				responseString = EntityUtils.toString(entity);
+				doc = XMLUtils.parse(responseString);
 			}
 		} else {
 			URL url = new URL(repoURL);
 			URLConnection cnx = url.openConnection();
-			is = cnx.getInputStream();
+			doc = XMLUtils.parse(cnx.getInputStream());
 		}
 				
-		if(is != null) {
+		if(doc != null) {
 	        try {
-				Document doc = XMLUtils.parse(is);
 				Element elRepository = doc.getDocumentElement();
 				if("error".equals(elRepository.getLocalName())) {
 					throw new Exception(XMLUtils.getChildText(elRepository, "message"));
 				}
 				Installable[] installables;			
 				String name = elRepository.getAttribute("name");
+				System.out.println(XMLUtils.ElementToString(elRepository, true));
 				if("Requea Repository".equals(name)) {
 					// repo v1
 					List lstInstall = new ArrayList();
@@ -768,6 +794,12 @@ public class InstallManager {
 				} else {
 					// parse the list of installable resources
 					installables = Installable.parse(elRepository);
+					String project = elRepository.getAttribute("project");
+					session.setAttribute(PROJECT, project);
+					req.setAttribute(PROJECT, project);
+					String config = elRepository.getAttribute("config");
+					session.setAttribute(CONFIG, config);
+					req.setAttribute(CONFIG, config);
 				}
 
 				// grab all the images
@@ -789,6 +821,9 @@ public class InstallManager {
 				session.setAttribute(CATEGORIES, categories);
 				req.setAttribute(CATEGORIES, categories);
 			} catch(XMLException e) {
+				fLog.log(Level.WARNING, "Error parsing response", e);
+				if (responseString != null)
+					fLog.log(Level.WARNING, "Repo response: "+responseString);
 				req.setAttribute(ErrorTag.ERROR, "Unable to find repository information. Please try later, or check the repository URL");
 			}
 		} else {
@@ -846,74 +881,71 @@ public class InstallManager {
             repoURL = InstallManager.DEFAULT_REPO;
         }
 
-        InputStream is = null;
-        
-        if(repoURL == null || repoURL.startsWith("http")) {
-            HttpGet httpget = new HttpGet("/dysoweb/repo/contents/config");
-            HttpResponse response = m_httpClient.execute(m_targetHost, httpget);
-            HttpEntity entity = response.getEntity();
-            if (entity != null) {
-                is = entity.getContent();
-            }
-        } else {
-        	URL baseURL = new URL(repoURL);
-        	URL url = new URL(baseURL, "/dysoweb/repo/contents/config");
-        	URLConnection cnx = url.openConnection();
-        	if(cnx != null && cnx.getContentLength() > 0) {
-        		is = cnx.getInputStream();
-        	}
-        }
-        
-        if(is != null) {
 
-            try {
-                Document doc = XMLUtils.parse(is);
-                Element elResult = doc.getDocumentElement();
-                if("error".equals(elResult.getLocalName())) {
-                    throw new Exception(XMLUtils.getChildText(elResult, "message"));
-                }
-                List lstVersions = new ArrayList();
-                
-                Element elVersions = XMLUtils.getChild(elResult, "versions");
-                if(elVersions != null) {
-                    // list the versions
-                    Element elVersion = XMLUtils.getChild(elVersions, "version");
-                    while(elVersion != null) {
-                        lstVersions.add(XMLUtils.getTextValue(elVersion));
-                        
-                        elVersion = XMLUtils.getNextSibling(elVersion);
-                    }
-                }
-                
-                // versions loaded
-                String[] versions = (String[])lstVersions.toArray(new String[lstVersions.size()]);
-                
-                session.setAttribute(VERSIONS, versions);
-                req.setAttribute(VERSIONS, versions);
-                
-                String ver = req.getParameter("ver");
-                if(ver == null || ver.equals("")) {
-                    ver = (String) session.getAttribute(CURRENTVERSION);
-                }
-                if(ver != null ) {
-                    session.setAttribute(CURRENTVERSION, ver);
-                    req.setAttribute(CURRENTVERSION, ver);
-                }
-                
-            } catch(XMLException e) {
-                req.setAttribute(ErrorTag.ERROR, "Unable to find repository information. Please try later, or check the repository URL");
-            }
-        }
-    }
+		Document doc = null;
+		String responseString = null;
+		try {
+			if(repoURL == null || repoURL.startsWith("http")) {
+				HttpGet httpget = new HttpGet("/repo/contents/config");
+				HttpResponse response = m_httpClient.execute(m_targetHost, httpget);
+				HttpEntity entity = response.getEntity();
+				if (entity != null) {
+					responseString = EntityUtils.toString(entity);
+					doc = XMLUtils.parse(responseString);
+				}
+			} else {
+				URL baseURL = new URL(repoURL);
+				URL url = new URL(baseURL, "/repo/contents/config");
+				URLConnection cnx = url.openConnection();
+				if(cnx != null && cnx.getContentLength() > 0) {
+					doc = XMLUtils.parse(cnx.getInputStream());
+				}
+			}
+
+			if(doc != null) {
+				Element elResult = doc.getDocumentElement();
+				if("error".equals(elResult.getLocalName())) {
+					throw new Exception(XMLUtils.getChildText(elResult, "message"));
+				}
+				List lstVersions = new ArrayList();
+
+				Element elVersions = XMLUtils.getChild(elResult, "versions");
+				if(elVersions != null) {
+					// list the versions
+					Element elVersion = XMLUtils.getChild(elVersions, "version");
+					while(elVersion != null) {
+						lstVersions.add(XMLUtils.getTextValue(elVersion));
+
+						elVersion = XMLUtils.getNextSibling(elVersion);
+					}
+				}
+
+				// versions loaded
+				String[] versions = (String[])lstVersions.toArray(new String[lstVersions.size()]);
+
+				session.setAttribute(VERSIONS, versions);
+				req.setAttribute(VERSIONS, versions);
+
+				String ver = req.getParameter("ver");
+				if(ver == null || ver.equals("")) {
+					ver = (String) session.getAttribute(CURRENTVERSION);
+				}
+				if(ver != null ) {
+					session.setAttribute(CURRENTVERSION, ver);
+					req.setAttribute(CURRENTVERSION, ver);
+				}
+			}
+		} catch(XMLException e) {
+			fLog.log(Level.WARNING, "Error loading versions", e);
+			if (responseString != null)
+				fLog.log(Level.WARNING, "Repo response: "+responseString);
+			req.setAttribute(ErrorTag.ERROR, "Unable to find repository information. Please try later, or check the repository URL");
+		}
+	}
 
 
 	private Installable[] parseInstallablesFromFeatures(Element elConfig) throws Exception {
-		String repoURL = XMLUtils.getChildText(elConfig, "RepoURL");
-		if(repoURL == null || repoURL.length() == 0) {
-			repoURL = InstallManager.DEFAULT_REPO;
-		}
-		
-		HttpGet httpget = new HttpGet("/dysoweb/repo/contents/feature.xml");
+		HttpGet httpget = new HttpGet("/repo/contents/feature.xml");
 		HttpResponse response = m_httpClient.execute(m_targetHost, httpget);
 		HttpEntity entity = response.getEntity();
 		if (entity != null) {
@@ -949,7 +981,10 @@ public class InstallManager {
             if(currentVersion != null) {
                 req.setAttribute(CURRENTVERSION, currentVersion);
             }
+			req.setAttribute(PROJECT, session.getAttribute(PROJECT));
+			req.setAttribute(CONFIG, session.getAttribute(CONFIG));
 		} else {
+			initHttpClient(elConfig);
 		    loadVersions(req,resp,elConfig);
 			loadInstallables(req, resp, elConfig);
 			installables = (Installable[])req.getAttribute(INSTALLABLES);
@@ -1004,6 +1039,7 @@ public class InstallManager {
 			Document doc = XMLUtils.parse(new FileInputStream(new File(fConfigDir, "server.xml")));
 			elServer = doc.getDocumentElement();
 		} catch(Exception e) {
+			fLog.log(Level.WARNING, "Error getting server.xml content", e);
 			elServer = null;
 		}
 		try {
@@ -1059,7 +1095,7 @@ public class InstallManager {
 	
 			// update the server config
 			elServer = getServerConfig(fConfigDir);
-			if (sysId != null)
+			if (sysId != null && elServer != null)
 				elServer.setAttribute("sysId", sysId);
 			
 			// set the authkey (if any)
@@ -1075,7 +1111,7 @@ public class InstallManager {
 			String xml = XMLUtils.ElementToString(elServer, true);
 	
 			OutputStream os = new FileOutputStream(new File(fConfigDir, "server.xml"));
-			Writer w = new OutputStreamWriter(os, "UTF-8");
+			Writer w = new OutputStreamWriter(os, StandardCharsets.UTF_8);
 			w.write(xml);
 			w.close();
 		}
@@ -1102,5 +1138,21 @@ public class InstallManager {
 			return null;
 		}
 	}
-	
+
+	public String getRestartCommand() {
+		String command = null;
+
+		if (fBinDir != null) {
+			String osName = Util.getOsName();
+			String cmd = null;
+			if (osName != null && osName.startsWith("Windows"))
+				cmd = "restart.cmd";
+			else
+				cmd = "restart.sh";
+			File fcmd = new File(fBinDir, cmd);
+			if (fcmd.exists())
+				return fcmd.getAbsolutePath();
+		}
+		return command;
+	}
 }

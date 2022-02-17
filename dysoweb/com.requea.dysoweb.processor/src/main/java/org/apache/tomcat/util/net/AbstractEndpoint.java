@@ -16,11 +16,14 @@
  */
 package org.apache.tomcat.util.net;
 
-import java.io.File;
 import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.util.concurrent.Executor;
@@ -39,6 +42,7 @@ import org.apache.tomcat.util.threads.ResizableExecutor;
 import org.apache.tomcat.util.threads.TaskQueue;
 import org.apache.tomcat.util.threads.TaskThreadFactory;
 import org.apache.tomcat.util.threads.ThreadPoolExecutor;
+
 /**
  *
  * @author fhanik
@@ -64,6 +68,8 @@ public abstract class AbstractEndpoint<S> {
 
         /**
          * Obtain the GlobalRequestProcessor associated with the handler.
+         *
+         * @return the GlobalRequestProcessor
          */
         public Object getGlobal();
 
@@ -117,7 +123,7 @@ public abstract class AbstractEndpoint<S> {
     /**
      * Are we using an internal executor
      */
-    protected volatile boolean internalExecutor = false;
+    protected volatile boolean internalExecutor = true;
 
 
     /**
@@ -224,7 +230,7 @@ public abstract class AbstractEndpoint<S> {
     private Executor executor = null;
     public void setExecutor(Executor executor) {
         this.executor = executor;
-        this.internalExecutor = (executor==null);
+        this.internalExecutor = (executor == null);
     }
     public Executor getExecutor() { return executor; }
 
@@ -245,8 +251,9 @@ public abstract class AbstractEndpoint<S> {
     public InetAddress getAddress() { return address; }
     public void setAddress(InetAddress address) { this.address = address; }
 
+
     /**
-     * Allows the server developer to specify the backlog that
+     * Allows the server developer to specify the acceptCount (backlog) that
      * should be used for server sockets. By default, this value
      * is 100.
      */
@@ -283,6 +290,9 @@ public abstract class AbstractEndpoint<S> {
 
     /**
      * Socket TCP no delay.
+     *
+     * @return The current TCP no delay setting for sockets created by this
+     *         endpoint
      */
     public boolean getTcpNoDelay() { return socketProperties.getTcpNoDelay();}
     public void setTcpNoDelay(boolean tcpNoDelay) { socketProperties.setTcpNoDelay(tcpNoDelay); }
@@ -290,6 +300,9 @@ public abstract class AbstractEndpoint<S> {
 
     /**
      * Socket linger.
+     *
+     * @return The current socket linger time for sockets created by this
+     *         endpoint
      */
     public int getSoLinger() { return socketProperties.getSoLingerTime(); }
     public void setSoLinger(int soLinger) {
@@ -300,6 +313,8 @@ public abstract class AbstractEndpoint<S> {
 
     /**
      * Socket timeout.
+     *
+     * @return The current socket timeout for sockets created by this endpoint
      */
     public int getSoTimeout() { return socketProperties.getSoTimeout(); }
     public void setSoTimeout(int soTimeout) { socketProperties.setSoTimeout(soTimeout); }
@@ -313,19 +328,28 @@ public abstract class AbstractEndpoint<S> {
 
 
     private int minSpareThreads = 10;
-    public int getMinSpareThreads() {
-        return Math.min(minSpareThreads,getMaxThreads());
-    }
     public void setMinSpareThreads(int minSpareThreads) {
         this.minSpareThreads = minSpareThreads;
-        if (running && executor!=null) {
-            if (executor instanceof java.util.concurrent.ThreadPoolExecutor) {
-                ((java.util.concurrent.ThreadPoolExecutor)executor).setCorePoolSize(minSpareThreads);
-            } else if (executor instanceof ResizableExecutor) {
-                ((ResizableExecutor)executor).resizePool(minSpareThreads, maxThreads);
-            }
+        Executor executor = this.executor;
+        if (internalExecutor && executor instanceof java.util.concurrent.ThreadPoolExecutor) {
+            // The internal executor should always be an instance of
+            // j.u.c.ThreadPoolExecutor but it may be null if the endpoint is
+            // not running.
+            // This check also avoids various threading issues.
+            ((java.util.concurrent.ThreadPoolExecutor) executor).setCorePoolSize(minSpareThreads);
         }
     }
+    public int getMinSpareThreads() {
+        return Math.min(getMinSpareThreadsInternal(), getMaxThreads());
+    }
+    private int getMinSpareThreadsInternal() {
+        if (internalExecutor) {
+            return minSpareThreads;
+        } else {
+            return -1;
+        }
+    }
+
 
     /**
      * Maximum amount of worker threads.
@@ -333,30 +357,56 @@ public abstract class AbstractEndpoint<S> {
     private int maxThreads = 200;
     public void setMaxThreads(int maxThreads) {
         this.maxThreads = maxThreads;
-        if (running && executor!=null) {
-            if (executor instanceof java.util.concurrent.ThreadPoolExecutor) {
-                ((java.util.concurrent.ThreadPoolExecutor)executor).setMaximumPoolSize(maxThreads);
-            } else if (executor instanceof ResizableExecutor) {
-                ((ResizableExecutor)executor).resizePool(minSpareThreads, maxThreads);
-            }
+        Executor executor = this.executor;
+        if (internalExecutor && executor instanceof java.util.concurrent.ThreadPoolExecutor) {
+            // The internal executor should always be an instance of
+            // j.u.c.ThreadPoolExecutor but it may be null if the endpoint is
+            // not running.
+            // This check also avoids various threading issues.
+            ((java.util.concurrent.ThreadPoolExecutor) executor).setMaximumPoolSize(maxThreads);
         }
     }
     public int getMaxThreads() {
-        return getMaxThreadsExecutor(running);
-    }
-    protected int getMaxThreadsExecutor(boolean useExecutor) {
-        if (useExecutor && executor != null) {
-            if (executor instanceof java.util.concurrent.ThreadPoolExecutor) {
-                return ((java.util.concurrent.ThreadPoolExecutor)executor).getMaximumPoolSize();
-            } else if (executor instanceof ResizableExecutor) {
-                return ((ResizableExecutor)executor).getMaxThreads();
-            } else {
-                return -1;
-            }
-        } else {
+        if (internalExecutor) {
             return maxThreads;
+        } else {
+            return -1;
         }
     }
+    protected int getMaxThreadsInternal() {
+        return maxThreads;
+    }
+    public int getMaxThreadsWithExecutor() {
+        Executor executor = this.executor;
+        if (internalExecutor) {
+            return maxThreads;
+        } else {
+            if (executor instanceof java.util.concurrent.ThreadPoolExecutor) {
+                return ((java.util.concurrent.ThreadPoolExecutor) executor).getMaximumPoolSize();
+            } else if (executor instanceof ResizableExecutor) {
+                return ((ResizableExecutor) executor).getMaxThreads();
+            }
+            return -1;
+        }
+    }
+
+
+    /**
+     * Priority of the worker threads.
+     */
+    protected int threadPriority = Thread.NORM_PRIORITY;
+    public void setThreadPriority(int threadPriority) {
+        // Can't change this once the executor has started
+        this.threadPriority = threadPriority;
+    }
+    public int getThreadPriority() {
+        if (internalExecutor) {
+            return threadPriority;
+        } else {
+            return -1;
+        }
+    }
+
 
     /**
      * Max keep alive requests
@@ -398,13 +448,6 @@ public abstract class AbstractEndpoint<S> {
     public boolean getDaemon() { return daemon; }
 
 
-    /**
-     * Priority of the worker threads.
-     */
-    protected int threadPriority = Thread.NORM_PRIORITY;
-    public void setThreadPriority(int threadPriority) { this.threadPriority = threadPriority; }
-    public int getThreadPriority() { return threadPriority; }
-
     protected abstract boolean getDeferAccept();
 
 
@@ -415,14 +458,16 @@ public abstract class AbstractEndpoint<S> {
      * sub-component is the
      * {@link org.apache.tomcat.util.net.ServerSocketFactory}.
      */
-    protected HashMap<String, Object> attributes =
-        new HashMap<String, Object>();
+    protected HashMap<String, Object> attributes = new HashMap<String, Object>();
     /**
      * Generic property setter called when a property for which a specific
      * setter already exists within the
      * {@link org.apache.coyote.ProtocolHandler} needs to be made available to
      * sub-components. The specific setter will call this method to populate the
      * attributes.
+     *
+     * @param name  Name of property to set
+     * @param value The value to set the property to
      */
     public void setAttribute(String name, Object value) {
         if (getLog().isTraceEnabled()) {
@@ -433,6 +478,11 @@ public abstract class AbstractEndpoint<S> {
     }
     /**
      * Used by sub-components to retrieve configuration information.
+     *
+     * @param key The name of the property for which the value should be
+     *            retrieved
+     *
+     * @return The value of the specified property
      */
     public Object getAttribute(String key) {
         Object value = attributes.get(key);
@@ -469,11 +519,12 @@ public abstract class AbstractEndpoint<S> {
      * @return the amount of threads that are managed by the pool
      */
     public int getCurrentThreadCount() {
-        if (executor!=null) {
+        Executor executor = this.executor;
+        if (executor != null) {
             if (executor instanceof ThreadPoolExecutor) {
-                return ((ThreadPoolExecutor)executor).getPoolSize();
+                return ((ThreadPoolExecutor) executor).getPoolSize();
             } else if (executor instanceof ResizableExecutor) {
-                return ((ResizableExecutor)executor).getPoolSize();
+                return ((ResizableExecutor) executor).getPoolSize();
             } else {
                 return -1;
             }
@@ -488,11 +539,12 @@ public abstract class AbstractEndpoint<S> {
      * @return the amount of threads that are in use
      */
     public int getCurrentThreadsBusy() {
-        if (executor!=null) {
+        Executor executor = this.executor;
+        if (executor != null) {
             if (executor instanceof ThreadPoolExecutor) {
-                return ((ThreadPoolExecutor)executor).getActiveCount();
+                return ((ThreadPoolExecutor) executor).getActiveCount();
             } else if (executor instanceof ResizableExecutor) {
-                return ((ResizableExecutor)executor).getActiveCount();
+                return ((ResizableExecutor) executor).getActiveCount();
             } else {
                 return -1;
             }
@@ -519,8 +571,10 @@ public abstract class AbstractEndpoint<S> {
     }
 
     public void shutdownExecutor() {
-        if ( executor!=null && internalExecutor ) {
-            if ( executor instanceof ThreadPoolExecutor ) {
+        Executor executor = this.executor;
+        if (executor != null && internalExecutor) {
+            this.executor = null;
+            if (executor instanceof ThreadPoolExecutor) {
                 //this is our internal one, so we need to shut it down
                 ThreadPoolExecutor tpe = (ThreadPoolExecutor) executor;
                 tpe.shutdownNow();
@@ -538,7 +592,6 @@ public abstract class AbstractEndpoint<S> {
                 TaskQueue queue = (TaskQueue) tpe.getQueue();
                 queue.setParent(null);
             }
-            executor = null;
         }
     }
 
@@ -564,6 +617,8 @@ public abstract class AbstractEndpoint<S> {
             // Need to create a connection to unlock the accept();
             if (address == null) {
                 saddr = new InetSocketAddress("localhost", getLocalPort());
+            } else if (address.isAnyLocalAddress()) {
+                saddr = new InetSocketAddress(getUnlockAddress(address), getLocalPort());
             } else {
                 saddr = new InetSocketAddress(address, getLocalPort());
             }
@@ -603,8 +658,8 @@ public abstract class AbstractEndpoint<S> {
             for (Acceptor acceptor : acceptors) {
                 while (waitLeft > 0 &&
                         acceptor.getState() == AcceptorState.RUNNING) {
-                    Thread.sleep(50);
-                    waitLeft -= 50;
+                    Thread.sleep(5);
+                    waitLeft -= 5;
                 }
             }
         } catch(Exception e) {
@@ -623,10 +678,56 @@ public abstract class AbstractEndpoint<S> {
     }
 
 
+    private static InetAddress getUnlockAddress(InetAddress localAddress)
+            throws SocketException, UnknownHostException {
+        // Need a local address of the same type (IPv4 or IPV6) as the
+        // configured bind address since the connector may be configured
+        // to not map between types.
+        InetAddress loopbackUnlockAddress = null;
+        InetAddress linkLocalUnlockAddress = null;
+
+        Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+        while (networkInterfaces.hasMoreElements()) {
+            NetworkInterface networkInterface = networkInterfaces.nextElement();
+            Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
+            while (inetAddresses.hasMoreElements()) {
+                InetAddress inetAddress = inetAddresses.nextElement();
+                if (localAddress.getAddress().getClass().isAssignableFrom(inetAddress.getClass())) {
+                    if (inetAddress.isLoopbackAddress()) {
+                        if (loopbackUnlockAddress == null) {
+                            loopbackUnlockAddress = inetAddress;
+                        }
+                    } else if (inetAddress.isLinkLocalAddress()) {
+                        if (linkLocalUnlockAddress == null) {
+                            linkLocalUnlockAddress = inetAddress;
+                        }
+                    } else {
+                        // Use a non-link local, non-loop back address by default
+                        return inetAddress;
+                    }
+                }
+            }
+        }
+        // Prefer loop back over link local since on some platforms (e.g.
+        // OSX) some link local addresses are not included when listening on
+        // all local addresses.
+        if (loopbackUnlockAddress != null) {
+            return loopbackUnlockAddress;
+        }
+        if (linkLocalUnlockAddress != null) {
+            return linkLocalUnlockAddress;
+        }
+        // Fallback
+        return InetAddress.getByName("localhost");
+    }
+
+
     // ---------------------------------------------- Request processing methods
 
     public abstract void processSocketAsync(SocketWrapper<S> socketWrapper,
             SocketStatus socketStatus);
+
+    public abstract void removeWaitingRequest(SocketWrapper<S> socketWrapper);
 
 
     // ------------------------------------------------------- Lifecycle methods
@@ -726,25 +827,6 @@ public abstract class AbstractEndpoint<S> {
         }
     }
 
-
-    public String adjustRelativePath(String path, String relativeTo) {
-        // Empty or null path can't point to anything useful. The assumption is
-        // that the value is deliberately empty / null so leave it that way.
-        if (path == null || path.length() == 0) {
-            return path;
-        }
-        String newPath = path;
-        File f = new File(newPath);
-        if ( !f.isAbsolute()) {
-            newPath = relativeTo + File.separator + newPath;
-            f = new File(newPath);
-        }
-        if (!f.exists()) {
-            getLog().warn("configured file:["+newPath+"] does not exist.");
-        }
-        return newPath;
-    }
-
     protected abstract Log getLog();
     // Flags to indicate optional feature support
     // Some of these are always hard-coded, some are hard-coded to false (i.e.
@@ -831,8 +913,7 @@ public abstract class AbstractEndpoint<S> {
     private String keystoreFile = System.getProperty("user.home")+"/.keystore";
     public String getKeystoreFile() { return keystoreFile;}
     public void setKeystoreFile(String s ) {
-        keystoreFile = adjustRelativePath(s,
-                System.getProperty(Constants.CATALINA_BASE_PROP));
+        keystoreFile = s;
     }
 
     private String keystorePass = null;
@@ -872,8 +953,7 @@ public abstract class AbstractEndpoint<S> {
     private String truststoreFile = System.getProperty("javax.net.ssl.trustStore");
     public String getTruststoreFile() {return truststoreFile;}
     public void setTruststoreFile(String s) {
-        truststoreFile = adjustRelativePath(s,
-                System.getProperty(Constants.CATALINA_BASE_PROP));
+        truststoreFile = s;
     }
 
     private String truststorePass =
@@ -958,12 +1038,13 @@ public abstract class AbstractEndpoint<S> {
         }
     }
 
+
     /**
      * Configures SSLEngine to honor cipher suites ordering based upon
      * endpoint configuration.
      *
-     * @throws InvalidAlgorithmParameterException If the runtime JVM doesn't
-     *         support this setting.
+     * @throws UnsupportedOperationException If the runtime JVM doesn't support
+     *                                       this setting.
      */
     protected void configureUseServerCipherSuitesOrder(SSLEngine engine) {
         String useServerCipherSuitesOrderStr = this

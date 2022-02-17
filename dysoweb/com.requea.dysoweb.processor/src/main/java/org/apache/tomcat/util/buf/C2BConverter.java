@@ -28,14 +28,14 @@ import java.nio.charset.CodingErrorAction;
  */
 public final class C2BConverter {
 
-    protected CharsetEncoder encoder = null;
-    protected ByteBuffer bb = null;
-    protected CharBuffer cb = null;
+    CharsetEncoder encoder = null;
+    ByteBuffer bb = null;
+    CharBuffer cb = null;
 
     /**
      * Leftover buffer used for multi-characters characters.
      */
-    protected CharBuffer leftovers = null;
+    CharBuffer leftovers = null;
 
     public C2BConverter(String encoding) throws IOException {
         encoder = B2CConverter.getCharset(encoding).newEncoder();
@@ -61,16 +61,15 @@ public final class C2BConverter {
 
     /**
      * Convert the given characters to bytes.
-     * 
+     *
      * @param cc char input
      * @param bc byte output
+     * @throws IOException An encoding error occurred
      */
-    public void convert(CharChunk cc, ByteChunk bc) 
-            throws IOException {
+    public void convert(CharChunk cc, ByteChunk bc) throws IOException {
         if ((bb == null) || (bb.array() != bc.getBuffer())) {
             // Create a new byte buffer if anything changed
-            bb = ByteBuffer.wrap(bc.getBuffer(), bc.getEnd(), 
-                    bc.getBuffer().length - bc.getEnd());
+            bb = ByteBuffer.wrap(bc.getBuffer(), bc.getEnd(), bc.getBuffer().length - bc.getEnd());
         } else {
             // Initialize the byte buffer
             bb.limit(bc.getBuffer().length);
@@ -78,8 +77,7 @@ public final class C2BConverter {
         }
         if ((cb == null) || (cb.array() != cc.getBuffer())) {
             // Create a new char buffer if anything changed
-            cb = CharBuffer.wrap(cc.getBuffer(), cc.getStart(), 
-                    cc.getLength());
+            cb = CharBuffer.wrap(cc.getBuffer(), cc.getStart(), cc.getLength());
         } else {
             // Initialize the char buffer
             cb.limit(cc.getEnd());

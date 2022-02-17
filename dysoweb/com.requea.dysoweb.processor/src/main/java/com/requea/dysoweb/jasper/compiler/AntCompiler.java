@@ -75,10 +75,12 @@ public class AntCompiler extends Compiler {
         logger.setErrorPrintStream(System.err);
         logger.setMessageOutputLevel(Project.MSG_INFO);
         project.addBuildListener( logger);
-        if (System.getProperty(Constants.CATALINA_HOME_PROP) != null) {
+        if (System.getProperty(Constants.CATALINA_BASE_PROP) != null) {
+            project.setBasedir(System.getProperty(Constants.CATALINA_BASE_PROP));
+        } else if (System.getProperty(Constants.CATALINA_HOME_PROP) != null) {
             project.setBasedir(System.getProperty(Constants.CATALINA_HOME_PROP));
         }
-        
+
         if( options.getCompiler() != null ) {
             if( log.isDebugEnabled() )
                 log.debug("Compiler " + options.getCompiler() );

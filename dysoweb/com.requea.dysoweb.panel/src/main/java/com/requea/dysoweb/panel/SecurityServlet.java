@@ -164,6 +164,8 @@ public class SecurityServlet extends HttpServlet {
 			if("dysoweb.home".equals(home)) {
 				if(System.getProperty("jboss.home.dir") != null) {
 					basedir = new File(new File(System.getProperty("jboss.home.dir")), "dysoweb.home");
+				} else if(System.getProperty("catalina.base") != null) {
+					basedir = new File(new File(System.getProperty("catalina.base")), "dysoweb.home");
 				} else if(System.getProperty("catalina.home") != null) {
 					basedir = new File(new File(System.getProperty("catalina.home")), "dysoweb.home");
 				} else if(System.getProperty("jonas.base") != null) {
@@ -186,6 +188,32 @@ public class SecurityServlet extends HttpServlet {
 		}
 		return dir;
 	}
-	
+
+	public static File getBinDir(ServletContext servletContext) {
+		File dir = null;
+		Thread th = Thread.currentThread();
+		ClassLoader cl = th.getContextClassLoader();
+		try {
+			th.setContextClassLoader(IWebProcessor.class.getClassLoader());
+			File basedir = null;
+			if(System.getProperty("jboss.home.dir") != null) {
+				basedir = new File(System.getProperty("jboss.home.dir"), "bin");
+			} else if(System.getProperty("catalina.base") != null) {
+				basedir = new File(System.getProperty("catalina.base"), "bin");
+			} else if(System.getProperty("catalina.home") != null) {
+				basedir = new File(System.getProperty("catalina.home"), "bin");
+			} else if(System.getProperty("jonas.base") != null) {
+				basedir = new File(System.getProperty("jonas.base"), "bin");
+			} else if(System.getProperty("weblogic.home") != null && System.getenv("DOMAIN_HOME") != null) {
+				basedir = new File(System.getenv("DOMAIN_HOME"), "bin");
+			}
+			return basedir;
+		} catch (Exception nex) {
+		} finally {
+			th.setContextClassLoader(cl);
+		}
+		return null;
+	}
+
 
 }

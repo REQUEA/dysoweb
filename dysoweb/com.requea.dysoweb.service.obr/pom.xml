@@ -44,8 +44,6 @@
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
-			    <version>1.0.0</version>
-				<extensions>true</extensions>
 				<configuration>
 					<instructions>
                         <Bundle-Name>Requea Dysoweb OBR API</Bundle-Name>                    

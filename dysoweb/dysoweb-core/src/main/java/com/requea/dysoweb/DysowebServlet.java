@@ -205,6 +205,8 @@ public class DysowebServlet extends HttpServlet {
 			if("dysoweb.home".equals(home)) {
 				if(System.getProperty("jboss.home.dir") != null) {
 					basedir = new File(new File(System.getProperty("jboss.home.dir")), "dysoweb.home");
+				} else if(System.getProperty("catalina.base") != null) {
+					basedir = new File(new File(System.getProperty("catalina.base")), "dysoweb.home");
 				} else if(System.getProperty("catalina.home") != null) {
 					basedir = new File(new File(System.getProperty("catalina.home")), "dysoweb.home");
 				} else if(System.getProperty("jonas.base") != null) {

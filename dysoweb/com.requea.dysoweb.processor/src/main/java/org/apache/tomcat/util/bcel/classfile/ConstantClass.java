@@ -20,37 +20,35 @@ package org.apache.tomcat.util.bcel.classfile;
 import java.io.DataInput;
 import java.io.IOException;
 
-import org.apache.tomcat.util.bcel.Constants;
+import org.apache.tomcat.util.bcel.Const;
 
-/** 
- * This class is derived from the abstract 
- * <A HREF="org.apache.tomcat.util.bcel.classfile.Constant.html">Constant</A> class 
+/**
+ * This class is derived from the abstract {@link Constant}
  * and represents a reference to a (external) class.
  *
- * @author  <A HREF="mailto:m.dahm@gmx.de">M. Dahm</A>
  * @see     Constant
  */
 public final class ConstantClass extends Constant {
 
-    private final int name_index; // Identical to ConstantString except for the name
+    private final int nameIndex; // Identical to ConstantString except for the name
 
 
     /**
-     * Initialize instance from file data.
+     * Constructs an instance from file data.
      *
-     * @param file Input stream
-     * @throws IOException
+     * @param dataInput Input stream
+     * @throws IOException if an I/O error occurs reading from the given {@code dataInput}.
      */
-    ConstantClass(DataInput file) throws IOException {
-        super(Constants.CONSTANT_Class);
-        this.name_index = file.readUnsignedShort();
+    ConstantClass(final DataInput dataInput) throws IOException {
+        super(Const.CONSTANT_Class);
+        this.nameIndex = dataInput.readUnsignedShort();
     }
 
 
-    /** 
+    /**
      * @return Name index in constant pool of class name.
      */
-    public final int getNameIndex() {
-        return name_index;
+    public int getNameIndex() {
+        return nameIndex;
     }
 }

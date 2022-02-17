@@ -32,7 +32,7 @@ import org.apache.tomcat.util.res.StringManager;
 /**
  *
  * Base class for a SocketChannel wrapper used by the endpoint.
- * This way, logic for a SSL socket channel remains the same as for
+ * This way, logic for an SSL socket channel remains the same as for
  * a non SSL, making sure we don't need to code for any exception cases.
  *
  * @author Filip Hanik
@@ -51,8 +51,6 @@ public class NioChannel implements ByteChannel{
 
     protected Poller poller;
 
-    protected volatile boolean sendFile = false;
-
     public NioChannel(SocketChannel channel, ApplicationBufferHandler bufHandler) throws IOException {
         this.sc = channel;
         this.bufHandler = bufHandler;
@@ -61,7 +59,6 @@ public class NioChannel implements ByteChannel{
     public void reset() throws IOException {
         bufHandler.getReadBuffer().clear();
         bufHandler.getWriteBuffer().clear();
-        this.sendFile = false;
     }
 
     public int getBufferSize() {
@@ -92,7 +89,6 @@ public class NioChannel implements ByteChannel{
      * Closes this channel.
      *
      * @throws IOException If an I/O error occurs
-     * TODO Implement this java.nio.channels.Channel method
      */
     @Override
     public void close() throws IOException {
@@ -106,8 +102,7 @@ public class NioChannel implements ByteChannel{
     /**
      * Tells whether or not this channel is open.
      *
-     * @return <tt>true</tt> if, and only if, this channel is open
-     * TODO Implement this java.nio.channels.Channel method
+     * @return <code>true</code> if, and only if, this channel is open
      */
     @Override
     public boolean isOpen() {
@@ -120,7 +115,6 @@ public class NioChannel implements ByteChannel{
      * @param src The buffer from which bytes are to be retrieved
      * @return The number of bytes written, possibly zero
      * @throws IOException If some other I/O error occurs
-     * TODO Implement this java.nio.channels.WritableByteChannel method
      */
     @Override
     public int write(ByteBuffer src) throws IOException {
@@ -132,9 +126,9 @@ public class NioChannel implements ByteChannel{
      * Reads a sequence of bytes from this channel into the given buffer.
      *
      * @param dst The buffer into which bytes are to be transferred
-     * @return The number of bytes read, possibly zero, or <tt>-1</tt> if the channel has reached end-of-stream
+     * @return The number of bytes read, possibly zero, or <code>-1</code> if
+     *         the channel has reached end-of-stream
      * @throws IOException If some other I/O error occurs
-     * TODO Implement this java.nio.channels.ReadableByteChannel method
      */
     @Override
     public int read(ByteBuffer dst) throws IOException {
@@ -152,7 +146,6 @@ public class NioChannel implements ByteChannel{
      * getBufHandler
      *
      * @return ApplicationBufferHandler
-     * TODO Implement this org.apache.tomcat.util.net.SecureNioChannel method
      */
     public ApplicationBufferHandler getBufHandler() {
         return bufHandler;
@@ -165,7 +158,6 @@ public class NioChannel implements ByteChannel{
      * getIOChannel
      *
      * @return SocketChannel
-     * TODO Implement this org.apache.tomcat.util.net.SecureNioChannel method
      */
     public SocketChannel getIOChannel() {
         return sc;
@@ -175,7 +167,6 @@ public class NioChannel implements ByteChannel{
      * isClosing
      *
      * @return boolean
-     * TODO Implement this org.apache.tomcat.util.net.SecureNioChannel method
      */
     public boolean isClosing() {
         return false;
@@ -218,15 +209,6 @@ public class NioChannel implements ByteChannel{
     public boolean flushOutbound() throws IOException {
         return false;
     }
-
-    public boolean isSendFile() {
-        return sendFile;
-    }
-
-    public void setSendFile(boolean s) {
-        this.sendFile = s;
-    }
-
 
     /**
      * This method should be used to check the interrupt status before

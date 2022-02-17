@@ -43,7 +43,7 @@ public final class Mapper {
     private static final org.apache.juli.logging.Log log =
         org.apache.juli.logging.LogFactory.getLog(Mapper.class);
 
-    protected static final StringManager sm =
+    static final StringManager sm =
         StringManager.getManager(Mapper.class.getPackage().getName());
 
     // ----------------------------------------------------- Instance Variables
@@ -52,13 +52,13 @@ public final class Mapper {
     /**
      * Array containing the virtual hosts definitions.
      */
-    protected Host[] hosts = new Host[0];
+    Host[] hosts = new Host[0];
 
 
     /**
      * Default host name.
      */
-    protected String defaultHostName = null;
+    String defaultHostName = null;
 
     /**
      * ContextVersion associated with this Mapper, used for wrapper mapping.
@@ -69,7 +69,7 @@ public final class Mapper {
      *
      * @see #setContext(String, String[], javax.naming.Context)
      */
-    protected ContextVersion context = new ContextVersion();
+    ContextVersion context = new ContextVersion();
 
 
     // --------------------------------------------------------- Public Methods
@@ -248,7 +248,8 @@ public final class Mapper {
      * @param context Context object
      * @param welcomeResources Welcome files defined for this context
      * @param resources Static resources of the context
-     * @deprecated Use {@link #addContextVersion(String, Object, String, String, Object, String[], javax.naming.Context, Collection)}
+     * @deprecated Use {@link #addContextVersion(String, Object, String, String, Object, String[],
+     *             javax.naming.Context, Collection, boolean, boolean)}
      */
     @Deprecated
     public void addContextVersion(String hostName, Object host, String path,
@@ -257,6 +258,7 @@ public final class Mapper {
         addContextVersion(hostName, host, path, version, context,
                 welcomeResources, resources, null);
     }
+
 
     /**
      * Add a new Context to an existing Host.
@@ -269,10 +271,36 @@ public final class Mapper {
      * @param welcomeResources Welcome files defined for this context
      * @param resources Static resources of the context
      * @param wrappers Information on wrapper mappings
+     * @deprecated Use {@link #addContextVersion(String, Object, String, String, Object, String[],
+     *             javax.naming.Context, Collection, boolean, boolean)}
      */
+    @Deprecated
     public void addContextVersion(String hostName, Object host, String path,
             String version, Object context, String[] welcomeResources,
             javax.naming.Context resources, Collection<WrapperMappingInfo> wrappers) {
+        addContextVersion(hostName, host, path, version, context, welcomeResources, resources,
+                wrappers, false, false);
+    }
+
+
+    /**
+     * Add a new Context to an existing Host.
+     *
+     * @param hostName Virtual host name this context belongs to
+     * @param host Host object
+     * @param path Context path
+     * @param version Context version
+     * @param context Context object
+     * @param welcomeResources Welcome files defined for this context
+     * @param resources Static resources of the context
+     * @param wrappers Information on wrapper mappings
+     * @param mapperContextRootRedirectEnabled Mapper does context root redirects
+     * @param mapperDirectoryRedirectEnabled Mapper does directory redirects
+     */
+    public void addContextVersion(String hostName, Object host, String path,
+            String version, Object context, String[] welcomeResources,
+            javax.naming.Context resources, Collection<WrapperMappingInfo> wrappers,
+            boolean mapperContextRootRedirectEnabled, boolean mapperDirectoryRedirectEnabled) {
 
         Host mappedHost = exactFind(hosts, hostName);
         if (mappedHost == null) {
@@ -294,6 +322,9 @@ public final class Mapper {
             newContextVersion.slashCount = slashCount;
             newContextVersion.welcomeResources = welcomeResources;
             newContextVersion.resources = resources;
+            newContextVersion.mapperContextRootRedirectEnabled = mapperContextRootRedirectEnabled;
+            newContextVersion.mapperDirectoryRedirectEnabled = mapperDirectoryRedirectEnabled;
+
             if (wrappers != null) {
                 addWrappers(newContextVersion, wrappers);
             }
@@ -571,8 +602,8 @@ public final class Mapper {
                 if (removeMap(oldWrappers, newWrappers, name)) {
                     // Recalculate nesting
                     context.nesting = 0;
-                    for (int i = 0; i < newWrappers.length; i++) {
-                        int slashCount = slashCount(newWrappers[i].name);
+                    for (Wrapper newWrapper : newWrappers) {
+                        int slashCount = slashCount(newWrapper.name);
                         if (slashCount > context.nesting) {
                             context.nesting = slashCount;
                         }
@@ -739,6 +770,7 @@ public final class Mapper {
     /**
      * Map the specified URI.
      */
+    @SuppressWarnings("deprecation") // contextPath
     private final void internalMap(CharChunk host, CharChunk uri,
             String version, MappingData mappingData) throws Exception {
 
@@ -856,20 +888,13 @@ public final class Mapper {
 
         int pathOffset = path.getOffset();
         int pathEnd = path.getEnd();
-        int servletPath = pathOffset;
         boolean noServletPath = false;
 
         int length = contextVersion.path.length();
-        if (length != (pathEnd - pathOffset)) {
-            servletPath = pathOffset + length;
-        } else {
+        if (length == (pathEnd - pathOffset)) {
             noServletPath = true;
-            path.append('/');
-            pathOffset = path.getOffset();
-            pathEnd = path.getEnd();
-            servletPath = pathOffset+length;
         }
-
+        int servletPath = pathOffset + length;
         path.setOffset(servletPath);
 
         // Rule 1 -- Exact Match
@@ -904,10 +929,13 @@ public final class Mapper {
             }
         }
 
-        if(mappingData.wrapper == null && noServletPath) {
+        if(mappingData.wrapper == null && noServletPath &&
+                contextVersion.mapperContextRootRedirectEnabled) {
             // The path is empty, redirect to "/"
+            path.append('/');
+            pathEnd = path.getEnd();
             mappingData.redirectPath.setChars
-                (path.getBuffer(), pathOffset, pathEnd-pathOffset);
+                (path.getBuffer(), pathOffset, pathEnd - pathOffset);
             path.setEnd(pathEnd - 1);
             return;
         }
@@ -1028,11 +1056,16 @@ public final class Mapper {
                 Object file = null;
                 String pathStr = path.toString();
                 try {
-                    file = contextVersion.resources.lookup(pathStr);
+                    if (pathStr.length() == 0) {
+                        file = contextVersion.resources.lookup("/");
+                    } else {
+                        file = contextVersion.resources.lookup(pathStr);
+                    }
                 } catch(NamingException nex) {
                     // Swallow, since someone else handles the 404
                 }
-                if (file != null && file instanceof DirContext) {
+                if (file != null && file instanceof DirContext &&
+                        contextVersion.mapperDirectoryRedirectEnabled) {
                     // Note: this mutates the path: do not do any processing
                     // after this (since we set the redirectPath, there
                     // shouldn't be any)
@@ -1049,13 +1082,13 @@ public final class Mapper {
 
         path.setOffset(pathOffset);
         path.setEnd(pathEnd);
-
     }
 
 
     /**
      * Exact mapping.
      */
+    @SuppressWarnings("deprecation") // contextPath
     private final void internalMapExactWrapper
         (Wrapper[] wrappers, CharChunk path, MappingData mappingData) {
         Wrapper wrapper = exactFind(wrappers, path);
@@ -1684,6 +1717,8 @@ public final class Mapper {
         public Wrapper[] wildcardWrappers = new Wrapper[0];
         public Wrapper[] extensionWrappers = new Wrapper[0];
         public int nesting = 0;
+        public boolean mapperContextRootRedirectEnabled = false;
+        public boolean mapperDirectoryRedirectEnabled = false;
         private volatile boolean paused;
 
         public ContextVersion() {

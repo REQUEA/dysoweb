@@ -51,11 +51,22 @@
 		</attribute>
 	</tag>
 
-    <tag>
-        <name>versions</name>
-        <tagclass>com.requea.dysoweb.panel.tags.VersionsTag</tagclass>
-        <bodycontent>JSP</bodycontent>
-    </tag>
+	<tag>
+		<name>versions</name>
+		<tagclass>com.requea.dysoweb.panel.tags.VersionsTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+	</tag>
+
+	<tag>
+		<name>restart</name>
+		<tagclass>com.requea.dysoweb.panel.tags.RestartTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+	</tag>
+	<tag>
+		<name>project</name>
+		<tagclass>com.requea.dysoweb.panel.tags.ProjectTag</tagclass>
+		<bodycontent>JSP</bodycontent>
+	</tag>
 
 	<tag>
 		<name>input</name>

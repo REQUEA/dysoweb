@@ -14,14 +14,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package org.apache.tomcat.util.net;
-
 
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.util.Locale;
-
 
 /**
  * <p><strong>URL</strong> is designed to provide public APIs for parsing
@@ -33,10 +30,10 @@ import java.util.Locale;
  *
  * <p><strong>WARNING</strong> - This class assumes that the string
  * representation of a URL conforms to the <code>spec</code> argument
- * as described in RFC 2396 "Uniform Resource Identifiers: Generic Syntax":
+ * as described in RFC 2396 "Uniform Resource Identifiers: Generic Syntax":</p>
  * <pre>
  *   &lt;scheme&gt;//&lt;authority&gt;&lt;path&gt;?&lt;query&gt;#&lt;fragment&gt;
- * </pre></p>
+ * </pre>
  *
  * <p><strong>FIXME</strong> - This class really ought to end up in a Commons
  * package someplace.</p>
@@ -140,7 +137,7 @@ public final class URL implements Serializable {
                     host = context.getHost();
                     port = context.getPort();
                     file = context.getFile();
-                    int question = file.lastIndexOf("?");
+                    int question = file.lastIndexOf('?');
                     if (question < 0)
                         path = file;
                     else
@@ -665,7 +662,7 @@ public final class URL implements Serializable {
 
         // Parse the authority section
         if (spec.indexOf("//", start) == start) {
-            int pathStart = spec.indexOf("/", start + 2);
+            int pathStart = spec.indexOf('/', start + 2);
             if ((pathStart >= 0) && (pathStart < limit)) {
                 authority = spec.substring(start + 2, pathStart);
                 start = pathStart;
@@ -708,7 +705,7 @@ public final class URL implements Serializable {
         }
 
         // Parse the path section
-        if (spec.indexOf("/", start) == start) {     // Absolute path
+        if (spec.indexOf('/', start) == start) {     // Absolute path
             path = spec.substring(start, limit);
             if (query != null)
                 file = path + "?" + query;

@@ -129,4 +129,30 @@ public class Util
     public static String escapeHTML(String str) {
     	return Entities.HTML40.escape(str);
     }
+
+    public static String getOsName() {
+        String osName = System.getProperty( "os.name" );
+        if (osName != null)
+            osName = stripWhitespace(osName).toLowerCase();
+        return osName;
+    }
+
+    private static String stripWhitespace( String mosname )
+    {
+        final StringBuffer sb = new StringBuffer();
+
+        final int size = mosname.length();
+        for( int i = 0; i < size; i++ )
+        {
+            final char ch = mosname.charAt( i );
+            if( ch != '\t' && ch != ' ' && ch != '\r' &&
+                    ch != '\n' && ch != '\b' )
+            {
+                sb.append( ch );
+            }
+        }
+
+        return sb.toString();
+    }
+
 }

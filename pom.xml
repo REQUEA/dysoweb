@@ -5,7 +5,7 @@
 	<packaging>pom</packaging>
 	<version>1.0.53-SNAPSHOT</version>
 	<name>Requea Dysoweb</name>
-	<url>http://www.requea.com</url>
+	<url>https://www.requea.com</url>
 	<properties>
 		<!-- dysowebVersion sould be the same number as dysoweb Version, 
 			but without the -SNAPSHOT if there is one -->
@@ -108,50 +108,49 @@
 		<repository>
 			<id>requea-maven-repository</id>
 			<name>Requea repository</name>
-			<url>http://maven.requea.com/repo/</url>
+			<url>https://maven.requea.com/repo/</url>
+		</repository>
+		<repository>
+			<id>spring-plugin-release</id>
+			<name>Spring Plugins Repository</name>
+			<url>https://repo.spring.io/plugins-release/</url>
+		</repository>
+		<repository>
+			<id>mule-soft-repository</id>
+			<name>Mule soft repository</name>
+			<url>https://repository.mulesoft.org/nexus/content/repositories/public/</url>
 		</repository>
 	</repositories>
-	
+
     <distributionManagement>
         <repository>
             <id>requea-maven-repository</id>
             <name>Requea repository</name>
-            <url>file:/Users/mgasco/.m2/repository</url>
+            <url>file:/home/maven/repo</url>
         </repository>
     </distributionManagement>
 
 	<scm>
-	    <url>https://github.com/REQUEA/dysoweb</url>
+	    <url>scm:git:https://github.com/REQUEA/dysoweb.git</url>
 	    <connection>scm:git:git://github.com/REQUEA/dysoweb.git</connection>
 	    <developerConnection>scm:git:git@github.com:REQUEA/dysoweb.git</developerConnection>
-	  <tag>main-1.0.52</tag>
+	  <tag>main-1.0.53</tag>
   </scm>
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
+				<version>2.5.3</version>
 				<configuration>
-					<tagBase>https://github.com/REQUEA/dysoweb/tags</tagBase>
+					<tagNameFormat>@{project.version}-${sourcebranch}</tagNameFormat>
+					<localCheckout>true</localCheckout>
 					<preparationGoals>clean install</preparationGoals>
+					<checkModificationExcludes>
+						<checkModificationExclude>pom.xml</checkModificationExclude>
+					</checkModificationExcludes>
 				</configuration>
 			</plugin>
-	        <plugin>
-	            <groupId>external.atlassian.jgitflow</groupId>
-	            <artifactId>jgitflow-maven-plugin</artifactId>
-	            <version>1.0-m5.1</version>
-	            <configuration>
-			      <flowInitContext>
-			         <masterBranchName>master</masterBranchName>
-			         <developBranchName>development</developBranchName>
-			         <featureBranchPrefix>feature-</featureBranchPrefix>
-			         <releaseBranchPrefix>release-</releaseBranchPrefix>
-			         <hotfixBranchPrefix>hotfix-</hotfixBranchPrefix>
-			         <versionTagPrefix>tag-</versionTagPrefix>
-			       </flowInitContext>
-					<preparationGoals>clean install</preparationGoals>
-	            </configuration>
-	        </plugin>
 	    </plugins>
 		<pluginManagement>
 			<plugins>
@@ -163,6 +162,12 @@
 						<source>1.8</source>
 						<target>1.8</target>
 					</configuration>
+				</plugin>
+				<plugin>
+	                <groupId>org.apache.felix</groupId>
+	                <artifactId>maven-bundle-plugin</artifactId>
+					<version>1.4.3</version>
+					<extensions>true</extensions>
 				</plugin>
 			</plugins>
 		</pluginManagement>

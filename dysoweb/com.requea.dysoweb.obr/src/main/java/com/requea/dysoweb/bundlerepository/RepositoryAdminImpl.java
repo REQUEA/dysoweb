@@ -18,8 +18,11 @@
  */
 package com.requea.dysoweb.bundlerepository;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -35,10 +38,6 @@ import org.osgi.service.obr.Repository;
 import org.osgi.service.obr.Resolver;
 import org.osgi.service.obr.Resource;
 
-import com.requea.dysoweb.bundlerepository.MapToDictionary;
-import com.requea.dysoweb.bundlerepository.RepositoryImpl;
-import com.requea.dysoweb.bundlerepository.ResolverImpl;
-import com.requea.dysoweb.bundlerepository.ResourceComparator;
 import com.requea.dysoweb.service.obr.ClientAuthRepositoryAdmin;
 import com.requea.dysoweb.service.obr.HttpClientExecutor;
 
@@ -62,6 +61,24 @@ public class RepositoryAdminImpl implements ClientAuthRepositoryAdmin
     {
         m_context = context;
         m_logger = logger;
+        m_executor = new HttpClientExecutor() {
+			
+			@Override
+			public InputStream executeGet(String path) throws IOException {
+				if(path.startsWith("http")) {
+					return null;
+				} else {
+					URL url = new URL(path);
+					URLConnection cnx = url.openConnection();
+					if(cnx != null && cnx.getContentLength() > 0) {
+						InputStream is = cnx.getInputStream();
+						return is;
+					} else {
+						return null;
+					}
+				}
+			}
+		};
     }
 
     

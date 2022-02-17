@@ -7,7 +7,7 @@
 <head>
 	<title>Dysoweb Control Panel</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <link href="<%= request.getContextPath() %>/dysoweb/panel/css/style-1.0.9.css" rel="stylesheet" type="text/css" />
+    <link href="<%= request.getContextPath() %>/dysoweb/panel/css/style-1.0.10.css" rel="stylesheet" type="text/css" />
 	<dw:insert bundle="com.requea.dysoweb.demo2">
     <link href="<%= request.getContextPath() %>/dysoweb/demo/style2.css" rel="stylesheet" type="text/css" />
 	</dw:insert>
@@ -29,8 +29,10 @@
 							<td>
 								<form method="post" name="frminstall" action="<%=response.encodeURL(request.getContextPath()+"/dysoweb/panel/secure/install") %>">
 								<input type="hidden" name="op" value="install"/>
-								<div class="versions">
-                                <panel:versions />
+								<panel:project />
+								<div class="options">
+                                    <panel:versions />
+                                    <panel:restart />
                                 </div>
 								<div class="rpfeatinst"><input type="submit" value="Install Selected"></input></div>
                                 <h2><span>Project Bundles</span></h2>

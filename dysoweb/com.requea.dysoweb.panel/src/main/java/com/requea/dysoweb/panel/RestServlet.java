@@ -9,6 +9,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.RequestDispatcher;
@@ -43,12 +44,15 @@ public class RestServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
 	private File fConfigDir;
+	private File fBinDir;
 	private InstallManager fInstallManager;
 
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		fConfigDir = SecurityServlet.getConfigDir(config.getServletContext());
-		fInstallManager = new InstallManager(fConfigDir);
+		fBinDir = SecurityServlet.getBinDir(config.getServletContext());
+
+		fInstallManager = new InstallManager(fConfigDir, fBinDir);
 	}
 	
 	@Override
@@ -270,9 +274,24 @@ public class RestServlet extends HttpServlet {
 					Element elConfig = doc.getDocumentElement();
 	    		
 					// get the installable bundles and features
-					Installable[] installables = fInstallManager.getInstallables(request, response, elConfig);
-	
-		    		// get the version to install
+					Installable[] allInstallables = fInstallManager.getInstallables(request, response, elConfig);
+
+					if (allInstallables == null) {
+						throw new Exception((String) request.getAttribute(ErrorTag.ERROR));
+					}
+
+					List lst = new ArrayList();
+					for(int i=0; i<allInstallables.length; i++) {
+						Installable inst = allInstallables[i];
+						// in the path?
+						if((("product".equals(inst.getType()) || "feature".equals(inst.getType()))) ||
+								("bundle".equals(inst.getType()) && inst.isRoot())) {
+								lst.add(inst);
+						}
+					}
+					Installable[] installables = (Installable[])lst.toArray(new Installable[lst.size()]);
+
+					// get the version to install
 		    		String ver = param;
 		            if(ver == null || ver.equals("")) {
 		                ver = (String) request.getSession().getAttribute(InstallManager.CURRENTVERSION);
@@ -286,37 +305,41 @@ public class RestServlet extends HttpServlet {
 					
 					RepositoryAdmin repo = fInstallManager.initRepo(fConfigDir, elConfig, ver);
 					
-					PackageAdmin pa = null;
 					BundleContext context = Activator.getDefault().getContext();
-			        ServiceReference ref = context.getServiceReference(
-			                org.osgi.service.packageadmin.PackageAdmin.class.getName());
-		            if (ref != null) {
-			            pa = (PackageAdmin) context.getService(ref);
-		            }			
-		            
+
 					// once we have the repo, we ask for deployment
 					// create the progress monitor
 					AjaxProgressMonitor monitor = new AjaxProgressMonitor();
 					Status status = new Status();
-		
+
+					PackageAdmin pa = null;
+					ServiceReference ref = context.getServiceReference(
+							org.osgi.service.packageadmin.PackageAdmin.class.getName());
+					if (ref != null) {
+						pa = (PackageAdmin) context.getService(ref);
+					}
+
 					// launch the thread to install the bundles
-					Thread th = new Thread(fInstallManager.newInstaller(elConfig, context, pa, repo, installables, monitor, status));
+					Thread th = new Thread(fInstallManager.newInstaller(elConfig, context, pa, repo, installables, monitor, status, true));
 					th.start();
 					
 					// wait for completion: should use a future, but pb with old jdk versions
 					int nb = 0;
+					Document docMonitor = XMLUtils.newDocument();
+					Element elRoot = docMonitor.createElement("root");
 					while(nb++ < 5*60 && status.getStatus() != InstallManager.Status.DONE && status.getStatus() != InstallManager.Status.ERROR) {
 						// wait a sec, 5 minutes max
 						Thread.sleep(1000);
+						monitor.renderProgress(elRoot);
 					}
-					
+
 					// install done or resulting in an error
 					if(status.getStatus() == InstallManager.Status.DONE) {
 						jsResult.put("code", 200);
 						jsResult.put("message", "ok");
 					} else if(status.getException() != null) {
 						jsResult.put("code", 503);
-						jsResult.put("message", status.getException().getMessage());
+						jsResult.put("message", status.getException().getMessage() == null?status.getException().getClass():status.getException().getMessage());
 					} else {
 						jsResult.put("code", 503);
 						jsResult.put("message", "Installed failed, but did not return an error.");

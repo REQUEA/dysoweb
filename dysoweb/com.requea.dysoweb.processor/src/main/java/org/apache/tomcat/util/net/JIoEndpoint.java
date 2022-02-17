@@ -132,6 +132,7 @@ public class JIoEndpoint extends AbstractEndpoint<Socket> {
         public SocketState process(SocketWrapper<Socket> socket,
                 SocketStatus status);
         public SSLImplementation getSslImplementation();
+        public boolean isAvailable(SocketWrapper<Socket> socket);
     }
 
 
@@ -159,8 +160,8 @@ public class JIoEndpoint extends AbstractEndpoint<Socket> {
                 while (sockets.hasNext()) {
                     SocketWrapper<Socket> socket = sockets.next();
                     long access = socket.getLastAccess();
-                    if (socket.getTimeout() > 0 &&
-                            (now-access)>socket.getTimeout()) {
+                    if (socket.getTimeout() > 0 && (now-access)>socket.getTimeout() ||
+                            !handler.isAvailable(socket)) {
                         // Prevent multiple timeouts
                         socket.setTimeout(-1);
                         processSocketAsync(socket,SocketStatus.TIMEOUT);
@@ -382,7 +383,7 @@ public class JIoEndpoint extends AbstractEndpoint<Socket> {
         // Initialize maxConnections
         if (getMaxConnections() == 0) {
             // User hasn't set a value - use the default
-            setMaxConnections(getMaxThreadsExecutor(true));
+            setMaxConnections(getMaxThreadsWithExecutor());
         }
 
         if (serverSocketFactory == null) {
@@ -558,6 +559,9 @@ public class JIoEndpoint extends AbstractEndpoint<Socket> {
     public void processSocketAsync(SocketWrapper<Socket> socket,
             SocketStatus status) {
         try {
+            // Sync is necessary to ensure that the original processing thread
+            // has placed the socket in waitingRequests before the dispatching
+            // thread tries to use it.
             synchronized (socket) {
                 if (waitingRequests.remove(socket)) {
                     SocketProcessor proc = new SocketProcessor(socket,status);
@@ -598,6 +602,12 @@ public class JIoEndpoint extends AbstractEndpoint<Socket> {
 
     protected ConcurrentLinkedQueue<SocketWrapper<Socket>> waitingRequests =
         new ConcurrentLinkedQueue<SocketWrapper<Socket>>();
+    @Override
+    public void removeWaitingRequest(SocketWrapper<Socket> socketWrapper) {
+        waitingRequests.remove(socketWrapper);
+    }
+
+
 
     @Override
     protected Log getLog() {

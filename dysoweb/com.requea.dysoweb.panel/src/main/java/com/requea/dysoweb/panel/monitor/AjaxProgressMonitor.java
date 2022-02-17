@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.text.NumberFormat;
 import java.util.Locale;
 
+import com.requea.dysoweb.panel.GuidGenerator;
 import org.w3c.dom.Element;
 
 import com.requea.dysoweb.service.obr.IProgressMonitor;
@@ -18,6 +19,7 @@ public class AjaxProgressMonitor implements IProgressMonitor, Serializable{
 	private int _workDoneSoFar = 0;
 	private boolean _cancelRequested = false;
 	private String fTaskName;
+	private String fId;
 
 	private static NumberFormat format;
 	static {
@@ -66,6 +68,7 @@ public class AjaxProgressMonitor implements IProgressMonitor, Serializable{
 	 */
 	public void setTaskName(String name) {
 		fTaskName = name;
+		System.out.println("---- "+fTaskName);
 	}
 
 	/**
@@ -73,6 +76,7 @@ public class AjaxProgressMonitor implements IProgressMonitor, Serializable{
 	 */
 	public void subTask(String name) {
 		fTaskName = name;
+		System.out.println("---- "+fTaskName);
 	}
 
 	/**
@@ -80,6 +84,12 @@ public class AjaxProgressMonitor implements IProgressMonitor, Serializable{
 	 */
 	public void worked(int work) {
 		_workDoneSoFar += work;
+	}
+
+	public String getId() {
+		if (fId == null)
+			fId = GuidGenerator.generate();
+		return fId;
 	}
 
 	public void renderProgress(Element el) {
@@ -113,6 +123,6 @@ public class AjaxProgressMonitor implements IProgressMonitor, Serializable{
 			XMLUtils.setText(elTask, msg);
 			XMLUtils.addElement(elTask, "br");
 			XMLUtils.addElement(elTask, "div", strPercent).setAttribute("class", "rqpercent");
-		}		
+		}
 	}
 }

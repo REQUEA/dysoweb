@@ -56,7 +56,7 @@ public final class UEncoder {
     private CharChunk output=null;
     private final boolean readOnlySafeChars;
 
-    private String encoding="UTF8";
+    private String encoding="UTF-8";
 
     public UEncoder() {
         this.safeChars = initialSafeChars();
@@ -70,15 +70,16 @@ public final class UEncoder {
      * on instances created by this constructor will throw an
      * {@link IllegalStateException}.
      *
-     * @param safeCharsSet
-     *            safe characters for this encoder
+     * @param safeCharsSet safe characters for this encoder
      */
     public UEncoder(SafeCharsSet safeCharsSet) {
         this.safeChars = safeCharsSet.getSafeChars();
         readOnlySafeChars = true;
     }
 
-     /**
+    /**
+     * @param s    Encoding to use
+     *
      * @deprecated Unused. Will be removed in Tomcat 8.0.x onwards.
      */
     @Deprecated
@@ -100,6 +101,9 @@ public final class UEncoder {
     * @param s string to be encoded
     * @param start the beginning index, inclusive
     * @param end the ending index, exclusive
+    *
+    * @return A new CharChunk contained the URL encoded string
+    *
     * @throws IOException If an I/O error occurs
     */
    public CharChunk encodeURL(String s, int start, int end)
@@ -141,7 +145,7 @@ public final class UEncoder {
                bb.recycle();
            }
        }
-       
+
        return output;
    }
 
@@ -156,7 +160,7 @@ public final class UEncoder {
            out.append(ch);
        }
    }
-   
+
     // -------------------- Internal implementation --------------------
 
     private static BitSet initialSafeChars() {

@@ -5,7 +5,7 @@
 	<packaging>pom</packaging>
 	<version>1.0.53-SNAPSHOT</version>
 	<name>Requea Dysoweb</name>
-	<url>http://www.requea.com</url>
+	<url>https://www.requea.com</url>
 	<parent>
 		<artifactId>main</artifactId>
 		<groupId>com.requea.dysoweb</groupId>
@@ -22,6 +22,5 @@
 		<module>com.requea.dysoweb.service.obr</module>
 		<module>com.requea.dysoweb.obr</module>
 		<module>com.requea.dysoweb.utils.tags</module>
-		<module>com.requea.dysoweb.log4j</module>
 	</modules>
 </project>

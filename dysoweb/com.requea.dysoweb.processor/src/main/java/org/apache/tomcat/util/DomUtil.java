@@ -76,6 +76,7 @@ public class DomUtil {
 
         for (Node node = first; node != null;
              node = node.getNextSibling()) {
+            //System.out.println("getNode: " + name + " " + node.getNodeName());
             if( node.getNodeType()!=Node.ELEMENT_NODE)
                 continue;
             if( name != null &&
@@ -194,6 +195,7 @@ public class DomUtil {
              node = node.getNextSibling()) {
 
             if( type >= 0 && node.getNodeType() != type ) continue;
+            //System.out.println("getNode: " + name + " " + node.getNodeName());
             if( name==null )
                 return node;
             if( name.equals( node.getNodeName() ) ) {

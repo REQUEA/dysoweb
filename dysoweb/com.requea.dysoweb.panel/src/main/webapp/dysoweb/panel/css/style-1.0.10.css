@@ -280,10 +280,31 @@ a.rpurl:hover {
 /*****************************************
     Features
 ******************************************/
+.options {
+    border:1px solid #ccc;
+    margin:0px 10px 20px 0px;
+}
 .versions {
     padding:10px;
-    border:1px solid #ccc;
-    margin:0px 10px 20px 0px;    
+
+}
+.restart {
+    padding:10px;
+}
+
+.projectd {
+  background-color: lightgray;
+  display: flex;
+  font-size: initial;
+  margin-right: 10px;
+}
+
+.project {
+  padding-left: 10px;
+}
+
+.config {
+  padding-left: 20px;
 }
 
 .rpcat {

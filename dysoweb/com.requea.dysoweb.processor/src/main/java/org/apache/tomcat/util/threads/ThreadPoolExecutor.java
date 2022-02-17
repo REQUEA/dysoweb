@@ -31,7 +31,6 @@ import org.apache.tomcat.util.res.StringManager;
  * {@link #getSubmittedCount()} method, to be used to properly handle the work queue.
  * If a RejectedExecutionHandler is not specified a default one will be configured
  * and that one will always throw a RejectedExecutionException
- * @author fhanik
  *
  */
 public class ThreadPoolExecutor extends java.util.concurrent.ThreadPoolExecutor {
@@ -64,19 +63,23 @@ public class ThreadPoolExecutor extends java.util.concurrent.ThreadPoolExecutor 
 
     public ThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, RejectedExecutionHandler handler) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, handler);
+        prestartAllCoreThreads();
     }
 
     public ThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory,
             RejectedExecutionHandler handler) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler);
+        prestartAllCoreThreads();
     }
 
     public ThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, new RejectHandler());
+        prestartAllCoreThreads();
     }
 
     public ThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, new RejectHandler());
+        prestartAllCoreThreads();
     }
 
     public long getThreadRenewalDelay() {
@@ -89,7 +92,13 @@ public class ThreadPoolExecutor extends java.util.concurrent.ThreadPoolExecutor 
 
     @Override
     protected void afterExecute(Runnable r, Throwable t) {
-        submittedCount.decrementAndGet();
+        // Throwing StopPooledThreadException is likely to cause this method to
+        // be called more than once for a given task based on the typical
+        // implementations of the parent class. This test ensures that
+        // decrementAndGet() is only called once after each task execution.
+        if (!(t instanceof StopPooledThreadException)) {
+            submittedCount.decrementAndGet();
+        }
 
         if (t == null) {
             stopCurrentThreadIfNeeded();
@@ -145,13 +154,15 @@ public class ThreadPoolExecutor extends java.util.concurrent.ThreadPoolExecutor 
     /**
      * Executes the given command at some time in the future.  The command
      * may execute in a new thread, in a pooled thread, or in the calling
-     * thread, at the discretion of the <tt>Executor</tt> implementation.
+     * thread, at the discretion of the <code>Executor</code> implementation.
      * If no threads are available, it will be added to the work queue.
      * If the work queue is full, the system will wait for the specified
      * time and it throw a RejectedExecutionException if the queue is still
      * full after that.
      *
      * @param command the runnable task
+     * @param timeout A timeout for the completion of the task
+     * @param unit The timeout time unit
      * @throws RejectedExecutionException if this task cannot be
      * accepted for execution - the queue is full
      * @throws NullPointerException if command or unit is null
@@ -166,11 +177,10 @@ public class ThreadPoolExecutor extends java.util.concurrent.ThreadPoolExecutor 
                 try {
                     if (!queue.force(command, timeout, unit)) {
                         submittedCount.decrementAndGet();
-                        throw new RejectedExecutionException("Queue capacity is full.");
+                        throw new RejectedExecutionException(sm.getString("threadPoolExecutor.queueFull"));
                     }
                 } catch (InterruptedException x) {
                     submittedCount.decrementAndGet();
-                    Thread.interrupted();
                     throw new RejectedExecutionException(x);
                 }
             } else {
@@ -193,7 +203,7 @@ public class ThreadPoolExecutor extends java.util.concurrent.ThreadPoolExecutor 
             // checks that queue.remainingCapacity()==0. I did not understand
             // why, but to get the intended effect of waking up idle threads, I
             // temporarily fake this condition.
-            taskQueue.setForcedRemainingCapacity(Integer.valueOf(0));
+            taskQueue.setForcedRemainingCapacity(0);
         }
 
         // setCorePoolSize(0) wakes idle threads
@@ -205,7 +215,7 @@ public class ThreadPoolExecutor extends java.util.concurrent.ThreadPoolExecutor 
 
         if (taskQueue != null) {
             // ok, restore the state of the queue and pool
-            taskQueue.setForcedRemainingCapacity(null);
+            taskQueue.resetForcedRemainingCapacity();
         }
         this.setCorePoolSize(savedCorePoolSize);
     }

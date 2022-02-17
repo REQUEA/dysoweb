@@ -74,27 +74,22 @@
 		<dependency>
 		    <groupId>commons-logging</groupId>
 		    <artifactId>commons-logging</artifactId>
-		    <version>1.1.1</version>
+		    <version>1.2</version>
 		</dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.16</version>
-        </dependency>
         <dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.5.6</version>
+			<version>4.5.13</version>
         </dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpmime</artifactId>
-			<version>4.5.6</version>
+			<version>4.5.13</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpcore</artifactId>
-			<version>4.4.10</version>
+			<version>4.4.13</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
@@ -119,7 +114,7 @@
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20140107</version>
+			<version>20180813</version>
 		</dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>
@@ -134,8 +129,6 @@
             <plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
-			    <version>1.4.3</version>
-				<extensions>true</extensions>
 				<configuration>
 					<instructions>
                         <Bundle-Name>Requea Dysoweb Panel</Bundle-Name>   
@@ -145,8 +138,8 @@
 			            	com.requea.dysoweb.panel.utils,
 			            	com.requea.dysoweb.panel.utils.xml,
 			            	com.requea.dysoweb.panel.monitor,
-			            	com.btr.proxy.search.browser.ie
-			            </Private-Package>
+			            	com.btr.proxy.search.browser.ie,
+						</Private-Package>
                         <Bundle-Vendor>Requea.com</Bundle-Vendor>
                         <Embed-Dependency>*;scope=compile|runtime</Embed-Dependency>
 			            <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
@@ -192,7 +185,8 @@
 	                        !javax.management,
 	                        !javax.naming,
 	                        !javax.swing.*,
-	                        !org.mockito.asm.signature
+	                        !org.mockito.asm.signature,
+							!org.apache.log4j.*
 						</Import-Package>
                         <Include-Resource>webapp=src/main/webapp</Include-Resource>
 					</instructions>

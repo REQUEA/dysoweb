@@ -28,6 +28,7 @@ public class VersionsTag extends BodyTagSupport {
 
 		// render the list of versions
         TagWriter tw = new TagWriter();
+        tw.append("<div class=\"versions\">");
         tw.append("<span>versions: </span>");
         tw.append("<select name=\"ver\"");
         tw.append(" onchange=\"window.location='");
@@ -58,6 +59,7 @@ public class VersionsTag extends BodyTagSupport {
             tw.append("</option>");
         }
         tw.append("</select>");
+        tw.append("</div>");
         tw.writeTo(pageContext);
 		
 		

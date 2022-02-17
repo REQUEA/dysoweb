@@ -22,31 +22,28 @@ import java.io.IOException;
 
 /**
  * base class for annotations
- * 
- * @author  <A HREF="mailto:dbrosius@qis.net">D. Brosius</A>
- * @since 6.0
  */
 public class Annotations {
 
-    private final AnnotationEntry[] annotation_table;
-    
+    private final AnnotationEntry[] annotationTable;
+
     /**
      * @param input Input stream
-     * @param constant_pool Array of constants
+     * @param constantPool Array of constants
      */
-    Annotations(DataInput input, ConstantPool constant_pool) throws IOException {
-        final int annotation_table_length = (input.readUnsignedShort());
-        annotation_table = new AnnotationEntry[annotation_table_length];
+    Annotations(final DataInput input, final ConstantPool constantPool) throws IOException {
+        final int annotation_table_length = input.readUnsignedShort();
+        annotationTable = new AnnotationEntry[annotation_table_length];
         for (int i = 0; i < annotation_table_length; i++) {
-            annotation_table[i] = new AnnotationEntry(input, constant_pool);
+            annotationTable[i] = new AnnotationEntry(input, constantPool);
         }
     }
 
 
     /**
-     * returns the array of annotation entries in this annotation
+     * @return the array of annotation entries in this annotation
      */
     public AnnotationEntry[] getAnnotationEntries() {
-        return annotation_table;
+        return annotationTable;
     }
 }

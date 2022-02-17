@@ -480,6 +480,8 @@ public class ResolverImpl implements MonitoredResolver
 			public int compare(Resource o1, Resource o2) {
 				String str1 = o1.getSymbolicName();
 				String str2 = o2.getSymbolicName();
+                String strPres1 = o1.getPresentationName();
+                String strPres2 = o2.getPresentationName();
 				if (str1 == null || str2 == null)
 					return 0;
 				
@@ -504,13 +506,25 @@ public class ResolverImpl implements MonitoredResolver
 				if (str1.startsWith("com.requea.dynapage.ext") && str2.startsWith("com.requea.dynapage"))
 					return 1;
 
-				if (str1.startsWith("com.requea.app") && !str2.startsWith("com.requea.app"))
-					return -1;
+                if (strPres1 != null && strPres2 != null) {
+                    if (strPres1.toLowerCase().indexOf("dynapage") > -1 && strPres2.toLowerCase().indexOf("dynapage") == -1)
+                        return -1;
+                    if (strPres1.toLowerCase().indexOf("dynapage") == -1 && strPres2.toLowerCase().indexOf("dynapage") > -1)
+                        return 1;
+                }
+                if (str1.startsWith("com.requea.iot") && !str2.startsWith("com.requea.iot"))
+                    return -1;
 
-				if (!str1.startsWith("com.requea.app") && str2.startsWith("com.requea.app"))
-					return 1;
+                if (!str1.startsWith("com.requea.iot") && str2.startsWith("com.requea.iot"))
+                    return 1;
 
-				if (str1.startsWith("com.requea.") && !str2.startsWith("com.requea."))
+                if (str1.startsWith("com.requea.app") && !str2.startsWith("com.requea.app"))
+                    return -1;
+
+                if (!str1.startsWith("com.requea.app") && str2.startsWith("com.requea.app"))
+                    return 1;
+
+                if (str1.startsWith("com.requea.") && !str2.startsWith("com.requea."))
 					return -1;
 
 				if (!str1.startsWith("com.requea.") && str2.startsWith("com.requea."))
@@ -526,6 +540,10 @@ public class ResolverImpl implements MonitoredResolver
         // List to hold all resources to be started.
         List startList = new ArrayList();
 
+        monitor.beginTask("Deploying resources", 10);
+        IProgressMonitor stopMonitor = new SubProgressMonitor(monitor, 1);
+        stopMonitor.setTaskName("Stopping bundles");
+        stopMonitor.beginTask("", deployResources.length);
 
         // Deploy each resource, which will involve either finding a locally
         // installed resource to update or the installation of a new version
@@ -559,15 +577,19 @@ public class ResolverImpl implements MonitoredResolver
                 // Only update if it is a different version or a SNAPSHOT version
                 if (!localResource.equals(deployResources[i]) || localResource.getVersion().getQualifier().endsWith("SNAPSHOT"))
                 {
-                	boolean doStartBundle = start;
+                	boolean doStartBundle = false;
                 	Bundle localBundle = localResource.getBundle();
                     if(localBundle.getState() == Bundle.ACTIVE) {
-                        doStartBundle = true;
+                        IProgressMonitor subMonitor = new SubProgressMonitor(stopMonitor, 1);
+                        subMonitor.setTaskName("Stopping " + deployResources[i].getSymbolicName() + " " + deployResources[i].getVersion().toString());
+                        subMonitor.beginTask("", 1);
+                        doStartBundle = start;
                         try {
 							localBundle.stop(Bundle.STOP_TRANSIENT);
 						} catch (BundleException e) {
 							// ignore this one
 						}
+                        subMonitor.worked(1);
                     }
                 	if(doStartBundle) {
                 		startList.add(localBundle);
@@ -586,15 +608,15 @@ public class ResolverImpl implements MonitoredResolver
             		size += lSize.intValue();
             	}
             }
+            stopMonitor.worked(1);
         }
         
         RuntimeException lastError = null;
         
-        monitor.beginTask("Deploying resources", 10);
-        
+
         try {
-        	// consider downloading bundles is 90% of time
-        	IProgressMonitor groupMonitor = new SubProgressMonitor(monitor, 9);
+        	// consider downloading bundles is 80% of time
+        	IProgressMonitor groupMonitor = new SubProgressMonitor(monitor, 8);
         	groupMonitor.setTaskName("Deploying bundles");
         	groupMonitor.beginTask("", size);
 	        
@@ -628,7 +650,7 @@ public class ResolverImpl implements MonitoredResolver
 	                        
 		                    	long lSize = getResourceSize(deployResources[i]);
 		                    	IProgressMonitor subMonitor = new SubProgressMonitor(groupMonitor,(int)lSize);
-		                    	subMonitor.setTaskName("Installing " + deployResources[i].getSymbolicName() + " " + deployResources[i].getVersion().toString());
+		                    	subMonitor.setTaskName("Updating " + deployResources[i].getSymbolicName() + " " + deployResources[i].getVersion().toString());
 		                    	// always stop the bundle if this is a local resource unless this is ourself (...)
 		                    	Bundle localBundle = localResource.getBundle();
 	                            boolean doStartBundle = start;
@@ -683,12 +705,9 @@ public class ResolverImpl implements MonitoredResolver
 		                            + "/" + System.currentTimeMillis(),
 		                            new ProgressMonitorInputStream(is, subMonitor, lSize));
 		
-		                        // If necessary, save the installed bundle to be
-		                        // started later.
-		                        if (start)
-		                        {
-		                            startList.add(bundle);
-		                        }
+		                        // save the installed bundle to be
+		                        // started later. new bundles need to be started once
+	                            startList.add(bundle);
 	            			}
 	                    }
 	                }
@@ -713,55 +732,55 @@ public class ResolverImpl implements MonitoredResolver
 		        	pa.refreshPackages(null);
 		        }
 	        }
-	        
-	        try {
-				Thread.sleep(2000);
-			} catch (InterruptedException e) {
-			}
-	        
-	        // and restart the bundles
-	        // starting bundles is 10%
-        	groupMonitor = new SubProgressMonitor(monitor, 1);
-        	groupMonitor.setTaskName("Starting bundles");
-        	groupMonitor.beginTask("", startList.size());
-	        
-	        for (int i = 0; i < startList.size(); i++)
-    	    {
-        	    try
-            	{
-        	    	Bundle bundle = (Bundle) startList.get(i); 
-        	    	String name = bundle.getSymbolicName();
-        	    	if(name == null) {
-        	    		name = Long.toString(bundle.getBundleId());
-        	    	}
-                	IProgressMonitor subMonitor = new SubProgressMonitor(groupMonitor, 1);
-                	subMonitor.setTaskName("Starting bundle " + name);
-                	subMonitor.beginTask("", 1);
-                	bundle.start();
-                	subMonitor.worked(1);
-	            }
-    	        catch (BundleException ex)
-        	    {
-            	    m_logger.log(
-                	    Logger.LOG_ERROR,
-                    	"Resolver: Start error - " + getBundleName((Bundle) startList.get(i)),
-	                    ex);
-    	        }
-        	}
 
-	        // then another refresh
-	        srPackageAdmin = m_context.getServiceReference(
-		            org.osgi.service.packageadmin.PackageAdmin.class.getName());
-		        if (srPackageAdmin != null) {
-			        PackageAdmin pa = (PackageAdmin) m_context.getService(srPackageAdmin);
-			        if (pa != null) {
-			        	pa.refreshPackages(null);
-			        }
-		        }
-	        
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+            }
+
+            // and restart the bundles
+            // starting bundles is 10%
+            groupMonitor = new SubProgressMonitor(monitor, 1);
+            groupMonitor.setTaskName("Starting bundles");
+            groupMonitor.beginTask("", startList.size());
+
+            for (int i = 0; i < startList.size(); i++)
+            {
+                try
+                {
+                    Bundle bundle = (Bundle) startList.get(i);
+                    String name = bundle.getSymbolicName();
+                    if(name == null) {
+                        name = Long.toString(bundle.getBundleId());
+                    }
+                    IProgressMonitor subMonitor = new SubProgressMonitor(groupMonitor, 1);
+                    subMonitor.setTaskName("Starting bundle " + name);
+                    subMonitor.beginTask("", 1);
+                    bundle.start();
+                    subMonitor.worked(1);
+                }
+                catch (BundleException ex)
+                {
+                    m_logger.log(
+                            Logger.LOG_ERROR,
+                            "Resolver: Start error - " + getBundleName((Bundle) startList.get(i)),
+                            ex);
+                }
+            }
+
+            // then another refresh
+            srPackageAdmin = m_context.getServiceReference(
+                    org.osgi.service.packageadmin.PackageAdmin.class.getName());
+            if (srPackageAdmin != null) {
+                PackageAdmin pa = (PackageAdmin) m_context.getService(srPackageAdmin);
+                if (pa != null) {
+                    pa.refreshPackages(null);
+                }
+            }
+
 	        
 	        if(lastError != null) {
-	        	throw new RuntimeException("Insallation complete with errors. Please consult the log :" + lastError.getMessage());
+	        	throw new RuntimeException("Installation complete with errors. Please consult the log :" + lastError.getMessage());
 	        }
         } finally {
         	monitor.done();

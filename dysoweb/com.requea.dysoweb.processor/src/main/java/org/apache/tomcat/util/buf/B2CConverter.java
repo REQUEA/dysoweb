@@ -24,9 +24,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
 import java.nio.charset.CodingErrorAction;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 
 import org.apache.tomcat.util.res.StringManager;
 
@@ -38,8 +36,7 @@ public class B2CConverter {
     private static final StringManager sm =
         StringManager.getManager(Constants.Package);
 
-    private static final Map<String, Charset> encodingToCharsetCache =
-        new HashMap<String, Charset>();
+    private static final CharsetCache charsetCache;
 
     public static final Charset ISO_8859_1;
     public static final Charset UTF_8;
@@ -48,14 +45,8 @@ public class B2CConverter {
     protected static final int LEFTOVER_SIZE = 9;
 
     static {
-        for (Charset charset: Charset.availableCharsets().values()) {
-            encodingToCharsetCache.put(
-                    charset.name().toLowerCase(Locale.ENGLISH), charset);
-            for (String alias : charset.aliases()) {
-                encodingToCharsetCache.put(
-                        alias.toLowerCase(Locale.ENGLISH), charset);
-            }
-        }
+        charsetCache = new CharsetCache();
+
         Charset iso88591 = null;
         Charset utf8 = null;
         try {
@@ -80,11 +71,18 @@ public class B2CConverter {
 
     /**
      * Only to be used when it is known that the encoding name is in lower case.
+     * @param lowerCaseEnc The name of the encoding for the required charset in
+     *                     lower case
+     *
+     * @return The Charset corresponding to the requested encoding
+     *
+     * @throws UnsupportedEncodingException If the requested Charset is not
+     *                                      available
      */
     public static Charset getCharsetLower(String lowerCaseEnc)
             throws UnsupportedEncodingException {
 
-        Charset charset = encodingToCharsetCache.get(lowerCaseEnc);
+        Charset charset = charsetCache.getCharset(lowerCaseEnc);
 
         if (charset == null) {
             // Pre-population of the cache means this must be invalid
@@ -93,6 +91,7 @@ public class B2CConverter {
         }
         return charset;
     }
+
 
     private final CharsetDecoder decoder;
     private ByteBuffer bb = null;
@@ -130,7 +129,7 @@ public class B2CConverter {
         decoder.onUnmappableCharacter(action);
     }
 
-    /** 
+    /**
      * Reset the decoder state.
      */
     public void recycle() {
@@ -140,10 +139,12 @@ public class B2CConverter {
 
     /**
      * Convert the given bytes to characters.
-     * 
+     *
      * @param bc byte input
      * @param cc char output
      * @param endOfInput    Is this all of the available data
+     *
+     * @throws IOException If the conversion can not be completed
      */
     public void convert(ByteChunk bc, CharChunk cc, boolean endOfInput)
             throws IOException {
@@ -157,7 +158,7 @@ public class B2CConverter {
         }
         if ((cb == null) || (cb.array() != cc.getBuffer())) {
             // Create a new char buffer if anything changed
-            cb = CharBuffer.wrap(cc.getBuffer(), cc.getEnd(), 
+            cb = CharBuffer.wrap(cc.getBuffer(), cc.getEnd(),
                     cc.getBuffer().length - cc.getEnd());
         } else {
             // Initialize the char buffer

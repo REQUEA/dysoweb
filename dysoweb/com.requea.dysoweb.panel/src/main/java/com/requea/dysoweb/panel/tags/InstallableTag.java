@@ -4,6 +4,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.TagSupport;
 
+import com.requea.dysoweb.panel.InstallManager;
 import com.requea.dysoweb.panel.Installable;
 import com.requea.dysoweb.panel.InstallServlet;
 import com.requea.dysoweb.panel.utils.Util;
@@ -84,22 +85,12 @@ public class InstallableTag extends TagSupport {
         	tw.append("</a>");
         	tw.writeTo(pageContext);
 	    } else if("launch".equals(fProperty)) {
-	    	String url = installable.getBaseURL();
-        	TagWriter tw = new TagWriter();
-        	tw.append("<div>");
-    		tw.append("Application ");
-    		tw.append(installable.getName());
-    		tw.append(" installed");
-        	tw.append("</div>");
+       	TagWriter tw = new TagWriter();
 
         	tw.append("<div>");
         	tw.append("<a href=\"");
         	tw.append(request.getContextPath());
-	    	if(url == null || url.length() == 0) {
-	    		tw.append("/page");
-	    	} else {
-	    		tw.append(url);
-	    	}
+			tw.append("/page");
         	tw.append("\"");
         	if(fStyle != null) {
         		tw.append(" class=\"");
@@ -109,7 +100,11 @@ public class InstallableTag extends TagSupport {
         	tw.append(" target=\"_blank\"");
         	tw.append(">");
         	tw.append("Launch "); // TODO: translate
-        	tw.append(installable.getName());
+			String config = (String)request.getAttribute(InstallManager.CONFIG);
+			if (config != null)
+				tw.append(config);
+			else
+        		tw.append("application");
         	tw.append("</a>");
         	tw.append("<div>");
 

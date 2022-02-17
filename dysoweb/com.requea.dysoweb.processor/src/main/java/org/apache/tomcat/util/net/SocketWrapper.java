@@ -24,8 +24,11 @@ public class SocketWrapper<E> {
 
     protected volatile E socket;
 
+    // Volatile because I/O and setting the timeout values occurs on a different
+    // thread to the thread checking the timeout.
     protected volatile long lastAccess = System.currentTimeMillis();
-    protected long timeout = -1;
+    protected volatile long timeout = -1;
+
     protected boolean error = false;
     protected long lastRegistered = 0;
     protected volatile int keepAliveLeft = 100;
@@ -83,7 +86,13 @@ public class SocketWrapper<E> {
         }
     }
     public void access(long access) { lastAccess = access; }
-    public void setTimeout(long timeout) {this.timeout = timeout;}
+    public void setTimeout(long timeout) {
+        if (timeout > 0) {
+            this.timeout = timeout;
+        } else {
+            this.timeout = -1;
+        }
+    }
     public long getTimeout() {return this.timeout;}
     public boolean getError() { return error; }
     public void setError(boolean error) { this.error = error; }

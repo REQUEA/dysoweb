@@ -4,3 +4,9 @@ target/
 
 .project
 bin/
+/.idea/.gitignore
+/.idea/compiler.xml
+/dysoweb/dependency-check-report.html
+/.idea/jarRepositories.xml
+/.idea/misc.xml
+/.idea/vcs.xml

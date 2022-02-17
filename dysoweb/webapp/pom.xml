@@ -57,11 +57,6 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.requea.dysoweb</groupId>
-			<artifactId>com.requea.dysoweb.log4j</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
 		    <groupId>org.glassfish.jaxb</groupId>
 		    <artifactId>jaxb-runtime</artifactId>
 		    <version>2.3.2</version>
