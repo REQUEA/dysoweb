@@ -132,8 +132,8 @@
 
 	<scm>
 	    <url>scm:git:https://github.com/REQUEA/dysoweb.git</url>
-	    <connection>scm:git:git://github.com/REQUEA/dysoweb.git</connection>
-	    <developerConnection>scm:git:git@github.com:REQUEA/dysoweb.git</developerConnection>
+	    <connection>scm:git:https://github.com/REQUEA/dysoweb.git</connection>
+	    <developerConnection>scm:git:https://github.com:REQUEA/dysoweb.git</developerConnection>
 	  <tag>main-1.0.53</tag>
   </scm>
 	<build>
