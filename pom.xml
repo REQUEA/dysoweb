@@ -9,7 +9,7 @@
 	<properties>
 		<!-- dysowebVersion sould be the same number as dysoweb Version, 
 			but without the -SNAPSHOT if there is one -->
-		<dysowebVersion>1.0.53</dysowebVersion>
+		<dysowebVersion>1.0.54</dysowebVersion>
 	</properties>
 	<modules>
 		<module>dysoweb</module>
@@ -134,7 +134,7 @@
 	    <url>scm:git:https://github.com/REQUEA/dysoweb.git</url>
 	    <connection>scm:git:https://github.com/REQUEA/dysoweb.git</connection>
 	    <developerConnection>scm:git:https://github.com/REQUEA/dysoweb.git</developerConnection>
-	  <tag>dysoweb-1.0.53</tag>
+	  <tag>dysoweb-1.0.54</tag>
   </scm>
 	<build>
 		<plugins>
@@ -143,7 +143,7 @@
 				<artifactId>maven-release-plugin</artifactId>
 				<version>2.5.3</version>
 				<configuration>
-					<tagNameFormat>@{project.version}-${sourcebranch}</tagNameFormat>
+					<tagNameFormat>dysoweb-@{project.version}</tagNameFormat>
 					<localCheckout>true</localCheckout>
 					<preparationGoals>clean install</preparationGoals>
 					<checkModificationExcludes>
