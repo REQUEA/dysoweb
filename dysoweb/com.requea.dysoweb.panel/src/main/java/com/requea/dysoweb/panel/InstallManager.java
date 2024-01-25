@@ -307,16 +307,6 @@ public class InstallManager {
 
 	private void registerInstalledApplication(Element elConfig, Installable installable, Element elResource) throws Exception {
 		
-		String repoURL = XMLUtils.getChildText(elConfig, "RepoURL");
-		if(repoURL != null && repoURL.length() > 0) {
-			URL url = new URL(repoURL);
-			if(!url.getProtocol().startsWith("http") || !"repo.requea.com".equals(url.getHost())) {
-				// not registrable
-				return;
-			}
-		} else {
-			repoURL = InstallManager.DEFAULT_REPO;
-		}
 		String fileName = installable.getID();
 		String version = installable.getVersion();
 		if(version != null) {
@@ -327,23 +317,6 @@ public class InstallManager {
 		File file = new File(fConfigDir, "install/"+fileName);
 		file.getParentFile().mkdirs();
 		
-		// get the image
-		Element elImage = XMLUtils.getChild(elResource, "rqImage");
-		if(elImage != null) {
-			String sysId = elImage.getAttribute("sysId");
-			String strURL = elImage.getAttribute("url");
-			// copy the image on the local directory
-			try {
-				File fileImage = new File(fConfigDir, "install/"+sysId+".jpg");
-	            copyImage(repoURL, strURL, fileImage);	            
-	            // update the image
-	            elResource.removeChild(elImage);
-	            XMLUtils.addElement(elResource, "image", sysId+".jpg");
-			} catch(Exception e) {
-				fLog.log(Level.WARNING, "Error retreiving images", e);
-			}
-		}
-		
 		// store the content as XML
         String xml = XMLUtils.ElementToString(elResource, true);
         // then write the content as utf-8: zip it if the requests accept zip, since xml compresses VERY well
@@ -351,7 +324,18 @@ public class InstallManager {
         w.write(xml);
         w.close();
 
-        try {
+		String repoURL = XMLUtils.getChildText(elConfig, "RepoURL");
+		if(repoURL != null && repoURL.length() > 0) {
+			URL url = new URL(repoURL);
+			if(!url.getProtocol().startsWith("http")) {
+				// not registrable
+				return;
+			}
+		} else {
+			repoURL = InstallManager.DEFAULT_REPO;
+		}
+
+		try {
 	        URL url = new URL(repoURL);
 			HttpPost httppost = new HttpPost(new URL(url, "registerinstall").toString());
 	
