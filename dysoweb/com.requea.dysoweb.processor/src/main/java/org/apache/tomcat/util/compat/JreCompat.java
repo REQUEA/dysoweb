@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLConnection;
@@ -38,7 +37,6 @@ import java.util.concurrent.Executor;
 import java.util.jar.JarFile;
 import java.util.zip.GZIPOutputStream;
 
-import javax.annotation.Resource;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLServerSocket;
 
@@ -365,13 +363,6 @@ public class JreCompat {
 
 
     public boolean isCommonsAnnotations1_1Available() {
-        Class<Resource> clazz = Resource.class;
-        Method[] methods = clazz.getDeclaredMethods();
-        for (Method method : methods) {
-            if (method.getName().equals("lookup")) {
-                return true;
-            }
-        }
         return false;
     }
 

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Stack;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -38,6 +39,13 @@ public class XMLUtils {
         fFactory.setNamespaceAware(true);
         fFactory.setIgnoringElementContentWhitespace(true);
         fFactory.setValidating(false);
+        try {
+            fFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            fFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            fFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            fFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+        } catch (ParserConfigurationException e) {
+        }
     }
     
     public static synchronized DocumentBuilder getParser() throws ParserConfigurationException {

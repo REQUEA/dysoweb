@@ -196,9 +196,10 @@ public class InstallManager {
 		String proxyPort = XMLUtils.getChildText(elConfig, "ProxyPort");
 		final String proxyUserName = XMLUtils.getChildText(elConfig, "ProxyUsername");
 		String proxyPassword = XMLUtils.getChildText(elConfig, "ProxyPassword");
-		if(proxyPassword != null && proxyPassword.startsWith("3DES:")) {
-			CryptUtils cu = CryptUtils.getInstance("3DES");
-			proxyPassword = cu.decrypt(proxyPassword.substring("3DES:".length()));
+		//check if password is encrypted in 3DES for backward compatibility
+		if(proxyPassword != null && (proxyPassword.startsWith("3DES:") || proxyPassword.startsWith("AES:"))) {
+			CryptUtils cu = CryptUtils.getInstance((proxyPassword.startsWith("3DES:")) ?"3DES":"AES", fConfigDir);
+			proxyPassword = cu.decrypt(proxyPassword.substring(proxyPassword.indexOf(":")+1));
 		}
 		String proxyNTDomain = XMLUtils.getChildText(elConfig, "ProxyNTDomain");
 		
@@ -274,7 +275,7 @@ public class InstallManager {
     		File certFile = new File(fConfigDir, "dysoweb.p12");
     		if(certFile.exists()) {
         	
-	            String strCertPassword = "dysoweb";
+	            String strCertPassword = CryptUtils.getInstance("AES", fConfigDir).getCertPassword();
 	            KeyStore keyStore = KeyStore.getInstance("PKCS12");
 	            InputStream keyInput = new FileInputStream(certFile);
 	            keyStore.load(keyInput, strCertPassword.toCharArray());
