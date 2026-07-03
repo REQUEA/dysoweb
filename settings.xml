@@ -1,6 +1,6 @@
 <servers>
     <server>
-        <id>github.com</id>
+        <id>https://github.com</id>
         <username>${server.username}</username>
         <password>${server.password}</password>
     </server>
