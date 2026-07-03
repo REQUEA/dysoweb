@@ -86,16 +86,19 @@ public class SecurityServlet extends HttpServlet {
 
 			// retrieve the password and compare
 			String pass = request.getParameter("Password");
+			String passLegacy = null;
 			// compare encrypted versions
 			try {
 				if(pass != null) {
+					passLegacy = encryptLegacy(pass);
 					pass = encrypt(pass);
 				}
 			} catch(Exception e) {
 				pass = null;
 			}
+			String storedPass = XMLUtils.getChildText(elConfig, "Password");
 			if (pass == null
-					|| !pass.equals(XMLUtils.getChildText(elConfig, "Password"))) {
+					|| (!pass.equals(storedPass) && !passLegacy.equals(storedPass))) {
 				// not registered!
 				request.setAttribute(ErrorTag.ERROR, "Incorrect password");
 				// re forward to registration for correction of errors
@@ -131,8 +134,34 @@ public class SecurityServlet extends HttpServlet {
 			super(e);
 		}
 	}
-	
+
 	static String encrypt(String plaintext)
+			throws RegistrationException {
+		MessageDigest md = null;
+		try {
+			md = MessageDigest.getInstance("SHA-256"); // step 2
+		} catch (NoSuchAlgorithmException e) {
+			throw new RegistrationException(e.getMessage());
+		}
+		try {
+			md.update(plaintext.getBytes("UTF-8")); // step 3
+		} catch (UnsupportedEncodingException e) {
+			throw new RegistrationException(e.getMessage());
+		}
+
+		byte raw[] = md.digest(); // step 4
+		String hash = Base64.encodeBytes(raw); // step 5
+		return hash; // step 6
+	}
+
+	/**
+	 *  Legacy SHA-1 encryption method for password storage.
+	 *  Only used to read on existing systems for backword compatibility
+	 * @param plaintext
+	 * @return
+	 * @throws RegistrationException
+	 */
+	static String encryptLegacy(String plaintext)
 			throws RegistrationException {
 		MessageDigest md = null;
 		try {

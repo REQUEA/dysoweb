@@ -18,14 +18,14 @@
     <parent>
         <artifactId>dysoweb</artifactId>
         <groupId>com.requea.dysoweb</groupId>
-		<version>1.0.53.3</version>
+		<version>1.0.54-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.requea.dysoweb</groupId>
     <artifactId>com.requea.dysoweb.utils.tags</artifactId>
     <packaging>bundle</packaging>
     <name>Requea Dysoweb Utilities Webapp</name>
-    <version>1.0.53.3</version>
+    <version>1.0.54-SNAPSHOT</version>
     <url>http://www.requea.com</url>
     <dependencies>
         <dependency>
@@ -71,6 +71,11 @@
                         </Bundle-Activator>
                         <Include-Resource>webapp=src/main/webapp</Include-Resource>
 			            <Export-Package>com.requea.dysoweb.utils.tags;version="${dysowebVersion}"</Export-Package>
+                        <Import-Package>
+                            javax.servlet.jsp;version="3.2.3",
+                            javax.servlet.jsp.tagext;version="3.2.3",
+                            *
+                        </Import-Package>
                     </instructions>
                 </configuration>
             </plugin>

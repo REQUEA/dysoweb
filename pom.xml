@@ -3,13 +3,13 @@
 	<groupId>com.requea.dysoweb</groupId>
 	<artifactId>main</artifactId>
 	<packaging>pom</packaging>
-	<version>1.0.53.3</version>
+	<version>1.0.54-SNAPSHOT</version>
 	<name>Requea Dysoweb</name>
 	<url>https://www.requea.com</url>
 	<properties>
 		<!-- dysowebVersion sould be the same number as dysoweb Version, 
 			but without the -SNAPSHOT if there is one -->
-		<dysowebVersion>1.0.53.3</dysowebVersion>
+		<dysowebVersion>1.0.54</dysowebVersion>
 	</properties>
 	<modules>
 		<module>dysoweb</module>
@@ -39,7 +39,7 @@
 			<dependency>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>org.apache.felix.framework</artifactId>
-				<version>6.0.2.1</version>
+				<version>7.0.5</version>
 			</dependency>
 			<dependency>
 				<groupId>org.osgi</groupId>
@@ -134,7 +134,7 @@
 	    <url>scm:git:https://github.com/REQUEA/dysoweb.git</url>
 	    <connection>scm:git:https://github.com/REQUEA/dysoweb.git</connection>
 	    <developerConnection>scm:git:https://github.com/REQUEA/dysoweb.git</developerConnection>
-	  <tag>dysoweb-1.0.53.3</tag>
+	  <tag>dysoweb-1.0.54</tag>
   </scm>
 	<build>
 		<plugins>
@@ -157,16 +157,15 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.8.0</version>
+					<version>3.13.0</version>
 					<configuration>
-						<source>1.8</source>
-						<target>1.8</target>
+						<release>21</release>
 					</configuration>
 				</plugin>
 				<plugin>
 	                <groupId>org.apache.felix</groupId>
 	                <artifactId>maven-bundle-plugin</artifactId>
-					<version>1.4.3</version>
+					<version>5.1.9</version>
 					<extensions>true</extensions>
 				</plugin>
 			</plugins>

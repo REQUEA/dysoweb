@@ -18,14 +18,14 @@
 	<parent>
 		<artifactId>dysoweb</artifactId>
 		<groupId>com.requea.dysoweb</groupId>
-		<version>1.0.53.3</version>
+		<version>1.0.54-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.requea.dysoweb</groupId>
 	<artifactId>com.requea.dysoweb.panel</artifactId>
 	<packaging>bundle</packaging>
 	<name>Requea Dysoweb Panel</name>
-	<version>1.0.53.3</version>
+	<version>1.0.54-SNAPSHOT</version>
 	<url>http://www.requea.com</url>
     <dependencies>
         <dependency>
@@ -109,19 +109,24 @@
         <dependency>
             <groupId>org.mozilla</groupId>
             <artifactId>rhino</artifactId>
-            <version>1.7R3</version>
+            <version>1.7.14.1</version>
         </dependency>
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20180813</version>
+			<version>20240303</version>
 		</dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.shell</artifactId>
             <scope>provided</scope>
         </dependency>
-		
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.6</version>
+		</dependency>
+
 		
 	</dependencies>
 	<build>

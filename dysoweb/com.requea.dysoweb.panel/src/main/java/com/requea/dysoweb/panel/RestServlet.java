@@ -20,8 +20,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import jdk.nashorn.api.scripting.JSObject;
-
 import org.apache.felix.shell.ShellService;
 import org.json.JSONArray;
 import org.json.JSONObject;
