@@ -131,9 +131,9 @@
     </distributionManagement>
 
 	<scm>
-	    <url>scm:git:https://github.com/REQUEA/dysoweb.git</url>
+	    <url>scm:git:https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/REQUEA/dysoweb.git</url>
 	    <connection>scm:git:https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/REQUEA/dysoweb.git</connection>
-	    <developerConnection>scm:git:https://github.com/REQUEA/dysoweb.git</developerConnection>
+	    <developerConnection>scm:git:https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/REQUEA/dysoweb.git</developerConnection>
 	  <tag>dysoweb-1.0.54</tag>
   </scm>
 	<build>
