@@ -109,12 +109,12 @@
         <dependency>
             <groupId>org.mozilla</groupId>
             <artifactId>rhino</artifactId>
-            <version>1.7R3</version>
+            <version>1.7.14.1</version>
         </dependency>
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20180813</version>
+			<version>20240303</version>
 		</dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>

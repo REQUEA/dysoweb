@@ -71,6 +71,11 @@
                         </Bundle-Activator>
                         <Include-Resource>webapp=src/main/webapp</Include-Resource>
 			            <Export-Package>com.requea.dysoweb.utils.tags;version="${dysowebVersion}"</Export-Package>
+                        <Import-Package>
+                            javax.servlet.jsp;version="3.2.3",
+                            javax.servlet.jsp.tagext;version="3.2.3",
+                            *
+                        </Import-Package>
                     </instructions>
                 </configuration>
             </plugin>
