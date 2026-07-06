@@ -29,15 +29,15 @@
     <url>http://www.requea.com</url>
     <dependencies>
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<version>3.1.0</version>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<version>6.0.0</version>
             <scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>javax.servlet.jsp</groupId>
-			<artifactId>javax.servlet.jsp-api</artifactId>
-			<version>2.3.1</version>
+			<groupId>jakarta.servlet.jsp</groupId>
+			<artifactId>jakarta.servlet.jsp-api</artifactId>
+			<version>3.1.1</version>
 			<scope>provided</scope>
 		</dependency>
         <dependency>
@@ -60,11 +60,8 @@
             <artifactId>com.requea.dysoweb.api</artifactId>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>requeabuild</groupId>
-            <artifactId>commons-el</artifactId>
-            <version>5.5.20</version>
-        </dependency>
+		<!-- commons-el:5.5.20 (Tomcat 5.5-era javax EL impl) dropped for Jakarta;
+		     EL implementation now comes from tomcat-jasper-el 10.1.x (jakarta.el 5.0). -->
 		<dependency>
 			<groupId>org.codehaus.janino</groupId>
 			<artifactId>janino</artifactId>
@@ -83,13 +80,13 @@
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>tomcat-el-api</artifactId>
-			<version>7.0.109</version>
+			<version>10.1.56</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>tomcat-jasper-el</artifactId>
-			<version>7.0.109</version>
-		</dependency>		
+			<version>10.1.56</version>
+		</dependency>
         <dependency>
 		    <groupId>commons-logging</groupId>
 		    <artifactId>commons-logging</artifactId>
@@ -135,17 +132,17 @@
                         <Import-Package>
                         	com.requea.webenv,
                         	com.requea.dysoweb;version="${dysowebVersion}",
-							javax.servlet,
-							javax.servlet.descriptor,
-							javax.servlet.http,
-							javax.servlet.jsp;version="3.2.3",
-							javax.servlet.jsp.resources;version="3.2.3",
-							javax.servlet.jsp.tagext;version="3.2.3",
-							javax.servlet.jsp.el;version="3.3.0",
-							javax.el;version="3.3.0",
+							jakarta.servlet;version="6.0.0",
+							jakarta.servlet.descriptor;version="6.0.0",
+							jakarta.servlet.http;version="6.0.0",
+							jakarta.servlet.jsp;version="3.1.0",
+							jakarta.servlet.jsp.resources;version="3.1.0",
+							jakarta.servlet.jsp.tagext;version="3.1.0",
+							jakarta.servlet.jsp.el;version="3.1.0",
+							jakarta.el;version="5.0.0",
 							javax.naming.*,
                         	javax.xml.*,
-                        	javax.el.*,
+                        	jakarta.el.*,
                         	org.w3c.dom,
                         	org.xml.sax.*,
 							org.osgi.framework.*

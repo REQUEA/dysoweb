@@ -39,13 +39,13 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
-			<groupId>javax.servlet.jsp</groupId>
-			<artifactId>javax.servlet.jsp-api</artifactId>
+			<groupId>jakarta.servlet.jsp</groupId>
+			<artifactId>jakarta.servlet.jsp-api</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -72,8 +72,8 @@
                         <Include-Resource>webapp=src/main/webapp</Include-Resource>
 			            <Export-Package>com.requea.dysoweb.utils.tags;version="${dysowebVersion}"</Export-Package>
                         <Import-Package>
-                            javax.servlet.jsp;version="3.2.3",
-                            javax.servlet.jsp.tagext;version="3.2.3",
+                            jakarta.servlet.jsp;version="3.1.0",
+                            jakarta.servlet.jsp.tagext;version="3.1.0",
                             *
                         </Import-Package>
                     </instructions>

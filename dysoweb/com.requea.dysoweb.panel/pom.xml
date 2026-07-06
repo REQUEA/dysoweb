@@ -56,13 +56,13 @@
 	      <scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>javax.servlet.jsp</groupId>
-			<artifactId>javax.servlet.jsp-api</artifactId>
+			<groupId>jakarta.servlet.jsp</groupId>
+			<artifactId>jakarta.servlet.jsp-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
         <dependency>
@@ -152,8 +152,8 @@
 						<Import-Package>
                             org.osgi.framework,
 							org.osgi.service.obr,
-                        	javax.servlet,
-                        	javax.servlet.http,
+                        	jakarta.servlet;version="6.0.0",
+                        	jakarta.servlet.http;version="6.0.0",
                             javax.naming,
                             com.requea.dysoweb.service.obr;version="${dysowebVersion}",
 							com.requea.dysoweb.util.xml;version="${dysowebVersion}",
@@ -166,9 +166,9 @@
 							javax.net.*,
 							javax.security.*,
 							javax.xml.*,
-							javax.servlet.jsp.*;version="3.2.3",
-							javax.servlet.jsp.el;version="3.3.0",
-							javax.el;version="3.3.0",
+							jakarta.servlet.jsp.*;version="3.1.0",
+							jakarta.servlet.jsp.el;version="3.1.0",
+							jakarta.el;version="5.0.0",
 							org.xml.sax.*,
 							!org.ietf.jgss, 
 							org.osgi.service.*, 
