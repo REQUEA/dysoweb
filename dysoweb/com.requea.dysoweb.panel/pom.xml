@@ -149,6 +149,9 @@
                         <Embed-Dependency>*;scope=compile|runtime</Embed-Dependency>
 			            <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 			            <Bundle-Activator>com.requea.dysoweb.panel.Activator</Bundle-Activator>
+			            <!-- Disable bnd osgi.contract Require-Capability (JakartaExpressionLanguage);
+			                 EL API is provided via the Felix system bundle package exports. -->
+			            <_contract>off</_contract>
 						<Import-Package>
                             org.osgi.framework,
 							org.osgi.service.obr,

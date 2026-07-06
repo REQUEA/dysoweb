@@ -118,6 +118,10 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
+                        <!-- Tomcat 10.1 el/servlet jars declare osgi.contract Provide-Capability;
+                             bnd would add matching Require-Capability the Felix system bundle can't
+                             satisfy. EL/servlet APIs resolve via system.packages, so disable contracts. -->
+                        <_contract>off</_contract>
                         <Bundle-Name>Requea Dysoweb Processor</Bundle-Name>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Vendor>Requea.com</Bundle-Vendor>
