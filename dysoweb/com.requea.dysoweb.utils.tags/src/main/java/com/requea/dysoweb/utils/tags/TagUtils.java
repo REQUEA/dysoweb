@@ -14,7 +14,7 @@
 
 package com.requea.dysoweb.utils.tags;
 
-import javax.servlet.jsp.tagext.Tag;
+import jakarta.servlet.jsp.tagext.Tag;
 
 public class TagUtils {
 	

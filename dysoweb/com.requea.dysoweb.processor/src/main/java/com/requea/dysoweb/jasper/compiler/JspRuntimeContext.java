@@ -31,8 +31,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.servlet.ServletContext;
-import javax.servlet.jsp.JspFactory;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.jsp.JspFactory;
 
 import com.requea.dysoweb.jasper.Constants;
 import com.requea.dysoweb.jasper.JspCompilationContext;

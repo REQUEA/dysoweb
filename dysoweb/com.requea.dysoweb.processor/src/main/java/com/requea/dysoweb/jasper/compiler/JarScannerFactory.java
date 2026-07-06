@@ -16,7 +16,7 @@
  */
 package com.requea.dysoweb.jasper.compiler;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import org.apache.tomcat.JarScanner;
 import org.apache.tomcat.util.scan.StandardJarScanner;

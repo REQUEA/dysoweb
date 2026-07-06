@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;

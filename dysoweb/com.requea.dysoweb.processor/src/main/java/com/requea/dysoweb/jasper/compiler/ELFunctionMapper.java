@@ -22,7 +22,7 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import javax.servlet.jsp.tagext.FunctionInfo;
+import jakarta.servlet.jsp.tagext.FunctionInfo;
 
 import org.apache.tomcat.util.security.PrivilegedGetTccl;
 

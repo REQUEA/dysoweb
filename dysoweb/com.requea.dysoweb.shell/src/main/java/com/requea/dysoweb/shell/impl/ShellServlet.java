@@ -23,10 +23,10 @@ import java.io.Writer;
 import java.util.StringTokenizer;
 import java.util.zip.GZIPOutputStream;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.felix.shell.ShellService;
 import org.w3c.dom.Document;

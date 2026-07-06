@@ -28,17 +28,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterRegistration;
-import javax.servlet.FilterRegistration.Dynamic;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import javax.servlet.SessionCookieConfig;
-import javax.servlet.SessionTrackingMode;
-import javax.servlet.descriptor.JspConfigDescriptor;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterRegistration;
+import jakarta.servlet.FilterRegistration.Dynamic;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.SessionCookieConfig;
+import jakarta.servlet.SessionTrackingMode;
+import jakarta.servlet.descriptor.JspConfigDescriptor;
 
 import com.requea.dysoweb.processor.RequestProcessor.EntryInfo;
 
@@ -284,19 +284,19 @@ public class ServletContextWrapper implements ServletContext {
 	}
 
 	@Override
-	public javax.servlet.ServletRegistration.Dynamic addServlet(String arg0,
+	public jakarta.servlet.ServletRegistration.Dynamic addServlet(String arg0,
 			String arg1) {
 		return fContext.addServlet(arg0, arg1);
 	}
 
 	@Override
-	public javax.servlet.ServletRegistration.Dynamic addServlet(String arg0,
+	public jakarta.servlet.ServletRegistration.Dynamic addServlet(String arg0,
 			Servlet arg1) {
 		return fContext.addServlet(arg0, arg1);
 	}
 
 	@Override
-	public javax.servlet.ServletRegistration.Dynamic addServlet(String arg0,
+	public jakarta.servlet.ServletRegistration.Dynamic addServlet(String arg0,
 			Class<? extends Servlet> arg1) {
 		return fContext.addServlet(arg0, arg1);
 	}
@@ -402,5 +402,42 @@ public class ServletContextWrapper implements ServletContext {
 	public void setSessionTrackingModes(Set<SessionTrackingMode> arg0) {
 		fContext.setSessionTrackingModes(arg0);
 	}
-		
+
+	// --- Methods added by Servlet 4.0+ (delegate to the wrapped context) ---
+
+	@Override
+	public int getSessionTimeout() {
+		return fContext.getSessionTimeout();
+	}
+
+	@Override
+	public void setSessionTimeout(int sessionTimeout) {
+		fContext.setSessionTimeout(sessionTimeout);
+	}
+
+	@Override
+	public String getRequestCharacterEncoding() {
+		return fContext.getRequestCharacterEncoding();
+	}
+
+	@Override
+	public void setRequestCharacterEncoding(String encoding) {
+		fContext.setRequestCharacterEncoding(encoding);
+	}
+
+	@Override
+	public String getResponseCharacterEncoding() {
+		return fContext.getResponseCharacterEncoding();
+	}
+
+	@Override
+	public void setResponseCharacterEncoding(String encoding) {
+		fContext.setResponseCharacterEncoding(encoding);
+	}
+
+	@Override
+	public jakarta.servlet.ServletRegistration.Dynamic addJspFile(String servletName, String jspFile) {
+		return fContext.addJspFile(servletName, jspFile);
+	}
+
 }

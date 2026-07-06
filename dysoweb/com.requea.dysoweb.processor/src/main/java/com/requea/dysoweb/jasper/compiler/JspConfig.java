@@ -20,7 +20,7 @@ package com.requea.dysoweb.jasper.compiler;
 import java.util.Iterator;
 import java.util.Vector;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import com.requea.dysoweb.jasper.Constants;
 import com.requea.dysoweb.jasper.JasperException;

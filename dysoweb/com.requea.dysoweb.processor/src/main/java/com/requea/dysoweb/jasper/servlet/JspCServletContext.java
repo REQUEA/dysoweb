@@ -33,17 +33,17 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterRegistration;
-import javax.servlet.FilterRegistration.Dynamic;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import javax.servlet.SessionCookieConfig;
-import javax.servlet.SessionTrackingMode;
-import javax.servlet.descriptor.JspConfigDescriptor;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterRegistration;
+import jakarta.servlet.FilterRegistration.Dynamic;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.SessionCookieConfig;
+import jakarta.servlet.SessionTrackingMode;
+import jakarta.servlet.descriptor.JspConfigDescriptor;
 
 import com.requea.dysoweb.jasper.JasperException;
 import com.requea.dysoweb.jasper.util.ExceptionUtils;
@@ -366,56 +366,12 @@ public class JspCServletContext implements ServletContext {
 
 
     /**
-     * Return a null reference for the specified servlet name.
-     *
-     * @param name Name of the requested servlet
-     *
-     * @deprecated This method has been deprecated with no replacement
-     */
-    @Override
-    @Deprecated
-    public Servlet getServlet(String name) throws ServletException {
-
-        return (null);
-
-    }
-
-
-    /**
      * Return the name of this servlet context.
      */
     @Override
     public String getServletContextName() {
 
         return (getServerInfo());
-
-    }
-
-
-    /**
-     * Return an empty enumeration of servlet names.
-     *
-     * @deprecated This method has been deprecated with no replacement
-     */
-    @Override
-    @Deprecated
-    public Enumeration<String> getServletNames() {
-
-        return (new Vector<String>().elements());
-
-    }
-
-
-    /**
-     * Return an empty enumeration of servlets.
-     *
-     * @deprecated This method has been deprecated with no replacement
-     */
-    @Override
-    @Deprecated
-    public Enumeration<Servlet> getServlets() {
-
-        return (new Vector<Servlet>().elements());
 
     }
 
@@ -429,23 +385,6 @@ public class JspCServletContext implements ServletContext {
     public void log(String message) {
 
         myLogWriter.println(message);
-
-    }
-
-
-    /**
-     * Log the specified message and exception.
-     *
-     * @param exception The exception to be logged
-     * @param message The message to be logged
-     *
-     * @deprecated Use log(String,Throwable) instead
-     */
-    @Override
-    @Deprecated
-    public void log(Exception exception, String message) {
-
-        log(message, exception);
 
     }
 
@@ -660,6 +599,43 @@ public class JspCServletContext implements ServletContext {
 	@Override
 	public String getVirtualServerName() {
 		// TODO Auto-generated method stub
+		return null;
+	}
+
+	// --- Methods added by Servlet 4.0+ (JspC batch context: minimal defaults) ---
+
+	@Override
+	public int getSessionTimeout() {
+		return 30;
+	}
+
+	@Override
+	public void setSessionTimeout(int sessionTimeout) {
+		// no-op for the JspC batch context
+	}
+
+	@Override
+	public String getRequestCharacterEncoding() {
+		return null;
+	}
+
+	@Override
+	public void setRequestCharacterEncoding(String encoding) {
+		// no-op for the JspC batch context
+	}
+
+	@Override
+	public String getResponseCharacterEncoding() {
+		return null;
+	}
+
+	@Override
+	public void setResponseCharacterEncoding(String encoding) {
+		// no-op for the JspC batch context
+	}
+
+	@Override
+	public ServletRegistration.Dynamic addJspFile(String servletName, String jspFile) {
 		return null;
 	}
 

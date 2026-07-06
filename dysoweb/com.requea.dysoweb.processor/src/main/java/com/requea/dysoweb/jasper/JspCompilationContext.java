@@ -32,8 +32,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.ServletContext;
-import javax.servlet.jsp.tagext.TagInfo;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.jsp.tagext.TagInfo;
 
 import com.requea.dysoweb.jasper.compiler.Compiler;
 import com.requea.dysoweb.jasper.compiler.JarResource;

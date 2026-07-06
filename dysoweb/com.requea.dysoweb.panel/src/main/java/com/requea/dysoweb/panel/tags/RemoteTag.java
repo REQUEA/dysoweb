@@ -1,6 +1,6 @@
 package com.requea.dysoweb.panel.tags;
 
-import javax.servlet.jsp.tagext.BodyTagSupport;
+import jakarta.servlet.jsp.tagext.BodyTagSupport;
 
 public class RemoteTag extends BodyTagSupport {
 

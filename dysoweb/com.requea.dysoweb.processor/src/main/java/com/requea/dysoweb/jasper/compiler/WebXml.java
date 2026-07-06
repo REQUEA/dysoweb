@@ -23,7 +23,7 @@ import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import com.requea.dysoweb.jasper.Constants;
 import org.apache.juli.logging.Log;

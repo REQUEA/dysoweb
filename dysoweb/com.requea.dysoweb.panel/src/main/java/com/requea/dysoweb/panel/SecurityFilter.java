@@ -4,17 +4,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -104,9 +104,9 @@ public class SecurityFilter implements Filter {
 	}
 
 	
-	private static final String TMP_DIR = "javax.servlet.context.tempdir";
+	private static final String TMP_DIR = "jakarta.servlet.context.tempdir";
 	public static String getScratchDir(ServletContext context) {
-		// First try the Servlet 2.2 javax.servlet.context.tempdir property
+		// First try the Servlet 2.2 jakarta.servlet.context.tempdir property
 		File scratchDir = (File) context.getAttribute(TMP_DIR);
 		if (scratchDir == null) {
 			// Not running in a Servlet 2.2 container.

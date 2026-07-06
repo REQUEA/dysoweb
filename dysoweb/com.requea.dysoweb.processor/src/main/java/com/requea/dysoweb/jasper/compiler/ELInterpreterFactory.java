@@ -16,7 +16,7 @@
  */
 package com.requea.dysoweb.jasper.compiler;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import com.requea.dysoweb.jasper.JspCompilationContext;
 

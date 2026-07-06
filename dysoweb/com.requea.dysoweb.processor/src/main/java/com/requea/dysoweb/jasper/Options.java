@@ -20,7 +20,7 @@ package com.requea.dysoweb.jasper;
 import java.io.File;
 import java.util.Map;
 
-import javax.servlet.jsp.tagext.TagLibraryInfo;
+import jakarta.servlet.jsp.tagext.TagLibraryInfo;
 
 import com.requea.dysoweb.jasper.compiler.JspConfig;
 import com.requea.dysoweb.jasper.compiler.TagPluginManager;

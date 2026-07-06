@@ -16,10 +16,10 @@ package com.requea.dysoweb.servlet.wrapper;
 
 import java.io.IOException;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
 
 import org.osgi.framework.Bundle;
 

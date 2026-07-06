@@ -22,14 +22,14 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ListIterator;
 
-import javax.servlet.jsp.tagext.PageData;
+import jakarta.servlet.jsp.tagext.PageData;
 
 import com.requea.dysoweb.jasper.JasperException;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
- * An implementation of <tt>javax.servlet.jsp.tagext.PageData</tt> which
+ * An implementation of <tt>jakarta.servlet.jsp.tagext.PageData</tt> which
  * builds the XML view of a given page.
  *
  * The XML view is built in two passes:

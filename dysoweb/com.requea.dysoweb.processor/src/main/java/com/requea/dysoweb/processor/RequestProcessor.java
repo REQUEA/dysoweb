@@ -41,26 +41,26 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextAttributeEvent;
-import javax.servlet.ServletContextAttributeListener;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSessionAttributeListener;
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSessionListener;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextAttributeEvent;
+import jakarta.servlet.ServletContextAttributeListener;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSessionAttributeListener;
+import jakarta.servlet.http.HttpSessionBindingEvent;
+import jakarta.servlet.http.HttpSessionEvent;
+import jakarta.servlet.http.HttpSessionListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -426,7 +426,7 @@ public class RequestProcessor implements IWebProcessor {
 
 	/*
 	 * Process the incoming Servlet request from the parent container
-	 * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
+	 * @see jakarta.servlet.Filter#doFilter(jakarta.servlet.ServletRequest, jakarta.servlet.ServletResponse, jakarta.servlet.FilterChain)
 	 */
 	public void process(ServletRequest request, ServletResponse response,
 			FilterChain chain) throws IOException, ServletException {
@@ -441,9 +441,9 @@ public class RequestProcessor implements IWebProcessor {
             /*
              * Requested JSP has been target of
              * RequestDispatcher.include(). Its path is assembled from the
-             * relevant javax.servlet.include.* request attributes
+             * relevant jakarta.servlet.include.* request attributes
              */
-            String pathInfo = (String) request.getAttribute("javax.servlet.include.path_info");
+            String pathInfo = (String) request.getAttribute("jakarta.servlet.include.path_info");
 			if (pathInfo != null) {
 				uri += pathInfo;
 			}
@@ -1147,14 +1147,14 @@ public class RequestProcessor implements IWebProcessor {
 		return fServletContext;
 	}
 
-	private static final String TMP_DIR = "javax.servlet.context.tempdir";
+	private static final String TMP_DIR = "jakarta.servlet.context.tempdir";
     public static final String PATHINFO = "com.requea.dysoweb.pathinfo";
 
 	/*
 	 * Retrieve the web container scratch directory
 	 */
 	public File getScratchDir() {
-		// First try the Servlet 2.2 javax.servlet.context.tempdir property
+		// First try the Servlet 2.2 jakarta.servlet.context.tempdir property
 		File scratchDir = (File) fServletContext.getAttribute(TMP_DIR);
 		if (scratchDir == null) {
 			// Not running in a Servlet 2.2 container.

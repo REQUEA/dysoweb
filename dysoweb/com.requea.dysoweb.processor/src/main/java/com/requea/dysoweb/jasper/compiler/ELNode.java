@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.servlet.jsp.tagext.FunctionInfo;
+import jakarta.servlet.jsp.tagext.FunctionInfo;
 
 import com.requea.dysoweb.jasper.JasperException;
 

@@ -3,9 +3,9 @@ package com.requea.dysoweb.panel.tags;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.jsp.JspException;
-import javax.servlet.jsp.tagext.BodyTagSupport;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.jsp.JspException;
+import jakarta.servlet.jsp.tagext.BodyTagSupport;
 
 import com.requea.dysoweb.panel.InstallManager;
 import com.requea.dysoweb.panel.InstallServlet;

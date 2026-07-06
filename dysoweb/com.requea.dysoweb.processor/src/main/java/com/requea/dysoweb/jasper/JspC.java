@@ -42,7 +42,7 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import javax.servlet.jsp.tagext.TagLibraryInfo;
+import jakarta.servlet.jsp.tagext.TagLibraryInfo;
 
 import com.requea.dysoweb.jasper.compiler.Compiler;
 import com.requea.dysoweb.jasper.compiler.JspConfig;

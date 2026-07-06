@@ -23,7 +23,7 @@ package com.requea.dysoweb.jasper;
  *
  * @author Anil K. Vijendran
  */
-public class JasperException extends javax.servlet.ServletException {
+public class JasperException extends jakarta.servlet.ServletException {
     
     private static final long serialVersionUID = 1L;
 

@@ -20,10 +20,10 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -113,7 +113,7 @@ public class FilterDefinition implements IFilterDefinition {
 			if(obj instanceof Filter) {
 				fInstance = (Filter)obj;
 			} else {
-				throw new WebAppException("The class "+fClassName+" is not a Servlet. It should extend javax.servlet.Servlet");
+				throw new WebAppException("The class "+fClassName+" is not a Servlet. It should extend jakarta.servlet.Servlet");
 			}
 		} catch(ClassNotFoundException e) {
 			throw new WebAppException(e);

@@ -4,11 +4,10 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Enumeration;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionContext;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.http.HttpSession;
 
 import com.requea.webenv.DysowebSessionSerializer;
 
@@ -139,18 +138,6 @@ public class RequestWrapper extends HttpServletRequestWrapper {
 			return fServletContext;
 		}
 
-		public HttpSessionContext getSessionContext() {
-			return fSession.getSessionContext();
-		}
-
-		public Object getValue(String arg0) {
-			return fSession.getValue(arg0);
-		}
-
-		public String[] getValueNames() {
-			return fSession.getValueNames();
-		}
-
 		public void invalidate() {
 			fSession.invalidate();
 		}
@@ -159,16 +146,8 @@ public class RequestWrapper extends HttpServletRequestWrapper {
 			return fSession.isNew();
 		}
 
-		public void putValue(String arg0, Object value) {
-			fSession.putValue(arg0, value);
-		}
-
 		public void removeAttribute(String attr) {
 			fSession.removeAttribute(attr);
-		}
-
-		public void removeValue(String value) {
-			fSession.removeValue(value);
 		}
 
 		public void setAttribute(String attr, Object value) {

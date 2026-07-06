@@ -22,9 +22,9 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.jsp.tagext.TagLibraryInfo;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.jsp.tagext.TagLibraryInfo;
 
 import com.requea.dysoweb.jasper.compiler.JspConfig;
 import com.requea.dysoweb.jasper.compiler.Localizer;
@@ -638,7 +638,7 @@ public final class EmbeddedServletOptions implements Options {
         if (dir != null) {
             scratchDir = new File(dir);
         } else {
-            // First try the Servlet 2.2 javax.servlet.context.tempdir property
+            // First try the Servlet 2.2 jakarta.servlet.context.tempdir property
             scratchDir = (File) context.getAttribute(ServletContext.TEMPDIR);
             if (scratchDir == null) {
                 // Not running in a Servlet 2.2 container.

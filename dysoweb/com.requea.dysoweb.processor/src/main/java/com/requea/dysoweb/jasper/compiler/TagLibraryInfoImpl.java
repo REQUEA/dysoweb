@@ -31,18 +31,18 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
-import javax.servlet.ServletContext;
-import javax.servlet.jsp.tagext.FunctionInfo;
-import javax.servlet.jsp.tagext.PageData;
-import javax.servlet.jsp.tagext.TagAttributeInfo;
-import javax.servlet.jsp.tagext.TagExtraInfo;
-import javax.servlet.jsp.tagext.TagFileInfo;
-import javax.servlet.jsp.tagext.TagInfo;
-import javax.servlet.jsp.tagext.TagLibraryInfo;
-import javax.servlet.jsp.tagext.TagLibraryValidator;
-import javax.servlet.jsp.tagext.TagVariableInfo;
-import javax.servlet.jsp.tagext.ValidationMessage;
-import javax.servlet.jsp.tagext.VariableInfo;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.jsp.tagext.FunctionInfo;
+import jakarta.servlet.jsp.tagext.PageData;
+import jakarta.servlet.jsp.tagext.TagAttributeInfo;
+import jakarta.servlet.jsp.tagext.TagExtraInfo;
+import jakarta.servlet.jsp.tagext.TagFileInfo;
+import jakarta.servlet.jsp.tagext.TagInfo;
+import jakarta.servlet.jsp.tagext.TagLibraryInfo;
+import jakarta.servlet.jsp.tagext.TagLibraryValidator;
+import jakarta.servlet.jsp.tagext.TagVariableInfo;
+import jakarta.servlet.jsp.tagext.ValidationMessage;
+import jakarta.servlet.jsp.tagext.VariableInfo;
 
 import com.requea.dysoweb.jasper.Constants;
 import com.requea.dysoweb.jasper.JasperException;
@@ -540,7 +540,7 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
                 }
             } else if ("deferred-value".equals(tname)) {
                 deferredValue = true;
-                type = "javax.el.ValueExpression";
+                type = "jakarta.el.ValueExpression";
                 TreeNode child = element.findChild("type");
                 if (child != null) {
                     expectedType = child.getBody();
@@ -552,7 +552,7 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
                 }
             } else if ("deferred-method".equals(tname)) {
                 deferredMethod = true;
-                type = "javax.el.MethodExpression";
+                type = "jakarta.el.MethodExpression";
                 TreeNode child = element.findChild("method-signature");
                 if (child != null) {
                     methodSignature = child.getBody();
@@ -578,10 +578,10 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
              * 'type' and 'rtexprvalue' must not be specified if 'fragment' has
              * been specified (this will be enforced by validating parser).
              * Also, if 'fragment' is TRUE, 'type' is fixed at
-             * javax.servlet.jsp.tagext.JspFragment, and 'rtexprvalue' is fixed
+             * jakarta.servlet.jsp.tagext.JspFragment, and 'rtexprvalue' is fixed
              * at true. See also JSP.8.5.2.
              */
-            type = "javax.servlet.jsp.tagext.JspFragment";
+            type = "jakarta.servlet.jsp.tagext.JspFragment";
             rtexprvalue = true;
         }
 
@@ -738,7 +738,7 @@ class TagLibraryInfoImpl extends TagLibraryInfo implements TagConstants {
     }
 
     // *********************************************************************
-    // Until javax.servlet.jsp.tagext.TagLibraryInfo is fixed
+    // Until jakarta.servlet.jsp.tagext.TagLibraryInfo is fixed
 
     /**
      * The instance (if any) for the TagLibraryValidator class.

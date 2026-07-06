@@ -16,7 +16,7 @@
 
 package com.requea.dysoweb.servlet.jasper;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import com.requea.dysoweb.jasper.JasperException;
 import com.requea.dysoweb.jasper.compiler.TldLocation;

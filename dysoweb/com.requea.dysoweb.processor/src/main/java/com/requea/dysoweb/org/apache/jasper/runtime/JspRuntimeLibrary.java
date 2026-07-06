@@ -28,14 +28,14 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Enumeration;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.jsp.JspWriter;
-import javax.servlet.jsp.PageContext;
-import javax.servlet.jsp.tagext.BodyContent;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.jsp.JspWriter;
+import jakarta.servlet.jsp.PageContext;
+import jakarta.servlet.jsp.tagext.BodyContent;
 
 import com.requea.dysoweb.jasper.Constants;
 import com.requea.dysoweb.jasper.JasperException;
@@ -87,9 +87,9 @@ public class JspRuntimeLibrary {
     }
 
     /**
-     * Returns the value of the javax.servlet.error.exception request
+     * Returns the value of the jakarta.servlet.error.exception request
      * attribute value, if present, otherwise the value of the
-     * javax.servlet.jsp.jspException request attribute value.
+     * jakarta.servlet.jsp.jspException request attribute value.
      *
      * This method is called at the beginning of the generated servlet code
      * for a JSP error page, when the "exception" implicit scripting language

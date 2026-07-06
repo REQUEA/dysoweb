@@ -22,16 +22,15 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.SingleThreadModel;
-import javax.servlet.UnavailableException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.jsp.tagext.TagInfo;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.UnavailableException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.jsp.tagext.TagInfo;
 
 import com.requea.dysoweb.jasper.Constants;
 import com.requea.dysoweb.jasper.JasperException;
@@ -71,7 +70,6 @@ import org.osgi.framework.Bundle;
  * @author Tim Fennell
  */
 
-@SuppressWarnings("deprecation") // Have to support SingleThreadModel
 public class JspServletWrapper {
 
     private static final Map<String,Long> ALWAYS_OUTDATED_DEPENDENCIES =
@@ -454,15 +452,8 @@ public class JspServletWrapper {
             /*
              * (4) Service request
              */
-            if (servlet instanceof SingleThreadModel) {
-               // sync on the wrapper so that the freshness
-               // of the page is determined right before servicing
-               synchronized (this) {
-                   servlet.service(request, response);
-                }
-            } else {
-                servlet.service(request, response);
-            }
+            // SingleThreadModel was removed in Servlet 6.0; always service directly.
+            servlet.service(request, response);
         } catch (UnavailableException ex) {
             String includeRequestUri = (String)
                 request.getAttribute(RequestDispatcher.INCLUDE_REQUEST_URI);

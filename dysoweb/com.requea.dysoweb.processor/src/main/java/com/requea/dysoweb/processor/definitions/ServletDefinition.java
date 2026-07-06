@@ -24,10 +24,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -131,7 +131,7 @@ public class ServletDefinition implements IServletDefinition {
 			if(obj instanceof Servlet) {
 				fInstance = (Servlet)obj;
 			} else {
-				throw new WebAppException("The class "+fClassName+" is not a Servlet. It should extend javax.servlet.Servlet");
+				throw new WebAppException("The class "+fClassName+" is not a Servlet. It should extend jakarta.servlet.Servlet");
 			}
 		} catch(ClassNotFoundException e) {
 			throw new WebAppException(e);

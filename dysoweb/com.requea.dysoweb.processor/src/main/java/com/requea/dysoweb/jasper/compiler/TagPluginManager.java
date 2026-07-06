@@ -23,7 +23,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import com.requea.dysoweb.jasper.Constants;
 import com.requea.dysoweb.jasper.JasperException;

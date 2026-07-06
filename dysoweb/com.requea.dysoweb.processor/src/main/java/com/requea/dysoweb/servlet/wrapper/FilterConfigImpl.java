@@ -16,8 +16,8 @@ package com.requea.dysoweb.servlet.wrapper;
 
 import java.util.Enumeration;
 
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletContext;
 
 /**
  * The implementation of the FilterConfig

@@ -14,9 +14,9 @@
 
 package com.requea.dysoweb.processor;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 
 import org.osgi.framework.Bundle;
 

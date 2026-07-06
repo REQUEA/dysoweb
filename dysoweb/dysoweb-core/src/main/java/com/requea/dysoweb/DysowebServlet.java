@@ -17,13 +17,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpSession;
 
 import org.apache.felix.framework.FrameworkFactory;
 import org.apache.felix.framework.cache.BundleCache;
@@ -96,13 +96,13 @@ public class DysowebServlet extends HttpServlet {
 		}
 	}
 
-	private static final String TMP_DIR = "javax.servlet.context.tempdir";
+	private static final String TMP_DIR = "jakarta.servlet.context.tempdir";
 
 	/*
 	 * Retrieve the web container scratch directory
 	 */
 	public static File getScratchDir(ServletContext context) {
-		// First try the Servlet 2.2 javax.servlet.context.tempdir property
+		// First try the Servlet 2.2 jakarta.servlet.context.tempdir property
 		File scratchDir = (File) context.getAttribute(TMP_DIR);
 		if (scratchDir == null) {
 			// Not running in a Servlet 2.2 container.

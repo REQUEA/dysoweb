@@ -16,7 +16,7 @@
  */
 package com.requea.dysoweb.org.apache.jasper.runtime;
 
-import javax.servlet.ServletConfig;
+import jakarta.servlet.ServletConfig;
 
 import org.apache.tomcat.DefaultInstanceManager;
 import org.apache.tomcat.InstanceManager;

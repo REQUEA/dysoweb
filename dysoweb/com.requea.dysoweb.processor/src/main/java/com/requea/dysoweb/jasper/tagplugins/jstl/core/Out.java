@@ -21,7 +21,7 @@ package com.requea.dysoweb.jasper.tagplugins.jstl.core;
 import java.io.IOException;
 import java.io.Reader;
 
-import javax.servlet.jsp.JspWriter;
+import jakarta.servlet.jsp.JspWriter;
 
 import com.requea.dysoweb.jasper.compiler.tagplugin.TagPlugin;
 import com.requea.dysoweb.jasper.compiler.tagplugin.TagPluginContext;

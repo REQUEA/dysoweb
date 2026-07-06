@@ -40,7 +40,7 @@ public final class Globals {
      * if any.
      */
     public static final String CERTIFICATES_ATTR =
-        "javax.servlet.request.X509Certificate";
+        "jakarta.servlet.request.X509Certificate";
 
     /**
      * The request attribute under which we store the name of the cipher suite
@@ -48,7 +48,7 @@ public final class Globals {
      * java.lang.String).
      */
     public static final String CIPHER_SUITE_ATTR =
-        "javax.servlet.request.cipher_suite";
+        "jakarta.servlet.request.cipher_suite";
 
 
     /**
@@ -92,7 +92,7 @@ public final class Globals {
      * (as an object of type Throwable) to an error page.
      */
     public static final String EXCEPTION_ATTR =
-        "javax.servlet.error.exception";
+        "jakarta.servlet.error.exception";
 
 
     /**
@@ -100,7 +100,7 @@ public final class Globals {
      * (as an object of type String) of the page on which an error occurred.
      */
     public static final String EXCEPTION_PAGE_ATTR =
-        "javax.servlet.error.request_uri";
+        "jakarta.servlet.error.request_uri";
 
 
     /**
@@ -108,7 +108,7 @@ public final class Globals {
      * (as an object of type Class) to an error page.
      */
     public static final String EXCEPTION_TYPE_ATTR =
-        "javax.servlet.error.exception_type";
+        "jakarta.servlet.error.exception_type";
 
 
     /**
@@ -116,7 +116,7 @@ public final class Globals {
      * (as an object of type STring) to an error page.
      */
     public static final String ERROR_MESSAGE_ATTR =
-        "javax.servlet.error.message";
+        "jakarta.servlet.error.message";
 
 
     /**
@@ -142,14 +142,14 @@ public final class Globals {
      * this SSL connection (as an object of type java.lang.Integer).
      */
     public static final String KEY_SIZE_ATTR =
-        "javax.servlet.request.key_size";
+        "jakarta.servlet.request.key_size";
 
     /**
      * The request attribute under which we store the session id being used
      * for this SSL connection (as an object of type java.lang.String).
      */
     public static final String SSL_SESSION_ID_ATTR =
-        "javax.servlet.request.ssl_session";
+        "jakarta.servlet.request.ssl_session";
 
 
     /**
@@ -181,7 +181,7 @@ public final class Globals {
      * servlet is stored on an included dispatcher request.
      */
     public static final String INCLUDE_REQUEST_URI_ATTR =
-        "javax.servlet.include.request_uri";
+        "jakarta.servlet.include.request_uri";
 
 
     /**
@@ -189,7 +189,7 @@ public final class Globals {
      * servlet is stored on an included dispatcher request.
      */
     public static final String INCLUDE_CONTEXT_PATH_ATTR =
-        "javax.servlet.include.context_path";
+        "jakarta.servlet.include.context_path";
 
 
     /**
@@ -197,7 +197,7 @@ public final class Globals {
      * servlet is stored on an included dispatcher request.
      */
     public static final String INCLUDE_PATH_INFO_ATTR =
-        "javax.servlet.include.path_info";
+        "jakarta.servlet.include.path_info";
 
 
     /**
@@ -205,7 +205,7 @@ public final class Globals {
      * servlet is stored on an included dispatcher request.
      */
     public static final String INCLUDE_SERVLET_PATH_ATTR =
-        "javax.servlet.include.servlet_path";
+        "jakarta.servlet.include.servlet_path";
 
 
     /**
@@ -213,7 +213,7 @@ public final class Globals {
      * servlet is stored on an included dispatcher request.
      */
     public static final String INCLUDE_QUERY_STRING_ATTR =
-        "javax.servlet.include.query_string";
+        "jakarta.servlet.include.query_string";
 
 
     /**
@@ -221,7 +221,7 @@ public final class Globals {
      * on an forwarded dispatcher request.
      */
     public static final String FORWARD_REQUEST_URI_ATTR =
-        "javax.servlet.forward.request_uri";
+        "jakarta.servlet.forward.request_uri";
     
     
     /**
@@ -229,7 +229,7 @@ public final class Globals {
      * on an forwarded dispatcher request.
      */
     public static final String FORWARD_CONTEXT_PATH_ATTR =
-        "javax.servlet.forward.context_path";
+        "jakarta.servlet.forward.context_path";
 
 
     /**
@@ -237,7 +237,7 @@ public final class Globals {
      * on an forwarded dispatcher request.
      */
     public static final String FORWARD_PATH_INFO_ATTR =
-        "javax.servlet.forward.path_info";
+        "jakarta.servlet.forward.path_info";
 
 
     /**
@@ -245,7 +245,7 @@ public final class Globals {
      * on an forwarded dispatcher request.
      */
     public static final String FORWARD_SERVLET_PATH_ATTR =
-        "javax.servlet.forward.servlet_path";
+        "jakarta.servlet.forward.servlet_path";
 
 
     /**
@@ -253,7 +253,7 @@ public final class Globals {
      * on an forwarded dispatcher request.
      */
     public static final String FORWARD_QUERY_STRING_ATTR =
-        "javax.servlet.forward.query_string";
+        "jakarta.servlet.forward.query_string";
 
 
     /**
@@ -261,7 +261,7 @@ public final class Globals {
      * an error page.
      */
     public static final String SERVLET_NAME_ATTR =
-        "javax.servlet.error.servlet_name";
+        "jakarta.servlet.error.servlet_name";
 
     
     /**
@@ -294,7 +294,7 @@ public final class Globals {
      * (as an object of type Integer) to an error page.
      */
     public static final String STATUS_CODE_ATTR =
-        "javax.servlet.error.status_code";
+        "jakarta.servlet.error.status_code";
 
 
     /**
@@ -318,7 +318,7 @@ public final class Globals {
      * within this web application.
      */
     public static final String WORK_DIR_ATTR =
-        "javax.servlet.context.tempdir";
+        "jakarta.servlet.context.tempdir";
 
 
 }

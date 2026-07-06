@@ -438,7 +438,7 @@ public class JspUtil {
                         + ") "
                         + "com.requea.dysoweb.org.apache.jasper.runtime.PageContextImpl.proprietaryEvaluate"
                         + "(" + Generator.quote(expression) + ", " + targetType
-                        + ".class, " + "(javax.servlet.jsp.PageContext)" + jspCtxt + ", "
+                        + ".class, " + "(jakarta.servlet.jsp.PageContext)" + jspCtxt + ", "
                         + fnmapvar + ", " + XmlEscape + ")");
 
         /*
