@@ -3,13 +3,13 @@
 	<groupId>com.requea.dysoweb</groupId>
 	<artifactId>main</artifactId>
 	<packaging>pom</packaging>
-	<version>1.0.55-SNAPSHOT</version>
+	<version>2.0.0-SNAPSHOT</version>
 	<name>Requea Dysoweb</name>
 	<url>https://www.requea.com</url>
 	<properties>
 		<!-- dysowebVersion sould be the same number as dysoweb Version, 
 			but without the -SNAPSHOT if there is one -->
-		<dysowebVersion>1.0.54</dysowebVersion>
+		<dysowebVersion>2.0.0</dysowebVersion>
 	</properties>
 	<modules>
 		<module>dysoweb</module>
@@ -134,7 +134,7 @@
 	    <url>scm:git:https://github.com/REQUEA/dysoweb.git</url>
 	    <connection>scm:git:https://github.com/REQUEA/dysoweb.git</connection>
 	    <developerConnection>scm:git:https://github.com/REQUEA/dysoweb.git</developerConnection>
-	  <tag>dysoweb-1.0.54</tag>
+	  <tag>dysoweb-2.0.0</tag>
   </scm>
 	<build>
 		<plugins>
