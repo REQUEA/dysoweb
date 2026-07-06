@@ -133,6 +133,10 @@
 							jakarta.servlet.jsp.el;version="3.1.0",
 							jakarta.servlet.jsp.tagext;version="3.1.0",
 							com.requea.dysoweb.utils.tags,
+							<!-- embedded JFreeChart 1.0.2 carries javax.servlet servlet-utility
+							     classes we never call; exclude so the bundle resolves on jakarta -->
+							!javax.servlet,
+							!javax.servlet.http,
                         	*
                         </Import-Package>
                     </instructions>
