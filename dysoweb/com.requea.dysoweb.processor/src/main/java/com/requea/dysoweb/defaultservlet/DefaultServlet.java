@@ -246,14 +246,14 @@ public class DefaultServlet
         }
         try {
             value = getServletConfig().getInitParameter("listings");
-            listings = (new Boolean(value)).booleanValue();
+            listings = (Boolean.valueOf(value)).booleanValue();
         } catch (Throwable t) {
             ;
         }
         try {
             value = getServletConfig().getInitParameter("readonly");
             if (value != null)
-                readOnly = (new Boolean(value)).booleanValue();
+                readOnly = (Boolean.valueOf(value)).booleanValue();
         } catch (Throwable t) {
             ;
         }
@@ -1539,11 +1539,11 @@ public class DefaultServlet
             && (response.getClass().getName().equals("org.apache.catalina.connector.ResponseFacade"))) {
             request.setAttribute("org.apache.tomcat.sendfile.filename", entry.attributes.getCanonicalPath());
             if (range == null) {
-                request.setAttribute("org.apache.tomcat.sendfile.start", new Long(0L));
-                request.setAttribute("org.apache.tomcat.sendfile.end", new Long(length));
+                request.setAttribute("org.apache.tomcat.sendfile.start", Long.valueOf(0L));
+                request.setAttribute("org.apache.tomcat.sendfile.end", Long.valueOf(length));
             } else {
-                request.setAttribute("org.apache.tomcat.sendfile.start", new Long(range.start));
-                request.setAttribute("org.apache.tomcat.sendfile.end", new Long(range.end + 1));
+                request.setAttribute("org.apache.tomcat.sendfile.start", Long.valueOf(range.start));
+                request.setAttribute("org.apache.tomcat.sendfile.end", Long.valueOf(range.end + 1));
             }
             request.setAttribute("org.apache.tomcat.sendfile.token", this);
             return true;

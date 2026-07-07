@@ -89,7 +89,7 @@ import com.requea.webenv.IWebProcessor;
 
 public class RequestProcessor implements IWebProcessor {
 
-	public static final Object NULL = new Integer(0);
+	public static final Object NULL = Integer.valueOf(0);
 	public static final java.lang.String BUNDLE_VERSION = "Bundle-Version";
 	
 	private DefaultServlet fDefaultServlet;
@@ -150,7 +150,7 @@ public class RequestProcessor implements IWebProcessor {
 		List lst = new ArrayList();
 		for(int i=0; i<fActiveBundleInfos.size(); i++) {
 			BundleInfo info = (BundleInfo)fActiveBundleInfos.get(i);
-			Long key = new Long(info.getBundle().getBundleId());
+			Long key = Long.valueOf(info.getBundle().getBundleId());
 			if(fServletContextWrappers.get(key) == null) {
 				// not deployed yet
 				lst.add(info.getBundle());
@@ -179,7 +179,7 @@ public class RequestProcessor implements IWebProcessor {
 		List lst = new ArrayList();
 		for(int i=0; i<fActiveBundleInfos.size(); i++) {
 			BundleInfo info = (BundleInfo)fActiveBundleInfos.get(i);
-			Long key = new Long(info.getBundle().getBundleId());
+			Long key = Long.valueOf(info.getBundle().getBundleId());
 			if(fServletContextWrappers.get(key) != null) {
 				// not deployed yet
 				lst.add(info.getBundle());
@@ -472,7 +472,7 @@ public class RequestProcessor implements IWebProcessor {
 			if(wrapper != null) {
 				Long bundleId = (Long)request.getAttribute("com.requea.dysoweb.service");
 				if(bundleId == null) {
-					bundleId = new Long(wrapper.getBundleId());
+					bundleId = Long.valueOf(wrapper.getBundleId());
 					request.setAttribute("com.requea.dysoweb.service", bundleId);
 				}
 				ServletChain ac = ((ServletWrapper)wrapper).getChain();
@@ -782,7 +782,7 @@ public class RequestProcessor implements IWebProcessor {
 			return;
 		}
 		
-		Long key = new Long(bundle.getBundleId());
+		Long key = Long.valueOf(bundle.getBundleId());
 
 		// check if the bundle does not try to be deployed when another bundle
 		// with the same symbolic name is already deployed
@@ -1025,7 +1025,7 @@ public class RequestProcessor implements IWebProcessor {
 	        if(tagURI != null) {
 	        	fTagLocations.put(tagURI, "$scratch/"+baseName);
         		fTagLocations.put("/WEB-INF"+path, "$scratch/"+baseName);
-	        	fTagBundles.put(tagURI, new Long(bundleId));
+	        	fTagBundles.put(tagURI, Long.valueOf(bundleId));
 	        }
 		} catch (IOException e) {
 			throw new WebAppException(e);
@@ -1050,7 +1050,7 @@ public class RequestProcessor implements IWebProcessor {
 			}
 		}
 		
-		Long bundleKey = new Long(bundleId);
+		Long bundleKey = Long.valueOf(bundleId);
 		Map map = (Map)fServlets.remove(bundleKey);
 		if(map != null) {
 			Iterator iter = map.values().iterator();
@@ -1196,7 +1196,7 @@ public class RequestProcessor implements IWebProcessor {
 		long bundleId = bundle.getBundleId();
 		
 		// do we already have this servlet associated to the service?
-		Map servlets = (Map)fServlets.get(new Long(bundleId));
+		Map servlets = (Map)fServlets.get(Long.valueOf(bundleId));
 		ServletDefinition def = (ServletDefinition)servlets.get(name);
 		if(def != null) {
 			// already got this one
@@ -1221,7 +1221,7 @@ public class RequestProcessor implements IWebProcessor {
 
 		long bundleId = bundle.getBundleId();
 		
-		Map filters = (Map)fFilters.get(new Long(bundleId));
+		Map filters = (Map)fFilters.get(Long.valueOf(bundleId));
 		FilterDefinition def = (FilterDefinition)filters.get(name);
 		if(def != null) {
 			return def;
@@ -1240,7 +1240,7 @@ public class RequestProcessor implements IWebProcessor {
 	public IListenerDefinition createListenerDefinition(Bundle bundle, String className) throws WebAppException {
 
 		long bundleId = bundle.getBundleId();
-		Map listeners = (Map)fListeners.get(new Long(bundleId));
+		Map listeners = (Map)fListeners.get(Long.valueOf(bundleId));
 		ListenerDefinition def = (ListenerDefinition)listeners.get(className);
 		if(def != null) {
 			return def;
@@ -1345,7 +1345,7 @@ public class RequestProcessor implements IWebProcessor {
 					Object instance = def.getInstance();
 					if(instance instanceof ServletContextListener) {
 						contextListeners.add(instance);
-						ServletContextWrapper contextWrapper = (ServletContextWrapper)fServletContextWrappers.get(new Long(def.getBundleId()));
+						ServletContextWrapper contextWrapper = (ServletContextWrapper)fServletContextWrappers.get(Long.valueOf(def.getBundleId()));
 						if(contextWrapper != null && !def.isContextNotified()) {
 							fLog.info("Initializing Servlet Context listener " + def.getClassName());
 							((ServletContextListener)instance).contextInitialized(new ServletContextEvent(contextWrapper));
@@ -1392,7 +1392,7 @@ public class RequestProcessor implements IWebProcessor {
 		for(int i=0; i<fActiveBundleInfos.size(); i++) {
 			BundleInfo info = (BundleInfo)fActiveBundleInfos.get(i);
 			Bundle bundle = info.getBundle();
-			Long l = new Long(bundle.getBundleId());
+			Long l = Long.valueOf(bundle.getBundleId());
 			ServletContextWrapper contextWrapper = (ServletContextWrapper)fServletContextWrappers.get(l);
 			if(fJspWrappers.get(l) == null && contextWrapper != null) {
 				try {
@@ -1426,7 +1426,7 @@ public class RequestProcessor implements IWebProcessor {
 					servletMappings.put(def, mappings);
 				}
 				
-				ServletContextWrapper contextWrapper = (ServletContextWrapper)fServletContextWrappers.get(new Long(def.getBundleId()));
+				ServletContextWrapper contextWrapper = (ServletContextWrapper)fServletContextWrappers.get(Long.valueOf(def.getBundleId()));
 				ServletWrapper w = new ServletWrapper(def.getBundleId(), contextWrapper, def);
 				try {
 					if(def.getLoader() != null) {
@@ -1486,7 +1486,7 @@ public class RequestProcessor implements IWebProcessor {
 			if(item instanceof IFilterDefinition) {
 				IFilterDefinition def = (IFilterDefinition)item;
 				try {
-					ServletContextWrapper contextWrapper = (ServletContextWrapper)fServletContextWrappers.get(new Long(def.getBundleId()));
+					ServletContextWrapper contextWrapper = (ServletContextWrapper)fServletContextWrappers.get(Long.valueOf(def.getBundleId()));
 					if(def.getLoader() != null) {
 						th.setContextClassLoader(def.getLoader());
 					}
@@ -1511,7 +1511,7 @@ public class RequestProcessor implements IWebProcessor {
 				IServletDefinition def = (IServletDefinition)item;
 				try {
 					if(def.getLoadOnStartup() > 0) {
-						ServletContextWrapper contextWrapper = (ServletContextWrapper)fServletContextWrappers.get(new Long(def.getBundleId()));
+						ServletContextWrapper contextWrapper = (ServletContextWrapper)fServletContextWrappers.get(Long.valueOf(def.getBundleId()));
 						if(def.getLoader() != null) {
 							th.setContextClassLoader(def.getLoader());
 						}

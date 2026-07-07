@@ -86,9 +86,9 @@ public class VoteServlet extends HttpServlet {
 	public void init(ServletConfig cfg) throws ServletException {
 		if(cfg.getServletContext().getAttribute(RESULTS) == null) {
 			Map results = new HashMap();
-			results.put("modular", new Integer(0));
-			results.put("dynamic", new Integer(0));
-			results.put("standard", new Integer(0));
+			results.put("modular", Integer.valueOf(0));
+			results.put("dynamic", Integer.valueOf(0));
+			results.put("standard", Integer.valueOf(0));
 			cfg.getServletContext().setAttribute(RESULTS, results);
 		}
 		super.init(cfg);
@@ -124,7 +124,7 @@ public class VoteServlet extends HttpServlet {
 					Integer val = (Integer)results.get(resp);
 					if(val != null) {
 						// increment the value
-						val = new Integer(val.intValue()+1);
+						val = Integer.valueOf(val.intValue()+1);
 						results.put(resp, val);
 					}
 				}

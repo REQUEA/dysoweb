@@ -123,10 +123,8 @@ public final class ELResolverImpl extends ELResolver {
         return elResolver.isReadOnly(context, base, property);
     }
 
-    @Override
-    public Iterator<java.beans.FeatureDescriptor> getFeatureDescriptors(ELContext context, Object base) {
-        return elResolver.getFeatureDescriptors(context, base);
-    }
+    // getFeatureDescriptors was deprecated for removal in Jakarta EL 5.0 (the runtime no longer
+    // calls it and the default returns null); the override has been dropped.
 
     @Override
     public Class<?> getCommonPropertyType(ELContext context, Object base) {

@@ -77,7 +77,7 @@ public class RequestMapper {
             req.setAttribute(RequestProcessor.PATHINFO, null);
 			// jasper wrappers
 			EntryInfo ei = fRequestProcessor.getEntryInfo(uri);
-			return ei == null ? null : fRequestProcessor.getJapserWrapper(new Long(ei.getBundleId()));
+			return ei == null ? null : fRequestProcessor.getJapserWrapper(Long.valueOf(ei.getBundleId()));
 		} else {
 			// regular wrapper
 		    PathMap.Entry entry = fServletsPathMap.getMatch(uri);
