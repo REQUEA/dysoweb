@@ -19,7 +19,13 @@ public class JasperLoader extends ClassLoader {
 	}
 
 	public URL getResource(String name) {
-		return fBundle.getResource(name);
+		URL url = fBundle.getResource(name);
+		if(url == null) {
+			// same fallback as loadClass: the JSP compiler (ecj) reads the jasper runtime
+			// classes as resources, and web bundles do not import them
+			url = this.getClass().getClassLoader().getResource(name);
+		}
+		return url;
 	}
 
 	public InputStream getResourceAsStream(String name) {

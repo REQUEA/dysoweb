@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.EventListener;
 import java.util.Iterator;
@@ -45,16 +46,33 @@ import com.requea.dysoweb.processor.RequestProcessor.EntryInfo;
 public class ServletContextWrapper implements ServletContext {
 
 	private static final Object ATTRIBUTE_SET = Boolean.TRUE;
+
+	/**
+	 * Attributes that must be BUNDLE-LOCAL rather than shared on the container
+	 * ServletContext. Modern Jasper (Track B) stores a per-bundle TldCache,
+	 * InstanceManager, compile classpath and work dir under these keys; because a
+	 * single container context is shared by every web bundle, writing them through
+	 * to {@link #fContext} would let bundles clobber each other's Jasper state.
+	 * These keys are held in {@link #fLocalAttributes} and never written to fContext.
+	 */
+	private static final Set<String> LOCAL_ATTRS = new java.util.HashSet<String>(java.util.Arrays.asList(
+			"org.apache.jasper.compiler.TldCache",   // TldCache.SERVLET_CONTEXT_ATTRIBUTE_NAME
+			"org.apache.tomcat.InstanceManager",     // InstanceManager context attribute
+			"org.apache.catalina.jsp_classpath",     // Jasper compile classpath
+			"jakarta.servlet.context.tempdir"));     // ServletContext.TEMPDIR (Jasper work dir)
+
 	private ServletContext fContext;
 	private RequestProcessor fRequestProcessor;
 	private Map fParams;
 	private Map fAttributesMap;
+	private Map fLocalAttributes;
 
 	public ServletContextWrapper(RequestProcessor requestProcessor, ServletContext servletContext, Map contextParams) {
 		fRequestProcessor = requestProcessor;
 		fContext = servletContext;
 		fParams = contextParams;
 		fAttributesMap = new ConcurrentHashMap();
+		fLocalAttributes = new ConcurrentHashMap();
 	}
 
 	
@@ -91,7 +109,13 @@ public class ServletContextWrapper implements ServletContext {
 	}
 	
 	public Enumeration getAttributeNames() {
-		return fContext.getAttributeNames();
+		// union of the bundle-local Jasper attributes and the shared container attributes
+		java.util.Set names = new java.util.HashSet(fLocalAttributes.keySet());
+		Enumeration e = fContext.getAttributeNames();
+		while (e.hasMoreElements()) {
+			names.add(e.nextElement());
+		}
+		return Collections.enumeration(names);
 	}
 
 	public ServletContext getContext(String arg0) {
@@ -226,15 +250,30 @@ public class ServletContextWrapper implements ServletContext {
 	}
 
 	public Object getAttribute(String name) {
+		if (LOCAL_ATTRS.contains(name)) {
+			Object v = fLocalAttributes.get(name);
+			if (v != null) {
+				return v;
+			}
+		}
 		return fContext.getAttribute(name);
 	}
-	
+
 	public void removeAttribute(String name) {
+		if (LOCAL_ATTRS.contains(name)) {
+			fLocalAttributes.remove(name);
+			return;
+		}
 		fContext.removeAttribute(name);
 		fAttributesMap.remove(name);
 	}
 
 	public void setAttribute(String name, Object value) {
+		if (LOCAL_ATTRS.contains(name)) {
+			// keep bundle-local; do NOT clobber the shared container context
+			fLocalAttributes.put(name, value);
+			return;
+		}
 		fContext.setAttribute(name, value);
 		fAttributesMap.put(name, ATTRIBUTE_SET);
 	}
@@ -251,6 +290,7 @@ public class ServletContextWrapper implements ServletContext {
 			fContext.removeAttribute(name);
 		}
 		fAttributesMap.clear();
+		fLocalAttributes.clear();
 	}
 
 	@Override

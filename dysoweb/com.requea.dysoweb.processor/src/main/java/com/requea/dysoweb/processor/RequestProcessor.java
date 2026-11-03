@@ -71,14 +71,14 @@ import org.w3c.dom.Element;
 
 import com.requea.dysoweb.WebAppException;
 import com.requea.dysoweb.defaultservlet.DefaultServlet;
-import com.requea.dysoweb.jasper.servlet.JspServlet;
+import org.apache.jasper.servlet.JspServlet;
+
 import com.requea.dysoweb.processor.definitions.ContextParam;
 import com.requea.dysoweb.processor.definitions.FilterDefinition;
 import com.requea.dysoweb.processor.definitions.JasperLoader;
 import com.requea.dysoweb.processor.definitions.ListenerDefinition;
 import com.requea.dysoweb.processor.definitions.ServletDefinition;
-import com.requea.dysoweb.servlet.jasper.DysowebCompilerAdapter;
-import com.requea.dysoweb.servlet.jasper.DysowebEmbeddedServletOptions;
+import com.requea.dysoweb.processor.jasper.DysowebJasperSetup;
 import com.requea.dysoweb.servlet.wrapper.FilterMappingDefinition;
 import com.requea.dysoweb.servlet.wrapper.ServletMappingDefinition;
 import com.requea.dysoweb.servlet.wrapper.ServletWrapper;
@@ -1401,6 +1401,11 @@ public class RequestProcessor implements IWebProcessor {
 					// set a URL class loader to make Jasper happy with dynamic class path compilation
 					ClassLoader jspLoader = new URLClassLoader(loaderURL, new JasperLoader(bundle));
 					th.setContextClassLoader(jspLoader);
+					// Track B: install the modern-Jasper container services (TldCache resolving
+					// against the platform-wide taglib registry, InstanceManager, compile
+					// classpath, work dir) on the bundle-local ServletContext before init.
+					DysowebJasperSetup.configure(contextWrapper, jspLoader, loaderURL, getScratchDir(),
+							this::getTaglibFile);
 					jasperServlet.init(new JasperConfig(contextWrapper, bundle));
 					ServletWrapper jasperWrapper = new ServletWrapper(l.longValue(), contextWrapper, jasperServlet, jspLoader);
 					fJspWrappers.put(l, jasperWrapper);
@@ -1574,6 +1579,18 @@ public class RequestProcessor implements IWebProcessor {
 		return parentURL;
 	}
 
+	/**
+	 * @return the scratch copy of the TLD registered for this taglib uri (from any active
+	 * bundle), or null if the uri is unknown
+	 */
+	public File getTaglibFile(String uri) {
+		String[] location = getTaglibLocation(uri);
+		if(location == null || !location[0].startsWith("$scratch/")) {
+			return null;
+		}
+		return new File(getScratchDir(), location[0].substring("$scratch/".length()));
+	}
+
 	public String getTaglib(String uri) {
 		String path = (String)fTaglibs.get(uri);
 		if(path == null) {
@@ -1636,11 +1653,10 @@ public class RequestProcessor implements IWebProcessor {
 		}
 		
 		public String getInitParameter(String param) {
-			if("engineOptionsClass".equals(param)) {
-				return DysowebEmbeddedServletOptions.class.getName();
-			} else if("compiler".equals(param)) {
-				return DysowebCompilerAdapter.class.getName();
-			} else if("development".equals(param)) {
+			// Track B: use modern Jasper's default EmbeddedServletOptions + the ecj (JDT)
+			// compiler; no custom engineOptionsClass / compiler override. A writable
+			// (reference:file) bundle runs in development mode so JSP changes recompile.
+			if("development".equals(param)) {
 				return fWritableBundle ? "true" : "false";
 			} else {
 				return null;

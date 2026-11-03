@@ -121,8 +121,8 @@
 						<configuration>
 							<target>
 								<echo>Processing dysoweb.properties file with ${project.version}</echo>
-								<copy file="src/main/config/dysoweb.properties" toFile="target/dysoweb/WEB-INF/classes/dysoweb.properties" />
-								<replace file="target/dysoweb/WEB-INF/classes/dysoweb.properties" summary="true">
+								<copy file="src/main/config/dysoweb.properties" toFile="target/${project.build.finalName}/WEB-INF/classes/dysoweb.properties" />
+								<replace file="target/${project.build.finalName}/WEB-INF/classes/dysoweb.properties" summary="true">
 									<replacetoken>@version</replacetoken>
 									<replacevalue>${project.version}</replacevalue>
 								</replace>
@@ -155,7 +155,7 @@
 									<type>jar</type>
 									<overWrite>true</overWrite>
 									<outputDirectory>
-										${project.build.directory}/dysoweb/WEB-INF/bundle
+										${project.build.directory}/${project.build.finalName}/WEB-INF/bundle
 									</outputDirectory>
 								</artifactItem>
 								<artifactItem>
@@ -164,7 +164,7 @@
 									<type>jar</type>
 									<overWrite>true</overWrite>
 									<outputDirectory>
-										${project.build.directory}/dysoweb/WEB-INF/bundle
+										${project.build.directory}/${project.build.finalName}/WEB-INF/bundle
 									</outputDirectory>
 								</artifactItem>
 								<artifactItem>
@@ -177,7 +177,7 @@
 									<type>jar</type>
 									<overWrite>true</overWrite>
 									<outputDirectory>
-										${project.build.directory}/dysoweb/WEB-INF/bundle
+										${project.build.directory}/${project.build.finalName}/WEB-INF/bundle
 									</outputDirectory>
 								</artifactItem>
 								<artifactItem>
@@ -190,7 +190,7 @@
 									<type>jar</type>
 									<overWrite>true</overWrite>
 									<outputDirectory>
-										${project.build.directory}/dysoweb/WEB-INF/bundle
+										${project.build.directory}/${project.build.finalName}/WEB-INF/bundle
 									</outputDirectory>
 								</artifactItem>
 								<artifactItem>
@@ -203,7 +203,7 @@
 									<type>jar</type>
 									<overWrite>true</overWrite>
 									<outputDirectory>
-										${project.build.directory}/dysoweb/WEB-INF/bundle
+										${project.build.directory}/${project.build.finalName}/WEB-INF/bundle
 									</outputDirectory>
 								</artifactItem>
 								<artifactItem>
@@ -216,7 +216,7 @@
 									<type>jar</type>
 									<overWrite>true</overWrite>
 									<outputDirectory>
-										${project.build.directory}/dysoweb/WEB-INF/bundle
+										${project.build.directory}/${project.build.finalName}/WEB-INF/bundle
 									</outputDirectory>
 								</artifactItem>
 								<artifactItem>
@@ -229,7 +229,7 @@
 									<type>jar</type>
 									<overWrite>true</overWrite>
 									<outputDirectory>
-										${project.build.directory}/dysoweb/WEB-INF/bundle
+										${project.build.directory}/${project.build.finalName}/WEB-INF/bundle
 									</outputDirectory>
 								</artifactItem>
 								<artifactItem>
@@ -242,7 +242,7 @@
 									<type>jar</type>
 									<overWrite>true</overWrite>
 									<outputDirectory>
-										${project.build.directory}/dysoweb/WEB-INF/bundle
+										${project.build.directory}/${project.build.finalName}/WEB-INF/bundle
 									</outputDirectory>
 								</artifactItem>
 								<artifactItem>
@@ -255,7 +255,7 @@
 									<type>jar</type>
 									<overWrite>true</overWrite>
 									<outputDirectory>
-										${project.build.directory}/dysoweb/WEB-INF/bundle
+										${project.build.directory}/${project.build.finalName}/WEB-INF/bundle
 									</outputDirectory>
 								</artifactItem>
 							</artifactItems>
