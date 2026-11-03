@@ -73,6 +73,9 @@
 			            <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 			            <Bundle-Activator>com.requea.dysoweb.shell.impl.Activator</Bundle-Activator>
                         <Import-Service>org.apache.felix.shell.ShellService</Import-Service>
+			            <!-- Disable bnd osgi.contract Require-Capability (JakartaServlet);
+			                 the servlet API is provided via the Felix system bundle package exports. -->
+			            <_contract>off</_contract>
                         <Include-Resource>webapp=src/main/webapp</Include-Resource>
                         <Import-Package>
                         	jakarta.servlet;version="6.0.0",

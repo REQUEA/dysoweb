@@ -62,7 +62,8 @@
                         <Bundle-Vendor>Requea.com</Bundle-Vendor>
 			            <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 			            <Bundle-Activator>com.requea.dysoweb.test.Activator</Bundle-Activator>
-						<Import-Package>*</Import-Package>
+						<!-- dw: tag handlers are referenced only from JSPs, which bnd cannot see -->
+						<Import-Package>com.requea.dysoweb.utils.tags;version="${dysowebVersion}",*</Import-Package>
                         <Include-Resource>webapp=src/main/webapp</Include-Resource>
 					</instructions>
 				</configuration>

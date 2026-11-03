@@ -60,17 +60,49 @@
             <artifactId>com.requea.dysoweb.api</artifactId>
             <scope>provided</scope>
         </dependency>
-		<!-- commons-el:5.5.20 (Tomcat 5.5-era javax EL impl) dropped for Jakarta;
-		     EL implementation now comes from tomcat-jasper-el 10.1.x (jakarta.el 5.0). -->
+		<!-- Track B: modern Tomcat 10.1 Jasper replaces the vendored Tomcat-7 fork.
+		     janino/commons-compiler dropped (ecj is now the JSP compiler). The servlet/
+		     jsp APIs stay provided (resolved via system.packages), so exclude Tomcat's
+		     own copies to avoid duplicate jakarta.servlet* on the classpath. -->
 		<dependency>
-			<groupId>org.codehaus.janino</groupId>
-			<artifactId>janino</artifactId>
-			<version>3.1.12</version>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>tomcat-jasper</artifactId>
+			<version>10.1.56</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.tomcat</groupId>
+					<artifactId>tomcat-servlet-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.tomcat</groupId>
+					<artifactId>tomcat-jsp-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.codehaus.janino</groupId>
-			<artifactId>commons-compiler</artifactId>
-			<version>3.1.12</version>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>tomcat-util</artifactId>
+			<version>10.1.56</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>tomcat-util-scan</artifactId>
+			<version>10.1.56</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>tomcat-api</artifactId>
+			<version>10.1.56</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>tomcat-juli</artifactId>
+			<version>10.1.56</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jdt</groupId>
+			<artifactId>ecj</artifactId>
+			<version>3.33.0</version>
 		</dependency>
         <dependency>
             <groupId>requeabuild</groupId>
@@ -92,21 +124,6 @@
 		    <artifactId>commons-logging</artifactId>
 		    <version>1.2</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.ant</groupId>
-            <artifactId>ant</artifactId>
-            <version>1.10.12</version>
-        </dependency>
-		<dependency>
-		    <groupId>org.apache.ant</groupId>
-		    <artifactId>ant-launcher</artifactId>
-            <version>1.10.12</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.tomcat.embed</groupId>
-			<artifactId>tomcat-embed-logging-juli</artifactId>
-			<version>7.0.109</version>
-		</dependency>
     </dependencies>
 
     <build>
@@ -127,11 +144,17 @@
                         <Bundle-Vendor>Requea.com</Bundle-Vendor>
                         <Bundle-Activator>com.requea.dysoweb.bundle.Activator</Bundle-Activator>
                         <Export-Package>
-							com.requea.dysoweb.util.xml;version="${dysowebVersion}"
+							com.requea.dysoweb.util.xml;version="${dysowebVersion}",
+							<!-- generated JSP servlets extend org.apache.jasper.runtime.HttpJspBase
+							     etc.; web bundles must be able to import it from the processor -->
+							org.apache.jasper.runtime
                         </Export-Package>
+                        <!-- Only our own source is inlined. The modern engine packages
+                             (org.apache.jasper/tomcat/el, org.eclipse.jdt) ship as whole jars on
+                             the Bundle-ClassPath via Embed-Dependency; listing them here too would
+                             inline a second, loose copy. -->
                         <Private-Package>
-							com.requea.dysoweb.*,
-							org.apache.tomcat.*
+							com.requea.dysoweb.*
                         </Private-Package>
                         <Import-Package>
                         	com.requea.webenv,
@@ -149,9 +172,26 @@
                         	jakarta.el.*,
                         	org.w3c.dom,
                         	org.xml.sax.*,
-							org.osgi.framework.*
+							org.osgi.framework.*,
+							<!-- Unused by the ecj (JDT) compile path; mark optional so the bundle
+							     resolves without Ant / JSR-199 tools / Graal on the classpath. -->
+							org.apache.tools.ant.*;resolution:=optional,
+							javax.tools;resolution:=optional,
+							javax.lang.model.*;resolution:=optional,
+							javax.annotation.processing;resolution:=optional,
+							org.graalvm.nativeimage;resolution:=optional,
+							sun.misc;resolution:=optional,
+							<!-- the processor inlines dysoweb-core's bootstrap classes (DysowebServlet,
+							     AutoActivator) via com.requea.dysoweb.*; their Felix launcher refs are
+							     never used inside the bundle, so don't import them -->
+							!org.apache.felix.*,
+							<!-- let bnd resolve modern Jasper's remaining external refs -->
+							*
                         </Import-Package>
-                        <Embed-Dependency>*;scope=compile|runtime</Embed-Dependency>
+                        <!-- Embed exactly the modern engine + support jars. The servlet/jsp/el
+                             APIs stay provided (imported via system.packages), so they are NOT
+                             listed here. -->
+                        <Embed-Dependency>tomcat-jasper,tomcat-jasper-el,tomcat-util,tomcat-util-scan,tomcat-api,tomcat-juli,ecj,naming-resources,commons-logging;scope=compile|runtime</Embed-Dependency>
                     </instructions>
                 </configuration>
             </plugin>
